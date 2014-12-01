@@ -6,13 +6,6 @@ from vispy import app, gloo, visuals
 import pymea.pymea as mea
 import pymea.mea_cython as meac
 
-bin_count = 125
-
-
-def read_file(fname):
-    with open(fname, 'r') as f:
-        return f.read()
-
 
 class Grid():
     VERTEX_SHADER = """
@@ -55,7 +48,7 @@ class Grid():
         gloo.gl.glLineWidth(1)
 
 
-class Canvas(app.Canvas):
+class MEA120GridVisualization():
     VERTEX_SHADER = """
     attribute vec4 a_position;
 
@@ -94,15 +87,13 @@ class Canvas(app.Canvas):
     }
     """
 
-    def __init__(self, fname):
-        app.Canvas.__init__(self, keys='interactive')
+    def __init__(self, data):
+        self.data = data
+        self.t0 = 0
+        self.dt = 20
+        self.resample()
 
-        # Load data
-        print('Loading data...')
-        self.store = mea.MEARecording(fname)
-        self.data = self.store.get('all')
-
-        print('Interpolating...')
+    def resample(self, bin_count=125):
         data = np.zeros((120, 2*bin_count - 2, 4), dtype=np.float32)
         for i, column in enumerate(self.data):
             v = meac.min_max_bin(self.data[column].values, bin_count)
@@ -114,18 +105,37 @@ class Canvas(app.Canvas):
 
         # Create Shaders
         print('Create shaders...')
-        self.program = gloo.Program(Canvas.VERTEX_SHADER,
-                                    Canvas.FRAGMENT_SHADER)
+        self.program = gloo.Program(MEA120GridVisualization.VERTEX_SHADER,
+                                    MEA120GridVisualization.FRAGMENT_SHADER)
         self.program['a_position'] = data.reshape(120*(2*bin_count - 2), 4)
         self.program['u_width'] = bin_count
         self.program['u_y_scale'] = 50
 
-        self.tr_sys = visuals.transforms.TransformSystem(self)
-
         # Create grid
         self.grid = Grid(12, 12)
 
-        print('We are alive!')
+    def draw(self):
+        self.program.draw('line_strip')
+        self.grid.draw()
+
+    def on_mouse_move(self, event):
+        pass
+
+    def on_mouse_wheel(self, event):
+        pass
+
+
+class Canvas(app.Canvas):
+    def __init__(self, fname):
+        app.Canvas.__init__(self, keys='interactive')
+
+        # Load data
+        print('Loading data...')
+        self.store = mea.MEARecording(fname)
+        self.data = self.store.get('all')
+        self.grid_visualization = MEA120GridVisualization(self.data)
+        self.tr_sys = visuals.transforms.TransformSystem(self)
+        self.visualization = self.grid_visualization
 
     def _normalize(self, x_y):
         x, y = x_y
@@ -138,20 +148,22 @@ class Canvas(app.Canvas):
 
     def on_draw(self, event):
         gloo.clear((0.9, 0.91, 0.91, 1))
-        self.program.draw('line_strip')
-        self.grid.draw()
+        self.visualization.draw()
 
     def on_mouse_move(self, event):
+        self.visualization.on_mouse_move(event)
+
         if event.is_dragging:
             x0, y0 = self._normalize(event.press_event.pos)
             x1, y1 = self._normalize(event.last_event.pos)
             x, y = self._normalize(event.pos)
             # dx = x - x1
 
-            self.update()
+        self.update()
 
     def on_mouse_wheel(self, event):
         # dx = np.sign(event.delta[1])*.05
+        self.visualization.on_mouse_wheel(event)
         self.update()
 
 
