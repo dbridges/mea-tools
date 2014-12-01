@@ -12,7 +12,24 @@ input_dir = os.path.expanduser(
     '~/Dropbox/Hansma/ncp/IA6787/2014_08_20_Baseline')
 
 
-def limit(val, minval, maxval):
+def clamp(val, minval, maxval):
+    """
+    Returns val, not to exceed minval or maxval.
+
+    Parameters
+    ----------
+    val : number
+        The input value to clamp.
+    minval : number
+        Lower value to clamp to.
+    maxval : number
+        Uperr value to clamp to.
+
+    Retruns
+    -------
+    number
+        The clamped value.
+    """
     if val < minval:
         return minval
     if val > maxval:
@@ -49,9 +66,9 @@ class MEARecording:
         channels.sort(key=lambda s: self.lookup[s])
         if end_time is None:
             end_time = self.duration
-        start_i = int(limit(start_time * self.sample_rate,
+        start_i = int(clamp(start_time * self.sample_rate,
                             0, self.data_len - 1))
-        end_i = int(limit(end_time * self.sample_rate, 0, self.data_len))
+        end_i = int(clamp(end_time * self.sample_rate, 0, self.data_len))
         rows = [self.lookup[channel] for channel in channels]
         data = (self.conv *
                 self.electrode_data[rows, start_i:end_i]
@@ -111,9 +128,14 @@ def condense_spikes(srcdir, fname):
 
 def raster_plot(df):
     """
-    Dataframe has format (electrode, time):
-        a9, 0.05
-        h12, 0.09
+    Generates a raster plot of the given data.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        `df` must have an electrode and time column, ex:
+            a9, 0.05
+            h12, 0.09
     """
     plt.figure()
     plt.grid(False)
@@ -141,7 +163,7 @@ def read_binary(fname, no_channels, columns, part=(0, -1),
     no_channels : int
         Number of channels represented in binary data.
     fs : float
-        Sampling frequency
+        Sampling frequency in Hz.
     """
     d = np.fromfile(fname, np.uint16)
     d = d.reshape((-1, no_channels))
