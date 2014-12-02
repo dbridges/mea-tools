@@ -1,4 +1,5 @@
 import os
+import sys
 
 import numpy as np
 from vispy import app, gloo, visuals
@@ -91,28 +92,38 @@ class MEA120GridVisualization():
         self.data = data
         self.t0 = 0
         self.dt = 20
+        self.y_scale = 50  # in uV
+
+        # Create shaders
+        self.program = gloo.Program(MEA120GridVisualization.VERTEX_SHADER,
+                                    MEA120GridVisualization.FRAGMENT_SHADER)
+        self.grid = Grid(12, 12)
+
         self.resample()
 
     def resample(self, bin_count=125):
+        sample_rate = 1 / (self.data.index[1] - self.data.index[0])
+        start_i = mea.clamp(int(self.t0 * sample_rate), 0, sys.maxsize)
+        end_i = mea.clamp(start_i + int(self.dt * sample_rate),
+                          start_i, sys.maxsize)
+        bin_size = int((end_i - start_i) / bin_count)
+        bin_count = len(np.arange(start_i, end_i, bin_size))
+
         data = np.zeros((120, 2*bin_count - 2, 4), dtype=np.float32)
+
         for i, column in enumerate(self.data):
-            v = meac.min_max_bin(self.data[column].values, bin_count)
+            v = meac.min_max_bin(self.data[column].values[start_i:end_i],
+                                 bin_size, bin_count)
             col, row = mea.coordinates_for_electrode(column)
             x = np.full_like(v, col, dtype=np.float32)
             y = np.full_like(v, row, dtype=np.float32)
             t = np.arange(0, 2*bin_count - 2, dtype=np.float32) / 2.0
             data[i] = np.column_stack((x, y, t, v))
 
-        # Create Shaders
-        print('Create shaders...')
-        self.program = gloo.Program(MEA120GridVisualization.VERTEX_SHADER,
-                                    MEA120GridVisualization.FRAGMENT_SHADER)
+        # Update shader
         self.program['a_position'] = data.reshape(120*(2*bin_count - 2), 4)
         self.program['u_width'] = bin_count
-        self.program['u_y_scale'] = 50
-
-        # Create grid
-        self.grid = Grid(12, 12)
+        self.program['u_y_scale'] = self.y_scale
 
     def draw(self):
         self.program.draw('line_strip')
@@ -122,7 +133,8 @@ class MEA120GridVisualization():
         pass
 
     def on_mouse_wheel(self, event):
-        pass
+        dx = np.sign(event.delta[1])*.05
+        print(dx)
 
 
 class Canvas(app.Canvas):
@@ -162,7 +174,6 @@ class Canvas(app.Canvas):
         self.update()
 
     def on_mouse_wheel(self, event):
-        # dx = np.sign(event.delta[1])*.05
         self.visualization.on_mouse_wheel(event)
         self.update()
 

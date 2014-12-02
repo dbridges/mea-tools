@@ -30,6 +30,9 @@ def find_series_peaks(series):
 
 
 def min_max(np.ndarray[float] d):
+    if len(d) == 0:
+        return 0, 0
+
     cdef int n
     cdef float minval = d[0]
     cdef float maxval = d[0]
@@ -41,10 +44,9 @@ def min_max(np.ndarray[float] d):
     return minval, maxval
 
 
-def min_max_bin(np.ndarray[float] series, bins=130):
+def min_max_bin(np.ndarray[float] series, int bin_size, int bin_count):
     cdef np.ndarray[float] sub
-    cdef int bin_size = int(len(series)/bins)
-    cdef np.ndarray[long] edges = np.arange(0, len(series), bin_size)
+    cdef np.ndarray[long] edges = np.arange(0, bin_count * bin_size, bin_size)
     cdef np.ndarray[float] vals = np.zeros(len(edges)*2 - 2, np.float32)
 
     for n in range(len(edges) - 1):
