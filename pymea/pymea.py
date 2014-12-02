@@ -8,33 +8,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import h5py
 
+import pymea.util as util
+
 input_dir = os.path.expanduser(
     '~/Dropbox/Hansma/ncp/IA6787/2014_08_20_Baseline')
-
-
-def clamp(val, minval, maxval):
-    """
-    Returns val, not to exceed minval or maxval.
-
-    Parameters
-    ----------
-    val : number
-        The input value to clamp.
-    minval : number
-        Lower value to clamp to.
-    maxval : number
-        Uperr value to clamp to.
-
-    Retruns
-    -------
-    number
-        The clamped value.
-    """
-    if val < minval:
-        return minval
-    if val > maxval:
-        return maxval
-    return val
 
 
 class MEARecording:
@@ -66,9 +43,9 @@ class MEARecording:
         channels.sort(key=lambda s: self.lookup[s])
         if end_time is None:
             end_time = self.duration
-        start_i = int(clamp(start_time * self.sample_rate,
-                            0, self.data_len - 1))
-        end_i = int(clamp(end_time * self.sample_rate, 0, self.data_len))
+        start_i = int(util.clip(start_time * self.sample_rate,
+                                0, self.data_len - 1))
+        end_i = int(util.clip(end_time * self.sample_rate, 0, self.data_len))
         rows = [self.lookup[channel] for channel in channels]
         data = (self.conv *
                 self.electrode_data[rows, start_i:end_i]

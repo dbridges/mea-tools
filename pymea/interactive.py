@@ -6,6 +6,7 @@ import numpy as np
 from vispy import app, gloo, visuals
 
 import pymea.pymea as mea
+import pymea.util as util
 import pymea.mea_cython as meac
 
 
@@ -92,8 +93,8 @@ class MEA120GridVisualization():
     def __init__(self, canvas, data):
         self.canvas = canvas
         self.data = data
-        self.t0 = 0
-        self.dt = 20
+        self._t0 = 0
+        self._dt = 20
         self.y_scale = 50  # in uV
 
         # Create shaders
@@ -103,10 +104,26 @@ class MEA120GridVisualization():
 
         self.resample()
 
+    @property
+    def t0(self):
+        return self._t0
+
+    @t0.setter
+    def t0(self, val):
+        self._t0 = util.clip(val, 0, self.data.index[-1])
+
+    @property
+    def dt(self):
+        return self._dt
+
+    @dt.setter
+    def dt(self, val):
+        self._dt = util.clip(val, 0.0025, 20)
+
     def resample(self, bin_count=125):
         sample_rate = 1 / (self.data.index[1] - self.data.index[0])
-        start_i = mea.clamp(int(self.t0 * sample_rate), 0, sys.maxsize)
-        end_i = mea.clamp(start_i + int(self.dt * sample_rate),
+        start_i = int(self.t0 * sample_rate)
+        end_i = util.clip(start_i + int(self.dt * sample_rate),
                           start_i, sys.maxsize)
         bin_size = (end_i - start_i) // bin_count
         bin_count = len(np.arange(start_i, end_i, bin_size))
@@ -138,13 +155,21 @@ class MEA120GridVisualization():
             x, y = event.pos
             dx = x1 - x
             sperpx = self.dt / (self.canvas.size[0] / 12)
-            self.t0 = mea.clamp(self.t0 + dx * sperpx,
+            self.t0 = util.clip(self.t0 + dx * sperpx,
                                 0, self.data.index[-1])
             self.resample()
 
     def on_mouse_wheel(self, event):
+        sec_per_pixel = self.dt / (self.canvas.size[0] / 12)
+        rel_x = event.pos[0] % (self.canvas.size[0] / 12)
+
+        target_time = rel_x * sec_per_pixel + self.t0
         dx = np.sign(event.delta[1]) * 0.05
         self.dt *= math.exp(2.5 * dx)
+
+        sec_per_pixel = self.dt / (self.canvas.size[0] / 12)
+        self.t0 = target_time - (rel_x * sec_per_pixel)
+
         self.resample()
 
 
