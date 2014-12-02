@@ -1,5 +1,6 @@
 import os
 import sys
+import math
 
 import numpy as np
 from vispy import app, gloo, visuals
@@ -88,7 +89,8 @@ class MEA120GridVisualization():
     }
     """
 
-    def __init__(self, data):
+    def __init__(self, canvas, data):
+        self.canvas = canvas
         self.data = data
         self.t0 = 0
         self.dt = 20
@@ -130,11 +132,19 @@ class MEA120GridVisualization():
         self.grid.draw()
 
     def on_mouse_move(self, event):
-        pass
+        if event.is_dragging:
+            x0, y0 = self.canvas._normalize(event.press_event.pos)
+            x1, y1 = self.canvas._normalize(event.last_event.pos)
+            x, y = self.canvas._normalize(event.pos)
+            dx = x1 - x
+            self.t0 = mea.clamp(self.t0 + self.dt * dx / (self.canvas.size[0]/12),
+                                0, self.data.index[-1])
+            self.resample()
 
     def on_mouse_wheel(self, event):
         dx = np.sign(event.delta[1])*.05
-        print(dx)
+        self.dt *= math.exp(2.5*dx)
+        self.resample()
 
 
 class Canvas(app.Canvas):
@@ -145,7 +155,7 @@ class Canvas(app.Canvas):
         print('Loading data...')
         self.store = mea.MEARecording(fname)
         self.data = self.store.get('all')
-        self.grid_visualization = MEA120GridVisualization(self.data)
+        self.grid_visualization = MEA120GridVisualization(self, self.data)
         self.tr_sys = visuals.transforms.TransformSystem(self)
         self.visualization = self.grid_visualization
 
@@ -164,13 +174,6 @@ class Canvas(app.Canvas):
 
     def on_mouse_move(self, event):
         self.visualization.on_mouse_move(event)
-
-        if event.is_dragging:
-            x0, y0 = self._normalize(event.press_event.pos)
-            x1, y1 = self._normalize(event.last_event.pos)
-            x, y = self._normalize(event.pos)
-            # dx = x - x1
-
         self.update()
 
     def on_mouse_wheel(self, event):
