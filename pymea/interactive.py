@@ -4,6 +4,7 @@ import math
 
 import numpy as np
 from vispy import app, gloo, visuals
+import OpenGL.GL as gl
 
 import pymea.pymea as mea
 import pymea.util as util
@@ -46,9 +47,7 @@ class Grid():
         self.program['u_color'] = np.array([0.4, 0.4, 0.4, 1.0])
 
     def draw(self):
-        gloo.gl.glLineWidth(2)
         self.program.draw('lines')
-        gloo.gl.glLineWidth(1)
 
 
 class MEA120GridVisualization():
@@ -95,7 +94,9 @@ class MEA120GridVisualization():
         self.data = data
         self._t0 = 0
         self._dt = 20
-        self.y_scale = 50  # in uV
+        self.scales = [10.0, 25.0, 50.0, 100.0, 150.0, 200.0, 250.0, 500.0,
+                       1000.0]
+        self.y_scale_i = 2
 
         # Create shaders
         self.program = gloo.Program(MEA120GridVisualization.VERTEX_SHADER,
@@ -120,29 +121,34 @@ class MEA120GridVisualization():
     def dt(self, val):
         self._dt = util.clip(val, 0.0025, 20)
 
-    def resample(self, bin_count=125):
+    def resample(self, bin_count=250):
         sample_rate = 1 / (self.data.index[1] - self.data.index[0])
         start_i = int(self.t0 * sample_rate)
         end_i = util.clip(start_i + int(self.dt * sample_rate),
                           start_i, sys.maxsize)
         bin_size = (end_i - start_i) // bin_count
+        if bin_size < 1:
+            bin_size = 1
         bin_count = len(np.arange(start_i, end_i, bin_size))
 
-        data = np.zeros((120, 2*bin_count - 2, 4), dtype=np.float32)
+        data = np.empty((120, 2*bin_count, 4), dtype=np.float32)
 
         for i, column in enumerate(self.data):
             v = meac.min_max_bin(self.data[column].values[start_i:end_i],
-                                 bin_size, bin_count)
+                                 bin_size, bin_count+1)
             col, row = mea.coordinates_for_electrode(column)
             x = np.full_like(v, col, dtype=np.float32)
             y = np.full_like(v, row, dtype=np.float32)
-            t = np.arange(0, 2*bin_count - 2, dtype=np.float32) / 2.0
+            t = np.arange(0, (2*bin_count) / 2, 0.5, dtype=np.float32)
             data[i] = np.column_stack((x, y, t, v))
 
         # Update shader
-        self.program['a_position'] = data.reshape(120*(2*bin_count - 2), 4)
+        self.program['a_position'] = data.reshape(120*(2*bin_count), 4)
         self.program['u_width'] = bin_count
-        self.program['u_y_scale'] = self.y_scale
+        self.program['u_y_scale'] = self.scales[self.y_scale_i]
+
+    def update(self):
+        self.resample()
 
     def draw(self):
         self.program.draw('line_strip')
@@ -157,7 +163,7 @@ class MEA120GridVisualization():
             sperpx = self.dt / (self.canvas.size[0] / 12)
             self.t0 = util.clip(self.t0 + dx * sperpx,
                                 0, self.data.index[-1])
-            self.resample()
+            self.update()
 
     def on_mouse_wheel(self, event):
         sec_per_pixel = self.dt / (self.canvas.size[0] / 12)
@@ -170,7 +176,17 @@ class MEA120GridVisualization():
         sec_per_pixel = self.dt / (self.canvas.size[0] / 12)
         self.t0 = target_time - (rel_x * sec_per_pixel)
 
-        self.resample()
+        self.update()
+
+    def on_key_release(self, event):
+        if event.key == 'Up':
+            self.y_scale_i = util.clip(self.y_scale_i + 1,
+                                       0, len(self.scales) - 1)
+            self.program['u_y_scale'] = self.scales[self.y_scale_i]
+        elif event.key == 'Down':
+            self.y_scale_i = util.clip(self.y_scale_i - 1,
+                                       0, len(self.scales) - 1)
+            self.program['u_y_scale'] = self.scales[self.y_scale_i]
 
 
 class Canvas(app.Canvas):
@@ -196,6 +212,10 @@ class Canvas(app.Canvas):
 
     def on_draw(self, event):
         gloo.clear((0.9, 0.91, 0.91, 1))
+        gl.glEnable(gl.GL_LINE_SMOOTH)
+        gl.glHint(gl.GL_LINE_SMOOTH_HINT, gl.GL_NICEST)
+        gl.glEnable(gl.GL_BLEND)
+        gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
         self.visualization.draw()
 
     def on_mouse_move(self, event):
@@ -204,6 +224,10 @@ class Canvas(app.Canvas):
 
     def on_mouse_wheel(self, event):
         self.visualization.on_mouse_wheel(event)
+        self.update()
+
+    def on_key_release(self, event):
+        self.visualization.on_key_release(event)
         self.update()
 
 
