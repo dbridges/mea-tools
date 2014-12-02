@@ -108,7 +108,7 @@ class MEA120GridVisualization():
         start_i = mea.clamp(int(self.t0 * sample_rate), 0, sys.maxsize)
         end_i = mea.clamp(start_i + int(self.dt * sample_rate),
                           start_i, sys.maxsize)
-        bin_size = int((end_i - start_i) / bin_count)
+        bin_size = (end_i - start_i) // bin_count
         bin_count = len(np.arange(start_i, end_i, bin_size))
 
         data = np.zeros((120, 2*bin_count - 2, 4), dtype=np.float32)
@@ -137,19 +137,20 @@ class MEA120GridVisualization():
             x1, y1 = self.canvas._normalize(event.last_event.pos)
             x, y = self.canvas._normalize(event.pos)
             dx = x1 - x
-            self.t0 = mea.clamp(self.t0 + self.dt * dx / (self.canvas.size[0]/12),
+            self.t0 = mea.clamp(self.t0 +
+                                self.dt * dx / (self.canvas.size[0]/12),
                                 0, self.data.index[-1])
             self.resample()
 
     def on_mouse_wheel(self, event):
-        dx = np.sign(event.delta[1])*.05
-        self.dt *= math.exp(2.5*dx)
+        dx = np.sign(event.delta[1]) * 0.05
+        self.dt *= math.exp(2.5 * dx)
         self.resample()
 
 
 class Canvas(app.Canvas):
     def __init__(self, fname):
-        app.Canvas.__init__(self, keys='interactive')
+        app.Canvas.__init__(self, keys='interactive', size=(1280, 768))
 
         # Load data
         print('Loading data...')
