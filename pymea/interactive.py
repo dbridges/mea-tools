@@ -133,12 +133,12 @@ class MEA120GridVisualization():
 
     def on_mouse_move(self, event):
         if event.is_dragging:
-            x0, y0 = self.canvas._normalize(event.press_event.pos)
-            x1, y1 = self.canvas._normalize(event.last_event.pos)
-            x, y = self.canvas._normalize(event.pos)
+            x0, y0 = event.press_event.pos
+            x1, y1 = event.last_event.pos
+            x, y = event.pos
             dx = x1 - x
-            self.t0 = mea.clamp(self.t0 +
-                                self.dt * dx / (self.canvas.size[0]/12),
+            sperpx = self.dt / (self.canvas.size[0] / 12)
+            self.t0 = mea.clamp(self.t0 + dx * sperpx,
                                 0, self.data.index[-1])
             self.resample()
 
