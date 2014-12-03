@@ -8,7 +8,11 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import h5py
 
-import pymea.util as util
+from . import util
+from . import mea_cython
+
+__all__ = ['MEARecording', 'coordinates_for_electrode', 'condense_spikes',
+           'raster_plot']
 
 input_dir = os.path.expanduser(
     '~/Dropbox/Hansma/ncp/IA6787/2014_08_20_Baseline')
@@ -36,6 +40,7 @@ class MEARecording:
             'Data/Recording_0/AnalogStream/Stream_0/ChannelData']
         self.data_len = self.electrode_data.shape[1]
         self.duration = self.data_len / self.sample_rate
+        self.peaks = []
 
     def get(self, channels, start_time=0, end_time=None):
         if channels == 'all':
@@ -53,6 +58,16 @@ class MEARecording:
         return pd.DataFrame(data,
                             index=np.arange(start_i, end_i)/self.sample_rate,
                             columns=channels, dtype=np.float32)
+
+    def find_peaks(self):
+        peaks = []
+        for electrode in self.lookup.keys():
+            p = mea_cython.find_series_peaks(self[electrode])
+            p.insert(0, 'electrode', electrode)
+            peaks.append(p)
+            print('complete')
+        self.peaks = pd.concat(peaks)
+        return self.peaks
 
     def __getattr__(self, key):
         return self[key]

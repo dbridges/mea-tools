@@ -3,29 +3,40 @@ import pandas as pd
 cimport numpy as np
 from scipy import signal
 
+__all__ = ['find_series_peaks', 'min_max_bin']
+
 def find_series_peaks(series):
+    cdef np.ndarray[float] input_data
     cdef np.ndarray[double] bf, af, data
-    cdef double a, b, c, x, dt, t0, thresh
-    cdef int n
+    cdef double thresh, dt, t0, a, b, c, x
+    cdef int n, maxn, min_sep
     cdef list peaks = []
-    data = series.values
+    input_data = series.values
 
     # first perform high pass filter
     bf, af = signal.butter(1, 0.01, btype='highpass')
-    data = signal.lfilter(bf, af, data)
-    thresh = -7 * np.sqrt(np.mean(data**2))
+    data = signal.lfilter(bf, af, input_data)
+    thresh = -5 * np.sqrt(np.mean(data**2))
 
     dt = series.index[1] - series.index[0]
     t0 = series.index[0]
+    min_sep = int(0.0008/dt)
 
     # Find points which are smaller than neighboring points
-    for n in range(2, len(data) - 2):
+    n = 0
+    maxn = len(data) - 2
+    while n < maxn:
         if data[n] < thresh and data[n] < data[n-1] and data[n] < data[n+1]:
             a, b, c = np.polyfit(np.arange(n-2, n+3), data[n-2:n+3], 2)
             x = -b/(2*a)
             peaks.append((x * dt + t0, np.polyval([a, b, c], x), thresh))
+            n += min_sep
+        n += 1
 
-    return pd.DataFrame(np.array(peaks),
+    if len(peaks) < 1:
+        return pd.DataFrame(columns=['time', 'amplitude', 'threshold'])
+
+    return pd.DataFrame(np.array(peaks, dtype=np.float32),
                         columns=['time', 'amplitude', 'threshold'])
 
 
