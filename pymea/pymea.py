@@ -69,9 +69,6 @@ class MEARecording:
         self.peaks = pd.concat(peaks)
         return self.peaks
 
-    def __getattr__(self, key):
-        return self[key]
-
     def __del__(self):
         try:
             self.close()
