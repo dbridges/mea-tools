@@ -20,6 +20,7 @@ input_dir = os.path.expanduser(
 
 class MEARecording:
     def __init__(self, store):
+        store = os.path.expanduser(store)
         if not os.path.exists(store):
             raise IOError('File not found.')
         self.store_path = store
@@ -61,11 +62,11 @@ class MEARecording:
 
     def find_peaks(self):
         peaks = []
-        for electrode in self.lookup.keys():
-            p = mea_cython.find_series_peaks(self[electrode])
+        df = self.get('all')
+        for electrode in df.keys():
+            p = mea_cython.find_series_peaks(df[electrode])
             p.insert(0, 'electrode', electrode)
             peaks.append(p)
-            print('complete')
         self.peaks = pd.concat(peaks)
         return self.peaks
 
