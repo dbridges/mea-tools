@@ -8,26 +8,28 @@ __all__ = ['find_series_peaks', 'min_max_bin']
 def find_series_peaks(series):
     cdef np.ndarray[float] input_data
     cdef np.ndarray[double] bf, af, data
-    cdef double thresh, dt, t0, a, b, c, x
+    cdef double thresh, fs, dt, t0, a, b, c, x
     cdef int n, maxn, min_sep
     cdef list peaks = []
     input_data = series.values
 
-    # first perform high pass filter
-    bf, af = signal.butter(1, 0.01, btype='highpass')
-    data = signal.lfilter(bf, af, input_data)
-    thresh = -5 * np.sqrt(np.mean(data**2))
-
     dt = series.index[1] - series.index[0]
+    fs_nyquist = (1.0/dt) / 2.0
     t0 = series.index[0]
     min_sep = int(0.0008/dt)
+
+    # first perform band pass filter 300Hz - 3kHz
+    bf, af = signal.butter(1, (300.0/fs_nyquist, 3000.0/fs_nyquist),
+                           btype='bandpass')
+    data = signal.lfilter(bf, af, input_data)
+    thresh = -5 * np.sqrt(np.mean(data**2))
 
     # Find points which are smaller than neighboring points
     n = 0
     maxn = len(data) - 2
     while n < maxn:
         if data[n] < thresh and data[n] < data[n-1] and data[n] < data[n+1]:
-            a, b, c = np.polyfit(np.arange(n-2, n+3), data[n-2:n+3], 2)
+            a, b, c = np.polyfit(np.arange(n-1, n+2), data[n-1:n+2], 2)
             x = -b/(2*a)
             peaks.append((x * dt + t0, np.polyval([a, b, c], x), thresh))
             n += min_sep
