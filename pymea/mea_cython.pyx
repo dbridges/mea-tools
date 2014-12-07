@@ -19,19 +19,20 @@ def find_series_peaks(series):
     min_sep = int(0.0008/dt)
 
     # first perform band pass filter 300Hz - 3kHz
-    bf, af = signal.butter(1, (300.0/fs_nyquist, 3000.0/fs_nyquist),
+    bf, af = signal.butter(2, (100.0/fs_nyquist, 4000.0/fs_nyquist),
                            btype='bandpass')
-    data = signal.lfilter(bf, af, input_data)
-    thresh = -5 * np.sqrt(np.mean(data**2))
+    data = signal.filtfilt(bf, af, input_data)
+    thresh = -5 * np.median(np.absolute(data) / 0.6745)
 
     # Find points which are smaller than neighboring points
     n = 0
     maxn = len(data) - 2
     while n < maxn:
         if data[n] < thresh and data[n] < data[n-1] and data[n] < data[n+1]:
-            a, b, c = np.polyfit(np.arange(n-1, n+2), data[n-1:n+2], 2)
-            x = -b/(2*a)
-            peaks.append((x * dt + t0, np.polyval([a, b, c], x), thresh))
+            #a, b, c = np.polyfit(np.arange(n-1, n+2), data[n-1:n+2], 2)
+            #x = -b/(2*a)
+            #peaks.append((x * dt + t0, np.polyval([a, b, c], x), thresh))
+            peaks.append((series.index[n], data[n], thresh))
             n += min_sep
         n += 1
 
