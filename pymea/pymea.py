@@ -6,13 +6,14 @@ import time
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from scipy import signal
 import h5py
 
 from . import util
 from . import mea_cython
 
 __all__ = ['MEARecording', 'coordinates_for_electrode', 'condense_spikes',
-           'raster_plot']
+           'raster_plot', 'filter']
 
 input_dir = os.path.expanduser(
     '~/Dropbox/Hansma/ncp/IA6787/2014_08_20_Baseline')
@@ -161,3 +162,11 @@ def read_binary(fname, no_channels, columns, part=(0, -1),
                      columns=columns,
                      index=np.arange(0, len(d)/fs, 1/fs))
     return d
+
+
+def filter(series):
+    dt = series.index[1] - series.index[0]
+    fs_nyquist = (1.0/dt) / 2.0
+    bf, af = signal.butter(2, (100.0/fs_nyquist, 4000.0/fs_nyquist),
+                           btype='bandpass')
+    return pd.Series(signal.filtfilt(bf, af, series), index=series.index)
