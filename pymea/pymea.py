@@ -13,7 +13,7 @@ from . import util
 from . import mea_cython
 
 __all__ = ['MEARecording', 'coordinates_for_electrode', 'condense_spikes',
-           'raster_plot', 'filter']
+           'raster_plot', 'filter', 'export_peaks']
 
 input_dir = os.path.expanduser(
     '~/Dropbox/Hansma/ncp/IA6787/2014_08_20_Baseline')
@@ -61,11 +61,11 @@ class MEARecording:
                             index=np.arange(start_i, end_i)/self.sample_rate,
                             columns=channels, dtype=np.float32)
 
-    def find_peaks(self):
+    def find_peaks(self, amp=6.0):
         peaks = []
         df = self.get('all')
         for electrode in df.keys():
-            p = mea_cython.find_series_peaks(df[electrode])
+            p = mea_cython.find_series_peaks(df[electrode], amp)
             p.insert(0, 'electrode', electrode)
             peaks.append(p)
         self.peaks = pd.concat(peaks)
@@ -97,6 +97,13 @@ class MEARecording:
 
     def close(self):
         self.store.close()
+
+
+def export_peaks(fname, amp=6.0):
+    fname = os.path.expanduser(fname)
+    rec = MEARecording(fname)
+    df = rec.find_peaks(amp)
+    df.to_csv(fname[:-3] + '.csv', index=False)
 
 
 def coordinates_for_electrode(tag):
@@ -180,7 +187,7 @@ def filter(series):
     """
     dt = series.index[1] - series.index[0]
     fs_nyquist = (1.0/dt) / 2.0
-    bf, af = signal.butter(2, (100.0/fs_nyquist, 4000.0/fs_nyquist),
+    bf, af = signal.butter(2, (200.0/fs_nyquist, 4000.0/fs_nyquist),
                            btype='bandpass')
     return pd.Series(signal.filtfilt(bf, af, series).astype(np.float32),
                      index=series.index)
