@@ -3,6 +3,7 @@ import sys
 import math
 
 import numpy as np
+import pandas as pd
 from vispy import app, gloo, visuals
 import OpenGL.GL as gl
 
@@ -48,6 +49,162 @@ class Grid():
 
     def draw(self):
         self.program.draw('lines')
+
+
+class RasterPlotVisualization():
+    VERTEX_SHADER = """
+    attribute vec2 a_position;
+    attribute vec3 a_color;
+
+    uniform float u_pan;
+    uniform float u_y_scale;
+    uniform float u_count;
+
+    varying vec3 v_color;
+
+    void main(void)
+    {
+        float height = 2.0 / u_count;
+        gl_Position = vec4((a_position.x - u_pan) / u_y_scale - 1,
+                           1 - a_position.y * height, 0.0, 1.0);
+        v_color = a_color;
+    }
+    """
+
+    FRAGMENT_SHADER = """
+    varying vec3 v_color;
+
+    void main()
+    {
+        gl_FragColor = vec4(v_color, 1.0);
+    }
+    """
+
+    def __init__(self, canvas, spike_data):
+        self.canvas = canvas
+        self.spikes = spike_data
+        self.program = gloo.Program(RasterPlotVisualization.VERTEX_SHADER,
+                                    RasterPlotVisualization.FRAGMENT_SHADER)
+        self._t0 = 0
+        self._dt = self.spikes['time'].max()
+        self.program['u_pan'] = self._t0
+        self.program['u_y_scale'] = self._dt/2
+        self.spikes[['electrode', 'time']].values
+        self.electrode_row = {}
+        d = self.spikes.groupby('electrode').size()
+        d.sort(ascending=False)
+        for i, tag in enumerate(d.index):
+            self.electrode_row[tag] = i
+        verticies = []
+        colors = []
+        for e, t in self.spikes[['electrode', 'time']].values:
+            row = self.electrode_row[e]
+            verticies.append((t, row))
+            verticies.append((t, row + 1))
+            if row % 3 == 0:
+                color = (0.9254, 0.7411, 0.0588)
+            elif row % 3 == 1:
+                color = (0.396, 0.09, 0.62)
+            else:
+                color = (0.09, 0.365, 0.596)
+            colors.append(color)
+            colors.append(color)
+        self.program['a_position'] = verticies
+        self.program['a_color'] = colors
+        self.program['u_count'] = len(self.electrode_row)
+        self.velocity = 0
+        self.last_dx = 0
+        self.tick_separtion = 50
+        self.tick_labels = [visuals.TextVisual('', font_size=10) for x in range(25)]
+
+    @property
+    def t0(self):
+        return self._t0
+
+    @t0.setter
+    def t0(self, val):
+        self._t0 = util.clip(val,
+                             -self.spikes.time.max(),
+                             self.spikes.time.max())
+
+    @property
+    def dt(self):
+        return self._dt
+
+    @dt.setter
+    def dt(self, val):
+        self._dt = util.clip(val, 0.0025, self.spikes.time.max())
+
+    def create_labels(self):
+        log_val = math.log10(self.dt)
+
+        if log_val > 0:
+            self.tick_separtion = math.pow(10, int(log_val))
+        else:
+            self.tick_separtion = math.pow(10, int(log_val - 1))
+
+        if self.dt / self.tick_separtion < 3:
+            self.tick_separtion /= 4
+        elif self.dt / self.tick_separtion < 7:
+            self.tick_separtion /= 2
+
+        tick_loc = int(self.t0 / self.tick_separtion) * self.tick_separtion
+        xloc = 0
+        tick_label = 0
+        while tick_loc < (self.t0 + self.dt + self.tick_separtion):
+            xloc = (tick_loc - self.t0) / (self.dt / self.canvas.size[0])
+            self.tick_labels[tick_label].pos = (xloc, 20)
+            self.tick_labels[tick_label].text = '%1.3f' % tick_loc
+            tick_loc += self.tick_separtion
+            tick_label += 1
+
+    def update(self):
+        self.program['u_pan'] = self.t0
+        self.program['u_y_scale'] = self.dt / 2
+        self.create_labels()
+
+    def draw(self):
+        self.program.draw('lines')
+        #for label in self.tick_labels:
+            #label.draw(self.canvas.tr_sys)
+
+    def on_mouse_move(self, event):
+        if event.is_dragging:
+            x0, y0 = event.press_event.pos
+            x1, y1 = event.last_event.pos
+            x, y = event.pos
+            dx = x1 - x
+            self.last_dx = dx
+            sperpx = self.dt / self.canvas.size[0]
+            self.t0 += dx * sperpx
+            self.update()
+
+    def on_mouse_wheel(self, event):
+        sec_per_pixel = self.dt / self.canvas.size[0]
+        rel_x = event.pos[0]
+
+        target_time = rel_x * sec_per_pixel + self.t0
+        dx = np.sign(event.delta[1]) * 0.05
+        self.dt *= math.exp(2.5 * dx)
+
+        sec_per_pixel = self.dt / self.canvas.size[0]
+        self.t0 = target_time - (rel_x * sec_per_pixel)
+        self.update()
+
+    def on_key_release(self, event):
+        pass
+
+    def on_mouse_release(self, event):
+        self.velocity = -self.dt * self.last_dx / self.canvas.size[0]
+
+    def on_mouse_press(self, event):
+        self.velocity = 0
+        self.last_dx = 0
+
+    def on_tick(self, event):
+        self.velocity *= 0.98
+        self.t0 -= self.velocity
+        self.update()
 
 
 class MEA120GridVisualization():
@@ -188,6 +345,9 @@ class MEA120GridVisualization():
                                        0, len(self.scales) - 1)
             self.program['u_y_scale'] = self.scales[self.y_scale_i]
 
+    def on_tick(self, event):
+        pass
+
 
 class Canvas(app.Canvas):
     def __init__(self, fname):
@@ -197,9 +357,15 @@ class Canvas(app.Canvas):
         print('Loading data...')
         self.store = mea.MEARecording(fname)
         self.data = self.store.get('all')
+        self.spike_data = pd.read_csv(fname[:-3] + '.csv')
         self.grid_visualization = MEA120GridVisualization(self, self.data)
+        self.raster_visualization = RasterPlotVisualization(self,
+                                                            self.spike_data)
+        self.visualization = self.raster_visualization
         self.tr_sys = visuals.transforms.TransformSystem(self)
-        self.visualization = self.grid_visualization
+        self.text = visuals.TextVisual('Test', bold=True, font_size=24,
+                                       pos=(10, 10))
+        self._timer = app.Timer(1/60, connect=self.on_tick, start=True)
 
     def _normalize(self, x_y):
         x, y = x_y
@@ -211,12 +377,13 @@ class Canvas(app.Canvas):
         gloo.set_viewport(0, 0, *event.size)
 
     def on_draw(self, event):
-        gloo.clear((0.9, 0.91, 0.91, 1))
+        gloo.clear((0.5, 0.5, 0.5, 1))
         gl.glEnable(gl.GL_LINE_SMOOTH)
         gl.glHint(gl.GL_LINE_SMOOTH_HINT, gl.GL_NICEST)
         gl.glEnable(gl.GL_BLEND)
         gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
         self.visualization.draw()
+        self.text.draw(self.tr_sys)
 
     def on_mouse_move(self, event):
         self.visualization.on_mouse_move(event)
@@ -226,8 +393,20 @@ class Canvas(app.Canvas):
         self.visualization.on_mouse_wheel(event)
         self.update()
 
+    def on_mouse_press(self, event):
+        self.visualization.on_mouse_press(event)
+        self.update()
+
+    def on_mouse_release(self, event):
+        self.visualization.on_mouse_release(event)
+        self.update()
+
     def on_key_release(self, event):
         self.visualization.on_key_release(event)
+        self.update()
+
+    def on_tick(self, event):
+        self.visualization.on_tick(event)
         self.update()
 
 
