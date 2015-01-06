@@ -5,7 +5,7 @@ from scipy import signal
 
 __all__ = ['find_series_peaks', 'min_max_bin']
 
-def find_series_peaks(series):
+def find_series_peaks(series, double amp=6.0):
     cdef np.ndarray[float] input_data
     cdef np.ndarray[double] bf, af, data
     cdef double thresh, fs, dt, t0, a, b, c, x
@@ -18,11 +18,11 @@ def find_series_peaks(series):
     t0 = series.index[0]
     min_sep = int(0.0008/dt)
 
-    # first perform band pass filter 300Hz - 3kHz
-    bf, af = signal.butter(2, (100.0/fs_nyquist, 4000.0/fs_nyquist),
+    # first perform band pass filter 200Hz - 4kHz
+    bf, af = signal.butter(2, (200.0/fs_nyquist, 4000.0/fs_nyquist),
                            btype='bandpass')
     data = signal.filtfilt(bf, af, input_data)
-    thresh = -5 * np.median(np.absolute(data) / 0.6745)
+    thresh = -amp * np.median(np.absolute(data) / 0.6745)
 
     # Find points which are smaller than neighboring points
     n = 0
