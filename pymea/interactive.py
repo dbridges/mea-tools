@@ -51,7 +51,39 @@ class Grid():
         self.program.draw('lines')
 
 
-class RasterPlotVisualization():
+class Visualization():
+    def __init__(self):
+        pass
+
+    def update(self):
+        pass
+
+    def draw(self):
+        pass
+
+    def on_mouse_move(self, event):
+        pass
+
+    def on_mouse_wheel(self, event):
+        pass
+
+    def on_key_release(self, event):
+        pass
+
+    def on_mouse_release(self, event):
+        pass
+
+    def on_mouse_press(self, event):
+        pass
+
+    def on_tick(self, event):
+        pass
+
+    def on_resize(self, event):
+        pass
+
+
+class RasterPlotVisualization(Visualization):
     VERTEX_SHADER = """
     attribute vec2 a_position;
     attribute vec3 a_color;
@@ -59,14 +91,15 @@ class RasterPlotVisualization():
     uniform float u_pan;
     uniform float u_y_scale;
     uniform float u_count;
+    uniform float u_top_margin;
 
     varying vec3 v_color;
 
     void main(void)
     {
-        float height = 2.0 / u_count;
+        float height = (2.0 - u_top_margin) / u_count;
         gl_Position = vec4((a_position.x - u_pan) / u_y_scale - 1,
-                           1 - a_position.y * height, 0.0, 1.0);
+                           1 - a_position.y * height - u_top_margin, 0.0, 1.0);
         v_color = a_color;
     }
     """
@@ -89,6 +122,8 @@ class RasterPlotVisualization():
         self._dt = self.spikes['time'].max()
         self.program['u_pan'] = self._t0
         self.program['u_y_scale'] = self._dt/2
+        self.program['u_top_margin'] = 20.0 * 2.0 / canvas.size[1]
+        print(self.program['u_top_margin'])
         self.spikes[['electrode', 'time']].values
         self.electrode_row = {}
         d = self.spikes.groupby('electrode').size()
@@ -115,7 +150,8 @@ class RasterPlotVisualization():
         self.velocity = 0
         self.last_dx = 0
         self.tick_separtion = 50
-        self.tick_labels = [visuals.TextVisual('', font_size=10) for x in range(25)]
+        self.tick_labels = [visuals.TextVisual('', font_size=10)
+                            for x in range(15)]
 
     @property
     def t0(self):
@@ -150,13 +186,18 @@ class RasterPlotVisualization():
 
         tick_loc = int(self.t0 / self.tick_separtion) * self.tick_separtion
         xloc = 0
-        tick_label = 0
+        i = 0
         while tick_loc < (self.t0 + self.dt + self.tick_separtion):
             xloc = (tick_loc - self.t0) / (self.dt / self.canvas.size[0])
-            self.tick_labels[tick_label].pos = (xloc, 20)
-            self.tick_labels[tick_label].text = '%1.3f' % tick_loc
+            self.tick_labels[i].pos = (xloc, 15)
+            self.tick_labels[i].text = '%1.3f' % tick_loc
             tick_loc += self.tick_separtion
-            tick_label += 1
+            i += 1
+        # Clear labels not being used.
+        while i < len(self.tick_labels):
+            self.tick_labels[i].pos = (0, 15)
+            self.tick_labels[i].text = ''
+            i += 1
 
     def update(self):
         self.program['u_pan'] = self.t0
@@ -165,8 +206,8 @@ class RasterPlotVisualization():
 
     def draw(self):
         self.program.draw('lines')
-        #for label in self.tick_labels:
-            #label.draw(self.canvas.tr_sys)
+        for label in self.tick_labels:
+            label.draw(self.canvas.tr_sys)
 
     def on_mouse_move(self, event):
         if event.is_dragging:
@@ -177,7 +218,6 @@ class RasterPlotVisualization():
             self.last_dx = dx
             sperpx = self.dt / self.canvas.size[0]
             self.t0 += dx * sperpx
-            self.update()
 
     def on_mouse_wheel(self, event):
         sec_per_pixel = self.dt / self.canvas.size[0]
@@ -189,7 +229,6 @@ class RasterPlotVisualization():
 
         sec_per_pixel = self.dt / self.canvas.size[0]
         self.t0 = target_time - (rel_x * sec_per_pixel)
-        self.update()
 
     def on_key_release(self, event):
         pass
@@ -201,13 +240,16 @@ class RasterPlotVisualization():
         self.velocity = 0
         self.last_dx = 0
 
+    def on_resize(self, event):
+        self.program['u_top_margin'] = 20.0 * 2.0 / self.canvas.size[1]
+
     def on_tick(self, event):
         self.velocity *= 0.98
         self.t0 -= self.velocity
         self.update()
 
 
-class MEA120GridVisualization():
+class MEA120GridVisualization(Visualization):
     VERTEX_SHADER = """
     attribute vec4 a_position;
 
@@ -354,18 +396,43 @@ class Canvas(app.Canvas):
         app.Canvas.__init__(self, keys='interactive', size=(1280, 768))
 
         # Load data
+        if not os.path.exists(fname):
+            raise IOError('File does not exist.')
+
         print('Loading data...')
-        self.store = mea.MEARecording(fname)
-        self.data = self.store.get('all')
-        self.spike_data = pd.read_csv(fname[:-3] + '.csv')
-        self.grid_visualization = MEA120GridVisualization(self, self.data)
-        self.raster_visualization = RasterPlotVisualization(self,
-                                                            self.spike_data)
-        self.visualization = self.raster_visualization
+        if fname.endswith('.csv'):
+            self.spike_data = pd.read_csv(fname)
+            if os.path.exists(fname[:-4] + '.h5'):
+                self.store = mea.MEARecording(fname[:-4] + '.h5')
+                self.data = self.store.get('all')
+            else:
+                self.store = None
+                self.data = None
+        elif fname.endswith('.h5'):
+            self.store = mea.MEARecording(fname)
+            self.data = self.store.get('all')
+            if os.path.exists(fname[:-3] + '.csv'):
+                self.spike_data = pd.read_csv(fname[:-3] + '.csv')
+            else:
+                self.spike_data = None
+
+        if self.data is not None:
+            self.grid_visualization = MEA120GridVisualization(self, self.data)
+        else:
+            self.grid_visualization = None
+        if self.spike_data is not None:
+            self.raster_visualization = RasterPlotVisualization(
+                self, self.spike_data)
+        else:
+            self.raster_visualization = None
+
+        if fname.endswith('.h5'):
+            self.visualization = self.grid_visualization
+        else:
+            self.visualization = self.raster_visualization
+
         self.tr_sys = visuals.transforms.TransformSystem(self)
-        self.text = visuals.TextVisual('Test', bold=True, font_size=24,
-                                       pos=(10, 10))
-        self._timer = app.Timer(1/60, connect=self.on_tick, start=True)
+        self._timer = app.Timer(1/30, connect=self.on_tick, start=True)
 
     def _normalize(self, x_y):
         x, y = x_y
@@ -375,6 +442,8 @@ class Canvas(app.Canvas):
     def on_resize(self, event):
         self.width, self.height = event.size
         gloo.set_viewport(0, 0, *event.size)
+        self.tr_sys = visuals.transforms.TransformSystem(self)
+        self.visualization.on_resize(event)
 
     def on_draw(self, event):
         gloo.clear((0.5, 0.5, 0.5, 1))
@@ -383,27 +452,21 @@ class Canvas(app.Canvas):
         gl.glEnable(gl.GL_BLEND)
         gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
         self.visualization.draw()
-        self.text.draw(self.tr_sys)
 
     def on_mouse_move(self, event):
         self.visualization.on_mouse_move(event)
-        self.update()
 
     def on_mouse_wheel(self, event):
         self.visualization.on_mouse_wheel(event)
-        self.update()
 
     def on_mouse_press(self, event):
         self.visualization.on_mouse_press(event)
-        self.update()
 
     def on_mouse_release(self, event):
         self.visualization.on_mouse_release(event)
-        self.update()
 
     def on_key_release(self, event):
         self.visualization.on_key_release(event)
-        self.update()
 
     def on_tick(self, event):
         self.visualization.on_tick(event)
