@@ -53,7 +53,7 @@ class LineCollection:
         pt2 : 2 tuple
             The second point of the line, in screen coordinates.
         color : 4 tuple
-            The color of the line.
+            The color of the line in (r, g, b, alpha).
         """
         self._vert.append(pt1)
         self._vert.append(pt2)
