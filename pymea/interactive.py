@@ -5,6 +5,7 @@ import math
 import numpy as np
 import pandas as pd
 from vispy import app, gloo, visuals
+from vispy.visuals.shaders import ModularProgram
 import OpenGL.GL as gl
 
 import pymea.pymea as mea
@@ -12,7 +13,7 @@ import pymea.util as util
 import pymea.mea_cython as meac
 
 
-class Grid():
+class Grid:
     VERTEX_SHADER = """
     attribute vec2 a_position;
     uniform vec4 u_color;
@@ -51,7 +52,54 @@ class Grid():
         self.program.draw('lines')
 
 
-class Visualization():
+class LineCollection:
+    VERTEX_SHADER = """
+    attribute vec2 a_position;
+    attribute vec4 a_color;
+
+    varying vec4 v_color;
+
+    void main (void)
+    {
+        v_color = a_color;
+        gl_Position = $transform(vec4(a_position, 0.0, 1.0));
+    }
+    """
+
+    FRAGMENT_SHADER = """
+    varying vec4 v_color;
+
+    void main()
+    {
+        gl_FragColor = v_color;
+    }
+    """
+
+    def __init__(self):
+        self._vert = []
+        self._color = []
+        self._program = ModularProgram(LineCollection.VERTEX_SHADER,
+                                       LineCollection.FRAGMENT_SHADER)
+
+    def clear(self):
+        self._vert = []
+        self._color = []
+
+    def add(self, pt1, pt2, color=[1, 1, 1, 1]):
+        self._vert.append(pt1)
+        self._vert.append(pt2)
+        self._color.append(color)
+        self._color.append(color)
+        self._program['a_position'] = np.array(self._vert, dtype=np.float32)
+        self._program['a_color'] = np.array(self._color, dtype=np.float32)
+
+    def draw(self, transforms):
+        if len(self._vert) > 0:
+            self._program.vert['transform'] = transforms.get_full_transform()
+            self._program.draw('lines')
+
+
+class Visualization:
     def __init__(self):
         pass
 
@@ -144,14 +192,19 @@ class RasterPlotVisualization(Visualization):
                 color = (0.09, 0.365, 0.596)
             colors.append(color)
             colors.append(color)
+
+        self.margin = {}
+        self.margin['top'] = 20
+
         self.program['a_position'] = verticies
         self.program['a_color'] = colors
         self.program['u_count'] = len(self.electrode_row)
         self.velocity = 0
         self.last_dx = 0
         self.tick_separtion = 50
-        self.tick_labels = [visuals.TextVisual('', font_size=10)
-                            for x in range(15)]
+        self.tick_labels = [visuals.TextVisual('', font_size=10, color='w')
+                            for x in range(18)]
+        self.tick_marks = LineCollection()
 
     @property
     def t0(self):
@@ -172,6 +225,10 @@ class RasterPlotVisualization(Visualization):
         self._dt = util.clip(val, 0.0025, self.spikes.time.max())
 
     def create_labels(self):
+        self.tick_marks.clear()
+        self.tick_marks.add((0, self.margin['top']),
+                            (self.canvas.size[0], self.margin['top']))
+
         log_val = math.log10(self.dt)
 
         if log_val > 0:
@@ -189,13 +246,15 @@ class RasterPlotVisualization(Visualization):
         i = 0
         while tick_loc < (self.t0 + self.dt + self.tick_separtion):
             xloc = (tick_loc - self.t0) / (self.dt / self.canvas.size[0])
-            self.tick_labels[i].pos = (xloc, 15)
+            self.tick_labels[i].pos = (xloc, self.margin['top'] / 2 + 2)
             self.tick_labels[i].text = '%1.3f' % tick_loc
             tick_loc += self.tick_separtion
+            self.tick_marks.add((xloc, self.margin['top']),
+                                (xloc, self.margin['top'] + 6))
             i += 1
         # Clear labels not being used.
         while i < len(self.tick_labels):
-            self.tick_labels[i].pos = (0, 15)
+            self.tick_labels[i].pos = (0, self.margin['top'])
             self.tick_labels[i].text = ''
             i += 1
 
@@ -208,6 +267,7 @@ class RasterPlotVisualization(Visualization):
         self.program.draw('lines')
         for label in self.tick_labels:
             label.draw(self.canvas.tr_sys)
+        self.tick_marks.draw(self.canvas.tr_sys)
 
     def on_mouse_move(self, event):
         if event.is_dragging:
