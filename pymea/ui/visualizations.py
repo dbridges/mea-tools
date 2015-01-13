@@ -1,16 +1,13 @@
-import os
 import sys
 import math
-
-import numpy as np
-import pandas as pd
-from vispy import app, gloo, visuals
-from vispy.visuals.shaders import ModularProgram
-import OpenGL.GL as gl
 
 import pymea.pymea as mea
 import pymea.util as util
 import pymea.mea_cython as meac
+
+from vispy import gloo, visuals
+from vispy.visuals.shaders import ModularProgram
+import numpy as np
 
 
 class LineCollection:
@@ -167,7 +164,8 @@ class RasterPlotVisualization(Visualization):
 
         self.program['a_position'] = verticies
         self.program['a_color'] = colors
-        self.program['u_count'] = len(self.electrode_row)
+        self._row_count = len(self.electrode_row)
+        self.program['u_count'] = self._row_count
         self.velocity = 0
         self.last_dx = 0
         self.tick_separtion = 50
@@ -192,6 +190,15 @@ class RasterPlotVisualization(Visualization):
     @dt.setter
     def dt(self, val):
         self._dt = util.clip(val, 0.0025, self.spikes.time.max())
+
+    @property
+    def row_count(self):
+        return len(self.electrode_row)
+
+    @row_count.setter
+    def row_count(self, val):
+        self.program['u_count'] = val
+        self._row_count = val
 
     def create_labels(self):
         self.tick_marks.clear()
@@ -434,91 +441,3 @@ class MEA120GridVisualization(Visualization):
 
     def on_resize(self, event):
         self.create_grid()
-
-
-class Canvas(app.Canvas):
-    def __init__(self, fname):
-        app.Canvas.__init__(self, keys='interactive', size=(1280, 768))
-
-        # Load data
-        if not os.path.exists(fname):
-            raise IOError('File does not exist.')
-
-        print('Loading data...')
-        if fname.endswith('.csv'):
-            self.spike_data = pd.read_csv(fname)
-            if os.path.exists(fname[:-4] + '.h5'):
-                self.store = mea.MEARecording(fname[:-4] + '.h5')
-                self.data = self.store.get('all')
-            else:
-                self.store = None
-                self.data = None
-        elif fname.endswith('.h5'):
-            self.store = mea.MEARecording(fname)
-            self.data = self.store.get('all')
-            if os.path.exists(fname[:-3] + '.csv'):
-                self.spike_data = pd.read_csv(fname[:-3] + '.csv')
-            else:
-                self.spike_data = None
-
-        if self.data is not None:
-            self.grid_visualization = MEA120GridVisualization(self, self.data)
-        else:
-            self.grid_visualization = None
-        if self.spike_data is not None:
-            self.raster_visualization = RasterPlotVisualization(
-                self, self.spike_data)
-        else:
-            self.raster_visualization = None
-
-        if fname.endswith('.h5'):
-            self.visualization = self.grid_visualization
-        else:
-            self.visualization = self.raster_visualization
-
-        self.tr_sys = visuals.transforms.TransformSystem(self)
-        self._timer = app.Timer(1/30, connect=self.on_tick, start=True)
-
-    def _normalize(self, x_y):
-        x, y = x_y
-        w, h = float(self.width), float(self.height)
-        return x/(w/2.)-1., y/(h/2.)-1.
-
-    def on_resize(self, event):
-        self.width, self.height = event.size
-        gloo.set_viewport(0, 0, *event.size)
-        self.tr_sys = visuals.transforms.TransformSystem(self)
-        self.visualization.on_resize(event)
-
-    def on_draw(self, event):
-        gloo.clear((0.5, 0.5, 0.5, 1))
-        gl.glEnable(gl.GL_LINE_SMOOTH)
-        gl.glHint(gl.GL_LINE_SMOOTH_HINT, gl.GL_NICEST)
-        gl.glEnable(gl.GL_BLEND)
-        gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
-        self.visualization.draw()
-
-    def on_mouse_move(self, event):
-        self.visualization.on_mouse_move(event)
-
-    def on_mouse_wheel(self, event):
-        self.visualization.on_mouse_wheel(event)
-
-    def on_mouse_press(self, event):
-        self.visualization.on_mouse_press(event)
-
-    def on_mouse_release(self, event):
-        self.visualization.on_mouse_release(event)
-
-    def on_key_release(self, event):
-        self.visualization.on_key_release(event)
-
-    def on_tick(self, event):
-        self.visualization.on_tick(event)
-        self.update()
-
-
-def run(fname):
-    c = Canvas(os.path.expanduser(fname))
-    c.show()
-    app.run()
