@@ -13,45 +13,6 @@ import pymea.util as util
 import pymea.mea_cython as meac
 
 
-class Grid:
-    VERTEX_SHADER = """
-    attribute vec2 a_position;
-    uniform vec4 u_color;
-    varying vec4 v_color;
-
-    void main (void)
-    {
-        v_color = u_color;
-        gl_Position = vec4(a_position, 0.0, 1.0);
-    }
-    """
-
-    FRAGMENT_SHADER = """
-    varying vec4 v_color;
-
-    void main()
-    {
-        gl_FragColor = v_color;
-    }
-    """
-
-    def __init__(self, cols, rows):
-        self.vertical_lines = np.column_stack(
-            (np.repeat(2*np.arange(1, cols)/cols - 1, 2),
-             np.tile([-1, 1], cols - 1)))
-        self.horizontal_lines = np.column_stack(
-            (np.tile([-1, 1], rows - 1),
-             np.repeat(2*np.arange(1, rows)/rows - 1, 2)))
-        self.program = gloo.Program(Grid.VERTEX_SHADER, Grid.FRAGMENT_SHADER)
-        self.program['a_position'] = np.concatenate(
-            (self.vertical_lines, self.horizontal_lines)).astype(np.float32)
-
-        self.program['u_color'] = np.array([0.4, 0.4, 0.4, 1.0])
-
-    def draw(self):
-        self.program.draw('lines')
-
-
 class LineCollection:
     VERTEX_SHADER = """
     attribute vec2 a_position;
@@ -85,7 +46,15 @@ class LineCollection:
         self._vert = []
         self._color = []
 
-    def add(self, pt1, pt2, color=[1, 1, 1, 1]):
+    def append(self, pt1, pt2, color=[1, 1, 1, 1]):
+        """
+        pt1 : 2 tuple
+            The first point on the line, in screen coordinates.
+        pt2 : 2 tuple
+            The second point of the line, in screen coordinates.
+        color : 4 tuple
+            The color of the line.
+        """
         self._vert.append(pt1)
         self._vert.append(pt2)
         self._color.append(color)
@@ -226,8 +195,8 @@ class RasterPlotVisualization(Visualization):
 
     def create_labels(self):
         self.tick_marks.clear()
-        self.tick_marks.add((0, self.margin['top']),
-                            (self.canvas.size[0], self.margin['top']))
+        self.tick_marks.append((0, self.margin['top']),
+                               (self.canvas.size[0], self.margin['top']))
 
         log_val = math.log10(self.dt)
 
@@ -246,11 +215,11 @@ class RasterPlotVisualization(Visualization):
         i = 0
         while tick_loc < (self.t0 + self.dt + self.tick_separtion):
             xloc = (tick_loc - self.t0) / (self.dt / self.canvas.size[0])
-            self.tick_labels[i].pos = (xloc, self.margin['top'] / 2 + 2)
+            self.tick_labels[i].pos = (xloc, self.margin['top'] / 2 + 3)
             self.tick_labels[i].text = '%1.3f' % tick_loc
             tick_loc += self.tick_separtion
-            self.tick_marks.add((xloc, self.margin['top']),
-                                (xloc, self.margin['top'] + 6))
+            self.tick_marks.append((xloc, self.margin['top']),
+                                   (xloc, self.margin['top'] + 6))
             i += 1
         # Clear labels not being used.
         while i < len(self.tick_labels):
@@ -360,7 +329,8 @@ class MEA120GridVisualization(Visualization):
         # Create shaders
         self.program = gloo.Program(MEA120GridVisualization.VERTEX_SHADER,
                                     MEA120GridVisualization.FRAGMENT_SHADER)
-        self.grid = Grid(12, 12)
+        self.grid = LineCollection()
+        self.create_grid()
 
         self.resample()
 
@@ -379,6 +349,18 @@ class MEA120GridVisualization(Visualization):
     @dt.setter
     def dt(self, val):
         self._dt = util.clip(val, 0.0025, 20)
+
+    def create_grid(self):
+        self.grid.clear()
+        width = self.canvas.size[0] / 12
+        height = self.canvas.size[1] / 12
+
+        # vertical lines
+        for x in np.arange(width, self.canvas.size[0], width):
+            self.grid.append((x, 0), (x, self.canvas.size[1]))
+        # horizontal lines
+        for y in np.arange(height, self.canvas.size[1], height):
+            self.grid.append((0, y), (self.canvas.size[0], y))
 
     def resample(self, bin_count=250):
         sample_rate = 1 / (self.data.index[1] - self.data.index[0])
@@ -411,7 +393,7 @@ class MEA120GridVisualization(Visualization):
 
     def draw(self):
         self.program.draw('line_strip')
-        self.grid.draw()
+        self.grid.draw(self.canvas.tr_sys)
 
     def on_mouse_move(self, event):
         if event.is_dragging:
@@ -449,6 +431,9 @@ class MEA120GridVisualization(Visualization):
 
     def on_tick(self, event):
         pass
+
+    def on_resize(self, event):
+        self.create_grid()
 
 
 class Canvas(app.Canvas):
