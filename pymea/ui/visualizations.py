@@ -10,6 +10,15 @@ from vispy.visuals.shaders import ModularProgram
 import numpy as np
 
 
+class Theme:
+    yellow = (0.9254, 0.7411, 0.0588, 1.0)
+    purple = (0.396, 0.09, 0.62, 1.0)
+    blue = (0.09, 0.365, 0.596, 1.0)
+    white = (1.0, 1.0, 1.0, 1.0)
+    grid_line = (0.7, 0.7, 0.7, 1.0)
+    plot_colors = (yellow, purple, blue)
+
+
 class LineCollection:
     VERTEX_SHADER = """
     attribute vec2 a_position;
@@ -100,14 +109,14 @@ class Visualization:
 class RasterPlotVisualization(Visualization):
     VERTEX_SHADER = """
     attribute vec2 a_position;
-    attribute vec3 a_color;
+    attribute vec4 a_color;
 
     uniform float u_pan;
     uniform float u_y_scale;
     uniform float u_count;
     uniform float u_top_margin;
 
-    varying vec3 v_color;
+    varying vec4 v_color;
 
     void main(void)
     {
@@ -119,11 +128,11 @@ class RasterPlotVisualization(Visualization):
     """
 
     FRAGMENT_SHADER = """
-    varying vec3 v_color;
+    varying vec4 v_color;
 
     void main()
     {
-        gl_FragColor = vec4(v_color, 1.0);
+        gl_FragColor = v_color;
     }
     """
 
@@ -150,12 +159,7 @@ class RasterPlotVisualization(Visualization):
             row = self.electrode_row[e]
             verticies.append((t, row))
             verticies.append((t, row + 1))
-            if row % 3 == 0:
-                color = (0.9254, 0.7411, 0.0588)
-            elif row % 3 == 1:
-                color = (0.396, 0.09, 0.62)
-            else:
-                color = (0.09, 0.365, 0.596)
+            color = Theme.plot_colors[row % 3]
             colors.append(color)
             colors.append(color)
 
@@ -312,11 +316,12 @@ class MEA120GridVisualization(Visualization):
     """
 
     FRAGMENT_SHADER = """
+    uniform vec4 u_color;
     varying vec2 v_index;
 
     void main()
     {
-        gl_FragColor = vec4(0.349, 0.5, 0.715, 1.0);
+        gl_FragColor = u_color;
 
         if (fract(v_index.x) > 0.0 || fract(v_index.y) > 0.0) {
             discard;
@@ -336,6 +341,7 @@ class MEA120GridVisualization(Visualization):
         # Create shaders
         self.program = gloo.Program(MEA120GridVisualization.VERTEX_SHADER,
                                     MEA120GridVisualization.FRAGMENT_SHADER)
+        self.program['u_color'] = Theme.blue
         self.grid = LineCollection()
         self.create_grid()
 
@@ -348,6 +354,7 @@ class MEA120GridVisualization(Visualization):
     @t0.setter
     def t0(self, val):
         self._t0 = util.clip(val, 0, self.data.index[-1])
+        self.update()
 
     @property
     def dt(self):
@@ -356,18 +363,21 @@ class MEA120GridVisualization(Visualization):
     @dt.setter
     def dt(self, val):
         self._dt = util.clip(val, 0.0025, 20)
+        self.update()
 
     def create_grid(self):
         self.grid.clear()
-        width = self.canvas.size[0] / 12
-        height = self.canvas.size[1] / 12
+        width = self.canvas.size[0]
+        height = self.canvas.size[1]
+        cell_width = width / 12
+        cell_height = height / 12
 
         # vertical lines
-        for x in np.arange(width, self.canvas.size[0], width):
-            self.grid.append((x, 0), (x, self.canvas.size[1]))
+        for x in np.arange(cell_width, width, cell_width):
+            self.grid.append((x, 0), (x, height), Theme.grid_line)
         # horizontal lines
-        for y in np.arange(height, self.canvas.size[1], height):
-            self.grid.append((0, y), (self.canvas.size[0], y))
+        for y in np.arange(cell_height, height, cell_height):
+            self.grid.append((0, y), (width, y), Theme.grid_line)
 
     def resample(self, bin_count=250):
         sample_rate = 1 / (self.data.index[1] - self.data.index[0])

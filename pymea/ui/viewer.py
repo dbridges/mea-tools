@@ -32,15 +32,21 @@ class VisualizationCanvas(app.Canvas):
             else:
                 self.raster_visualization = RasterPlotVisualization(
                     self, self.controller.spike_data)
+        if self.visualization is not None:
+            self.raster_visualization.t0 = self.visualization.t0
+            self.raster_visualization.dt = self.visualization.dt
         self.visualization = self.raster_visualization
 
-    def show_analog(self):
+    def show_analog_grid(self):
         if self.analog_visualization is None:
             if self.controller.analog_data is None:
                 raise IOError('Analog data is unavailable.')
             else:
                 self.analog_visualization = MEA120GridVisualization(
                     self, self.controller.analog_data)
+        if self.visualization is not None:
+            self.analog_visualization.t0 = self.visualization.t0
+            self.analog_visualization.dt = self.visualization.dt
         self.visualization = self.analog_visualization
 
     def _normalize(self, x_y):
@@ -95,7 +101,7 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
     Subclass of QMainWindow
     """
     def __init__(self, input_file, parent=None):
-        super(MainWindow, self).__init__(parent)
+        super().__init__(parent)
 
         self.spike_data = None
         self.analog_data = None
@@ -146,10 +152,10 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
             self.canvas.show_raster()
         elif text == 'Flashing Spike':
             pass
-        elif text == 'Analog Data':
+        elif text == 'Analog Grid':
             if self.analog_data is None:
                 self.load_analog_data()
-            self.canvas.show_analog()
+            self.canvas.show_analog_grid()
 
 
 def run(fname):

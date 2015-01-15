@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'pymea/ui/PyMEAMainWindow.ui'
 #
-# Created: Tue Jan 13 11:38:11 2015
+# Created: Thu Jan 15 10:15:44 2015
 #      by: pyside-uic 0.2.15 running on PySide 1.2.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -130,7 +130,7 @@ class Ui_MainWindow(object):
         self.label_4.setText(QtGui.QApplication.translate("MainWindow", "Visualization", None, QtGui.QApplication.UnicodeUTF8))
         self.visualizationComboBox.setItemText(0, QtGui.QApplication.translate("MainWindow", "Raster", None, QtGui.QApplication.UnicodeUTF8))
         self.visualizationComboBox.setItemText(1, QtGui.QApplication.translate("MainWindow", "Flashing Spike", None, QtGui.QApplication.UnicodeUTF8))
-        self.visualizationComboBox.setItemText(2, QtGui.QApplication.translate("MainWindow", "Analog Data", None, QtGui.QApplication.UnicodeUTF8))
+        self.visualizationComboBox.setItemText(2, QtGui.QApplication.translate("MainWindow", "Analog Grid", None, QtGui.QApplication.UnicodeUTF8))
         self.label_2.setText(QtGui.QApplication.translate("MainWindow", "Raster View Options", None, QtGui.QApplication.UnicodeUTF8))
         self.label_6.setText(QtGui.QApplication.translate("MainWindow", "Row Count", None, QtGui.QApplication.UnicodeUTF8))
         self.label_5.setText(QtGui.QApplication.translate("MainWindow", "Flashing Spike View Options", None, QtGui.QApplication.UnicodeUTF8))
