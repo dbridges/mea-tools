@@ -48,6 +48,8 @@ class VisualizationCanvas(app.Canvas):
         if self.visualization is not None:
             self.analog_visualization.t0 = self.visualization.t0
             self.analog_visualization.dt = self.visualization.dt
+        self.analog_visualization.y_scale_index = \
+            self.controller.analogGridScaleComboBox.currentIndex()
         self.visualization = self.analog_visualization
 
     def _normalize(self, x_y):
@@ -133,6 +135,7 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
 
         self.rasterRowCountSlider.setValue(
             self.canvas.raster_visualization.row_count)
+        self.analogGridScaleComboBox.setCurrentIndex(4)
 
     def load_spike_data(self):
         self.spike_data = pd.read_csv(self.spike_file)
@@ -157,6 +160,11 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
             if self.analog_data is None:
                 self.load_analog_data()
             self.canvas.show_analog_grid()
+
+    @QtCore.Slot(int)
+    def on_analogGridScaleComboBox_currentIndexChanged(self, index):
+        if self.canvas.analog_visualization is not None:
+            self.canvas.analog_visualization.y_scale_index = index
 
 
 def run(fname):

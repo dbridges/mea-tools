@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'pymea/ui/PyMEAMainWindow.ui'
 #
-# Created: Thu Jan 15 10:15:44 2015
+# Created: Thu Jan 15 11:00:00 2015
 #      by: pyside-uic 0.2.15 running on PySide 1.2.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -95,6 +95,25 @@ class Ui_MainWindow(object):
         self.label_3.setFont(font)
         self.label_3.setObjectName("label_3")
         self.verticalLayout_2.addWidget(self.label_3)
+        self.formLayout_3 = QtGui.QFormLayout()
+        self.formLayout_3.setFieldGrowthPolicy(QtGui.QFormLayout.FieldsStayAtSizeHint)
+        self.formLayout_3.setObjectName("formLayout_3")
+        self.analogGridScaleLabel = QtGui.QLabel(self.centralwidget)
+        self.analogGridScaleLabel.setObjectName("analogGridScaleLabel")
+        self.formLayout_3.setWidget(0, QtGui.QFormLayout.LabelRole, self.analogGridScaleLabel)
+        self.analogGridScaleComboBox = QtGui.QComboBox(self.centralwidget)
+        self.analogGridScaleComboBox.setObjectName("analogGridScaleComboBox")
+        self.analogGridScaleComboBox.addItem("")
+        self.analogGridScaleComboBox.addItem("")
+        self.analogGridScaleComboBox.addItem("")
+        self.analogGridScaleComboBox.addItem("")
+        self.analogGridScaleComboBox.addItem("")
+        self.analogGridScaleComboBox.addItem("")
+        self.analogGridScaleComboBox.addItem("")
+        self.analogGridScaleComboBox.addItem("")
+        self.analogGridScaleComboBox.addItem("")
+        self.formLayout_3.setWidget(0, QtGui.QFormLayout.FieldRole, self.analogGridScaleComboBox)
+        self.verticalLayout_2.addLayout(self.formLayout_3)
         spacerItem = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         self.verticalLayout_2.addItem(spacerItem)
         self.mainLayout.addLayout(self.verticalLayout_2)
@@ -135,6 +154,16 @@ class Ui_MainWindow(object):
         self.label_6.setText(QtGui.QApplication.translate("MainWindow", "Row Count", None, QtGui.QApplication.UnicodeUTF8))
         self.label_5.setText(QtGui.QApplication.translate("MainWindow", "Flashing Spike View Options", None, QtGui.QApplication.UnicodeUTF8))
         self.label_3.setText(QtGui.QApplication.translate("MainWindow", "Analog Data View Options", None, QtGui.QApplication.UnicodeUTF8))
+        self.analogGridScaleLabel.setText(QtGui.QApplication.translate("MainWindow", "Scale", None, QtGui.QApplication.UnicodeUTF8))
+        self.analogGridScaleComboBox.setItemText(0, QtGui.QApplication.translate("MainWindow", "10 uV", None, QtGui.QApplication.UnicodeUTF8))
+        self.analogGridScaleComboBox.setItemText(1, QtGui.QApplication.translate("MainWindow", "25 uV", None, QtGui.QApplication.UnicodeUTF8))
+        self.analogGridScaleComboBox.setItemText(2, QtGui.QApplication.translate("MainWindow", "50 uV", None, QtGui.QApplication.UnicodeUTF8))
+        self.analogGridScaleComboBox.setItemText(3, QtGui.QApplication.translate("MainWindow", "100 uV", None, QtGui.QApplication.UnicodeUTF8))
+        self.analogGridScaleComboBox.setItemText(4, QtGui.QApplication.translate("MainWindow", "150 uV", None, QtGui.QApplication.UnicodeUTF8))
+        self.analogGridScaleComboBox.setItemText(5, QtGui.QApplication.translate("MainWindow", "200 uV", None, QtGui.QApplication.UnicodeUTF8))
+        self.analogGridScaleComboBox.setItemText(6, QtGui.QApplication.translate("MainWindow", "250 uV", None, QtGui.QApplication.UnicodeUTF8))
+        self.analogGridScaleComboBox.setItemText(7, QtGui.QApplication.translate("MainWindow", "500 uV", None, QtGui.QApplication.UnicodeUTF8))
+        self.analogGridScaleComboBox.setItemText(8, QtGui.QApplication.translate("MainWindow", "1000 uV", None, QtGui.QApplication.UnicodeUTF8))
         self.menuFile.setTitle(QtGui.QApplication.translate("MainWindow", "File", None, QtGui.QApplication.UnicodeUTF8))
         self.menuView.setTitle(QtGui.QApplication.translate("MainWindow", "View", None, QtGui.QApplication.UnicodeUTF8))
         self.actionSave_to_Spreadsheet.setText(QtGui.QApplication.translate("MainWindow", "Save to Spreadsheet...", None, QtGui.QApplication.UnicodeUTF8))

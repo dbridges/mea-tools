@@ -365,6 +365,16 @@ class MEA120GridVisualization(Visualization):
         self._dt = util.clip(val, 0.0025, 20)
         self.update()
 
+    @property
+    def y_scale_index(self):
+        return self.y_scale_i
+
+    @y_scale_index.setter
+    def y_scale_index(self, val):
+        self.y_scale_i = util.clip(val, 0, len(self.scales) - 1)
+        self.program['u_y_scale'] = self.scales[self.y_scale_i]
+        self.update()
+
     def create_grid(self):
         self.grid.clear()
         width = self.canvas.size[0]
@@ -403,7 +413,6 @@ class MEA120GridVisualization(Visualization):
         # Update shader
         self.program['a_position'] = data.reshape(120*(2*bin_count), 4)
         self.program['u_width'] = bin_count
-        self.program['u_y_scale'] = self.scales[self.y_scale_i]
 
     def update(self):
         self.resample()
@@ -435,16 +444,6 @@ class MEA120GridVisualization(Visualization):
         self.t0 = target_time - (rel_x * sec_per_pixel)
 
         self.update()
-
-    def on_key_release(self, event):
-        if event.key == 'Up':
-            self.y_scale_i = util.clip(self.y_scale_i + 1,
-                                       0, len(self.scales) - 1)
-            self.program['u_y_scale'] = self.scales[self.y_scale_i]
-        elif event.key == 'Down':
-            self.y_scale_i = util.clip(self.y_scale_i - 1,
-                                       0, len(self.scales) - 1)
-            self.program['u_y_scale'] = self.scales[self.y_scale_i]
 
     def on_tick(self, event):
         pass
