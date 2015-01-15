@@ -1,5 +1,6 @@
 import os
 import sys
+import platform
 
 import pymea.pymea as mea
 from pymea.ui.visualizations import (MEA120GridVisualization,
@@ -162,4 +163,6 @@ def run(fname):
     appQt = QtGui.QApplication(sys.argv)
     win = MainWindow(fname)
     win.show()
+    if platform.system() == 'Darwin':
+        os.system('''osascript -e 'tell app "Finder" to set frontmost of process "Python" to true' ''')  # noqa
     appQt.exec_()
