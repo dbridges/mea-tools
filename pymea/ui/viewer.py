@@ -79,7 +79,6 @@ class VisualizationCanvas(app.Canvas):
             self.visualization.on_resize(event)
 
     def on_draw(self, event):
-        gloo.clear((0.5, 0.5, 0.5, 1))
         gl.glEnable(gl.GL_LINE_SMOOTH)
         gl.glHint(gl.GL_LINE_SMOOTH_HINT, gl.GL_NICEST)
         gl.glEnable(gl.GL_BLEND)
