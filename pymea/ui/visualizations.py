@@ -74,6 +74,58 @@ class LineCollection:
             self._program.draw('lines')
 
 
+class QuadCollection:
+    VERTEX_SHADER = """
+    attribute vec2 a_position;
+    attribute vec4 a_color;
+
+    varying vec4 v_color;
+
+    void main (void)
+    {
+        v_color = a_color;
+        gl_Position = $transform(vec4(a_position, 0.0, 1.0));
+    }
+    """
+
+    FRAGMENT_SHADER = """
+    varying vec4 v_color;
+
+    void main()
+    {
+        gl_FragColor = v_color;
+    }
+    """
+
+    def __init__(self):
+        self._vert = []
+        self._color = []
+        self._program = ModularProgram(LineCollection.VERTEX_SHADER,
+                                       LineCollection.FRAGMENT_SHADER)
+
+    def clear(self):
+        self._vert = []
+        self._color = []
+
+    def append(self, x, y, width, height, color=[1, 1, 1, 1]):
+        """
+        color : 4 tuple
+            The color of the line in (r, g, b, alpha).
+        """
+        self._vert.append(pt1)
+        self._vert.append(pt2)
+        self._color.append(color)
+        self._color.append(color)
+        self._program['a_position'] = np.array(self._vert, dtype=np.float32)
+        self._program['a_color'] = np.array(self._color, dtype=np.float32)
+
+    def draw(self, transforms):
+        if len(self._vert) > 0:
+            self._program.vert['transform'] = transforms.get_full_transform()
+            self._program.draw('lines')
+
+
+
 class Visualization:
     def __init__(self):
         pass
@@ -104,6 +156,57 @@ class Visualization:
 
     def on_resize(self, event):
         pass
+
+
+class FlashingSpikeVisualization(Visualization):
+    VERTEX_SHADER = """
+    attribute vec2 a_position;
+    attribute vec4 a_color;
+
+    varying vec4 v_color;
+
+    void main(void)
+    {
+        float size = 2.0 / 12;
+        gl_Position = vec4((a_position.x - u_pan) / u_y_scale - 1,
+                           1 - a_position.y * height - u_top_margin, 0.0, 1.0);
+        v_color = a_color;
+    }
+    """
+
+    FRAGMENT_SHADER = """
+    varying vec4 v_color;
+
+    void main()
+    {
+        gl_FragColor = v_color;
+    }
+    """
+
+    def __init__(self, canvas, spike_data):
+        self.canvas = canvas
+        self.spikes = spike_data
+        self.program = gloo.Program(FlashingSpikeVisualization.VERTEX_SHADER,
+                                    FlashingSpikeVisualization.FRAGMENT_SHADER)
+    @property
+    def t0(self):
+        return self._t0
+
+    @t0.setter
+    def t0(self, val):
+        self._t0 = util.clip(val,
+                             -self.spikes.time.max(),
+                             self.spikes.time.max())
+
+    @property
+    def dt(self):
+        return self._dt
+
+    @dt.setter
+    def dt(self, val):
+        self._dt = util.clip(val, 0.0025, self.spikes.time.max())
+
+
 
 
 class RasterPlotVisualization(Visualization):
