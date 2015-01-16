@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'pymea/ui/PyMEAMainWindow.ui'
 #
-# Created: Thu Jan 15 11:00:00 2015
+# Created: Fri Jan 16 13:51:47 2015
 #      by: pyside-uic 0.2.15 running on PySide 1.2.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -87,6 +87,29 @@ class Ui_MainWindow(object):
         self.label_5.setFont(font)
         self.label_5.setObjectName("label_5")
         self.verticalLayout_2.addWidget(self.label_5)
+        self.formLayout_5 = QtGui.QFormLayout()
+        self.formLayout_5.setObjectName("formLayout_5")
+        self.speedLabel = QtGui.QLabel(self.centralwidget)
+        self.speedLabel.setObjectName("speedLabel")
+        self.formLayout_5.setWidget(1, QtGui.QFormLayout.LabelRole, self.speedLabel)
+        self.flashingSpikeSpeedComboBox = QtGui.QComboBox(self.centralwidget)
+        self.flashingSpikeSpeedComboBox.setObjectName("flashingSpikeSpeedComboBox")
+        self.flashingSpikeSpeedComboBox.addItem("")
+        self.flashingSpikeSpeedComboBox.addItem("")
+        self.flashingSpikeSpeedComboBox.addItem("")
+        self.flashingSpikeSpeedComboBox.addItem("")
+        self.flashingSpikeSpeedComboBox.addItem("")
+        self.flashingSpikeSpeedComboBox.addItem("")
+        self.flashingSpikeSpeedComboBox.addItem("")
+        self.flashingSpikeSpeedComboBox.addItem("")
+        self.formLayout_5.setWidget(1, QtGui.QFormLayout.FieldRole, self.flashingSpikeSpeedComboBox)
+        self.playbackLabel = QtGui.QLabel(self.centralwidget)
+        self.playbackLabel.setObjectName("playbackLabel")
+        self.formLayout_5.setWidget(0, QtGui.QFormLayout.LabelRole, self.playbackLabel)
+        self.flashingSpikePlayButton = QtGui.QPushButton(self.centralwidget)
+        self.flashingSpikePlayButton.setObjectName("flashingSpikePlayButton")
+        self.formLayout_5.setWidget(0, QtGui.QFormLayout.FieldRole, self.flashingSpikePlayButton)
+        self.verticalLayout_2.addLayout(self.formLayout_5)
         self.label_3 = QtGui.QLabel(self.centralwidget)
         font = QtGui.QFont()
         font.setPointSize(12)
@@ -153,6 +176,17 @@ class Ui_MainWindow(object):
         self.label_2.setText(QtGui.QApplication.translate("MainWindow", "Raster View Options", None, QtGui.QApplication.UnicodeUTF8))
         self.label_6.setText(QtGui.QApplication.translate("MainWindow", "Row Count", None, QtGui.QApplication.UnicodeUTF8))
         self.label_5.setText(QtGui.QApplication.translate("MainWindow", "Flashing Spike View Options", None, QtGui.QApplication.UnicodeUTF8))
+        self.speedLabel.setText(QtGui.QApplication.translate("MainWindow", "Speed", None, QtGui.QApplication.UnicodeUTF8))
+        self.flashingSpikeSpeedComboBox.setItemText(0, QtGui.QApplication.translate("MainWindow", "1x", None, QtGui.QApplication.UnicodeUTF8))
+        self.flashingSpikeSpeedComboBox.setItemText(1, QtGui.QApplication.translate("MainWindow", "1/2x", None, QtGui.QApplication.UnicodeUTF8))
+        self.flashingSpikeSpeedComboBox.setItemText(2, QtGui.QApplication.translate("MainWindow", "1/20x", None, QtGui.QApplication.UnicodeUTF8))
+        self.flashingSpikeSpeedComboBox.setItemText(3, QtGui.QApplication.translate("MainWindow", "1/100x", None, QtGui.QApplication.UnicodeUTF8))
+        self.flashingSpikeSpeedComboBox.setItemText(4, QtGui.QApplication.translate("MainWindow", "1/200x", None, QtGui.QApplication.UnicodeUTF8))
+        self.flashingSpikeSpeedComboBox.setItemText(5, QtGui.QApplication.translate("MainWindow", "1/400x", None, QtGui.QApplication.UnicodeUTF8))
+        self.flashingSpikeSpeedComboBox.setItemText(6, QtGui.QApplication.translate("MainWindow", "1/800x", None, QtGui.QApplication.UnicodeUTF8))
+        self.flashingSpikeSpeedComboBox.setItemText(7, QtGui.QApplication.translate("MainWindow", "1/1600x", None, QtGui.QApplication.UnicodeUTF8))
+        self.playbackLabel.setText(QtGui.QApplication.translate("MainWindow", "Playback", None, QtGui.QApplication.UnicodeUTF8))
+        self.flashingSpikePlayButton.setText(QtGui.QApplication.translate("MainWindow", "Play", None, QtGui.QApplication.UnicodeUTF8))
         self.label_3.setText(QtGui.QApplication.translate("MainWindow", "Analog Data View Options", None, QtGui.QApplication.UnicodeUTF8))
         self.analogGridScaleLabel.setText(QtGui.QApplication.translate("MainWindow", "Scale", None, QtGui.QApplication.UnicodeUTF8))
         self.analogGridScaleComboBox.setItemText(0, QtGui.QApplication.translate("MainWindow", "10 uV", None, QtGui.QApplication.UnicodeUTF8))

@@ -4,7 +4,8 @@ import platform
 
 import pymea.pymea as mea
 from pymea.ui.visualizations import (MEA120GridVisualization,
-                                     RasterPlotVisualization)
+                                     RasterPlotVisualization,
+                                     FlashingSpikeVisualization)
 
 import pandas as pd
 from vispy import app, gloo, visuals
@@ -20,6 +21,7 @@ class VisualizationCanvas(app.Canvas):
 
         self.analog_visualization = None
         self.raster_visualization = None
+        self.flashing_spike_visualization = None
 
         self.visualization = None
 
@@ -37,6 +39,18 @@ class VisualizationCanvas(app.Canvas):
             self.raster_visualization.t0 = self.visualization.t0
             self.raster_visualization.dt = self.visualization.dt
         self.visualization = self.raster_visualization
+
+    def show_flashing_spike(self):
+        if self.flashing_spike_visualization is None:
+            if self.controller.spike_data is None:
+                raise IOError('Spike data is unavailable.')
+            else:
+                self.flashing_spike_visualization = FlashingSpikeVisualization(
+                    self, self.controller.spike_data)
+        if self.visualization is not None:
+            self.flashing_spike_visualization.t0 = self.visualization.t0
+            self.flashing_spike_visualization.dt = self.visualization.dt
+        self.visualization = self.flashing_spike_visualization
 
     def show_analog_grid(self):
         if self.analog_visualization is None:
@@ -155,7 +169,9 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
                 self.load_spike_data()
             self.canvas.show_raster()
         elif text == 'Flashing Spike':
-            pass
+            if self.spike_data is None:
+                self.load_spike_data()
+            self.canvas.show_flashing_spike()
         elif text == 'Analog Grid':
             if self.analog_data is None:
                 self.load_analog_data()
@@ -165,6 +181,12 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
     def on_analogGridScaleComboBox_currentIndexChanged(self, index):
         if self.canvas.analog_visualization is not None:
             self.canvas.analog_visualization.y_scale_index = index
+
+    @QtCore.Slot()
+    def on_flashingSpikePlayButton_clicked(self):
+        if (self.canvas.visualization is
+                self.canvas.flashing_spike_visualization):
+            self.canvas.flashing_spike_visualization.toggle_play()
 
 
 def run(fname):

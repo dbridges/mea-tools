@@ -160,6 +160,75 @@
          </widget>
         </item>
         <item>
+         <layout class="QFormLayout" name="formLayout_5">
+          <item row="1" column="0">
+           <widget class="QLabel" name="speedLabel">
+            <property name="text">
+             <string>Speed</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QComboBox" name="flashingSpikeSpeedComboBox">
+            <item>
+             <property name="text">
+              <string>1x</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>1/2x</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>1/20x</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>1/100x</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>1/200x</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>1/400x</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>1/800x</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>1/1600x</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="playbackLabel">
+            <property name="text">
+             <string>Playback</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QPushButton" name="flashingSpikePlayButton">
+            <property name="text">
+             <string>Play</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
          <widget class="QLabel" name="label_3">
           <property name="font">
            <font>

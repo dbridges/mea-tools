@@ -74,58 +74,6 @@ class LineCollection:
             self._program.draw('lines')
 
 
-class QuadCollection:
-    VERTEX_SHADER = """
-    attribute vec2 a_position;
-    attribute vec4 a_color;
-
-    varying vec4 v_color;
-
-    void main (void)
-    {
-        v_color = a_color;
-        gl_Position = $transform(vec4(a_position, 0.0, 1.0));
-    }
-    """
-
-    FRAGMENT_SHADER = """
-    varying vec4 v_color;
-
-    void main()
-    {
-        gl_FragColor = v_color;
-    }
-    """
-
-    def __init__(self):
-        self._vert = []
-        self._color = []
-        self._program = ModularProgram(LineCollection.VERTEX_SHADER,
-                                       LineCollection.FRAGMENT_SHADER)
-
-    def clear(self):
-        self._vert = []
-        self._color = []
-
-    def append(self, x, y, width, height, color=[1, 1, 1, 1]):
-        """
-        color : 4 tuple
-            The color of the line in (r, g, b, alpha).
-        """
-        self._vert.append(pt1)
-        self._vert.append(pt2)
-        self._color.append(color)
-        self._color.append(color)
-        self._program['a_position'] = np.array(self._vert, dtype=np.float32)
-        self._program['a_color'] = np.array(self._color, dtype=np.float32)
-
-    def draw(self, transforms):
-        if len(self._vert) > 0:
-            self._program.vert['transform'] = transforms.get_full_transform()
-            self._program.draw('lines')
-
-
-
 class Visualization:
     def __init__(self):
         pass
@@ -158,36 +106,67 @@ class Visualization:
         pass
 
 
+class FlashingSpikeElectrode:
+    def __init__(self, tag, events):
+        self.events = events
+        self.value = 0
+        self.tag = tag
+
+    def update(self, t, dt):
+        try:
+            len(self.events == 0)
+        except:
+            return
+        self.value += 0.2*len(self.events[(self.events > t) &
+                                          (self.events < t + dt)])
+        self.value -= 0.01
+        self.value = util.clip(self.value, 0.0, 1.0)
+
+
 class FlashingSpikeVisualization(Visualization):
     VERTEX_SHADER = """
     attribute vec2 a_position;
-    attribute vec4 a_color;
+    attribute float a_color;
 
-    varying vec4 v_color;
+    varying float v_color;
 
     void main(void)
     {
-        float size = 2.0 / 12;
-        gl_Position = vec4((a_position.x - u_pan) / u_y_scale - 1,
-                           1 - a_position.y * height - u_top_margin, 0.0, 1.0);
+        gl_Position = $transform(vec4(a_position, 0.0, 1.0));
         v_color = a_color;
     }
     """
 
     FRAGMENT_SHADER = """
-    varying vec4 v_color;
+    varying float v_color;
 
     void main()
     {
-        gl_FragColor = v_color;
+        gl_FragColor = vec4(v_color, v_color, v_color, 1);
     }
     """
 
     def __init__(self, canvas, spike_data):
         self.canvas = canvas
+        self.program = ModularProgram(self.VERTEX_SHADER,
+                                      self.FRAGMENT_SHADER)
+        self._t0 = 0
+        self._dt = 10
+        self._interval = 1/30.0
+        self.time_scale = 1/200
+        self._vert = np.zeros((120*6, 2), dtype=np.float32)
+        self._color = np.zeros(120*6, dtype=np.float32)
+        self.electrodes = []
         self.spikes = spike_data
-        self.program = gloo.Program(FlashingSpikeVisualization.VERTEX_SHADER,
-                                    FlashingSpikeVisualization.FRAGMENT_SHADER)
+        for tag, df in spike_data.groupby('electrode'):
+            self.electrodes.append(FlashingSpikeElectrode(tag,
+                                                          df['time'].values))
+        self._create_vertex_data()
+        self.paused = True
+        self.program['a_position'] = self._vert
+        self.program['a_color'] = self._color
+        self.program.vert['transform'] = canvas.tr_sys.get_full_transform()
+
     @property
     def t0(self):
         return self._t0
@@ -206,7 +185,52 @@ class FlashingSpikeVisualization(Visualization):
     def dt(self, val):
         self._dt = util.clip(val, 0.0025, self.spikes.time.max())
 
+    def _create_vertex_data(self):
+        self._vert = np.zeros((120*6, 2), dtype=np.float32)
+        for i, e in enumerate(self.electrodes):
+            x, y = mea.coordinates_for_electrode(e.tag)
+            size = self.canvas.size[1] / 14
+            x = self.canvas.size[0] / 2 - 6 * size + x * size
+            y = y * size + size
+            self._vert[6*i] = [x, y]
+            self._vert[6*i + 1] = [x + size, y]
+            self._vert[6*i + 2] = [x + size, y + size]
+            self._vert[6*i + 3] = [x, y]
+            self._vert[6*i + 4] = [x + size, y + size]
+            self._vert[6*i + 5] = [x, y + size]
 
+    def draw(self):
+        gloo.clear((0.0, 1.0, 0.0, 1))
+        self.program.draw('triangles')
+
+    def pause(self):
+        self.paused = True
+
+    def run(self):
+        self.paused = False
+
+    def toggle_play(self):
+        if self.paused:
+            self.run()
+        else:
+            self.pause()
+
+    def update(self):
+        self.program['a_color'] = self._color
+
+    def on_resize(self, event):
+        self._create_vertex_data()
+        self.program['a_position'] = self._vert
+        self.program.vert['transform'] = self.canvas.tr_sys.get_full_transform()
+
+    def on_tick(self, event):
+        if self.paused:
+            return
+        for i, e in enumerate(self.electrodes):
+            e.update(self.t0, self._interval * self.time_scale)
+            self._color[6*i:6*i+6] = e.value
+        self.t0 += self.time_scale * self._interval
+        self.update()
 
 
 class RasterPlotVisualization(Visualization):
@@ -347,6 +371,7 @@ class RasterPlotVisualization(Visualization):
         self.create_labels()
 
     def draw(self):
+        gloo.clear((0.5, 0.5, 0.5, 1))
         self.program.draw('lines')
         for label in self.tick_labels:
             label.draw(self.canvas.tr_sys)
@@ -521,6 +546,7 @@ class MEA120GridVisualization(Visualization):
         self.resample()
 
     def draw(self):
+        gloo.clear((0.5, 0.5, 0.5, 1))
         self.program.draw('line_strip')
         self.grid.draw(self.canvas.tr_sys)
 

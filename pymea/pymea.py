@@ -110,7 +110,7 @@ def coordinates_for_electrode(tag):
     tag = tag.lower()
     cols = {'a':  0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5, 'g': 6,
             'h': 7, 'j': 8, 'k': 9, 'l': 10, 'm': 11}
-    return (cols[tag[0]], 12 - int(tag[1:]))
+    return (cols[tag[0]], int(tag[1:]) - 1)
 
 
 def condense_spikes(srcdir, fname):
