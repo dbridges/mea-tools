@@ -146,6 +146,18 @@ class FlashingSpikeVisualization(Visualization):
     }
     """
 
+    mea_outline = np.array(
+        [[3.0, 0.0], [9.0, 0.0], [9.0, 1.0],
+         [10.0, 1.0], [10.0, 2.0], [11.0, 2.0],
+         [11.0, 3.0], [12.0, 3.0], [12.0, 9.0],
+         [11.0, 9.0], [11.0, 10.0], [10.0, 10.0],
+         [10.0, 11.0], [9.0, 11.0], [9.0, 12.0],
+         [3.0, 12.0], [3.0, 11.0], [2.0, 11.0],
+         [2.0, 10.0], [1.0, 10.0], [1.0, 9.0],
+         [0.0, 9.0], [0.0, 3.0], [1.0, 3.0],
+         [1.0, 2.0], [2.0, 2.0], [2.0, 1.0],
+         [3.0, 1.0], [3.0, 0.0]], dtype=np.float32)
+
     def __init__(self, canvas, spike_data):
         self.canvas = canvas
         self.program = ModularProgram(self.VERTEX_SHADER,
@@ -166,6 +178,8 @@ class FlashingSpikeVisualization(Visualization):
         self.program['a_position'] = self._vert
         self.program['a_color'] = self._color
         self.program.vert['transform'] = canvas.tr_sys.get_full_transform()
+        self.outline = visuals.LineVisual(color=Theme.yellow)
+        self._rescale_outline()
 
     @property
     def t0(self):
@@ -199,8 +213,14 @@ class FlashingSpikeVisualization(Visualization):
             self._vert[6*i + 4] = [x + size, y + size]
             self._vert[6*i + 5] = [x, y + size]
 
+    def _rescale_outline(self):
+        size = self.canvas.size[1] / 14
+        self.outline.set_data(self.mea_outline * size +
+                              [self.canvas.size[0] / 2 - 6*size, size])
+
     def draw(self):
-        gloo.clear((0.0, 1.0, 0.0, 1))
+        gloo.clear((0.0, 0.0, 0.0, 1))
+        self.outline.draw(self.canvas.tr_sys)
         self.program.draw('triangles')
 
     def pause(self):
@@ -220,8 +240,10 @@ class FlashingSpikeVisualization(Visualization):
 
     def on_resize(self, event):
         self._create_vertex_data()
+        self._rescale_outline()
         self.program['a_position'] = self._vert
-        self.program.vert['transform'] = self.canvas.tr_sys.get_full_transform()
+        self.program.vert['transform'] = \
+            self.canvas.tr_sys.get_full_transform()
 
     def on_tick(self, event):
         if self.paused:
