@@ -109,6 +109,7 @@ class VisualizationCanvas(app.Canvas):
     def on_tick(self, event):
         if self.visualization is not None:
             self.visualization.on_tick(event)
+            self.controller.on_visualization_updated()
         self.update()
 
 
@@ -150,12 +151,17 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
             self.canvas.raster_visualization.row_count)
         self.analogGridScaleComboBox.setCurrentIndex(4)
 
+        self.flashingSpikeSpeedComboBox.setCurrentIndex(4)
+
     def load_spike_data(self):
         self.spike_data = pd.read_csv(self.spike_file)
 
     def load_analog_data(self):
         store = mea.MEARecording(self.analog_file)
         self.analog_data = store.get('all')
+
+    def on_visualization_updated(self):
+        pass
 
     @QtCore.Slot(int)
     def on_rasterRowCountSlider_valueChanged(self, val):
@@ -185,6 +191,10 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
     def on_flashingSpikePlayButton_clicked(self):
         if (self.canvas.visualization is
                 self.canvas.flashing_spike_visualization):
+            if self.canvas.flashing_spike_visualization.paused:
+                self.flashingSpikePlayButton.setText('Pause')
+            else:
+                self.flashingSpikePlayButton.setText('Play')
             self.canvas.flashing_spike_visualization.toggle_play()
 
 
