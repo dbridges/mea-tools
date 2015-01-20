@@ -38,7 +38,7 @@
            </font>
           </property>
           <property name="text">
-           <string>Visualization</string>
+           <string>Application</string>
           </property>
          </widget>
         </item>
@@ -95,7 +95,7 @@
            </font>
           </property>
           <property name="text">
-           <string>Raster View Options</string>
+           <string>Raster Plot Options</string>
           </property>
          </widget>
         </item>
@@ -155,7 +155,7 @@
            </font>
           </property>
           <property name="text">
-           <string>Flashing Spike View Options</string>
+           <string>Flashing Spike Options</string>
           </property>
          </widget>
         </item>
@@ -169,7 +169,7 @@
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QComboBox" name="flashingSpikeSpeedComboBox">
+           <widget class="QComboBox" name="flashingSpikeTimescaleComboBox">
             <item>
              <property name="text">
               <string>1x</string>
@@ -238,7 +238,7 @@
            </font>
           </property>
           <property name="text">
-           <string>Analog Data View Options</string>
+           <string>Analog Grid Options</string>
           </property>
          </widget>
         </item>
@@ -343,6 +343,9 @@
     <property name="title">
      <string>View</string>
     </property>
+    <addaction name="actionRaster"/>
+    <addaction name="actionFlashingSpikes"/>
+    <addaction name="actionAnalogGrid"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
@@ -375,6 +378,30 @@
   <action name="actionAnalog_Waveform">
    <property name="text">
     <string>Analog Waveform</string>
+   </property>
+  </action>
+  <action name="actionRaster">
+   <property name="text">
+    <string>Raster</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
+   </property>
+  </action>
+  <action name="actionFlashingSpikes">
+   <property name="text">
+    <string>Flashing Spikes</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+F</string>
+   </property>
+  </action>
+  <action name="actionAnalogGrid">
+   <property name="text">
+    <string>Analog Grid</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+A</string>
    </property>
   </action>
  </widget>

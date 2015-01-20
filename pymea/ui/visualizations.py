@@ -105,6 +105,12 @@ class Visualization:
     def on_resize(self, event):
         pass
 
+    def on_hide(self):
+        pass
+
+    def on_show(self):
+        pass
+
 
 class FlashingSpikeElectrode:
     def __init__(self, tag, events):
@@ -437,6 +443,9 @@ class RasterPlotVisualization(Visualization):
         self.velocity *= 0.98
         self.t0 -= self.velocity
         self.update()
+
+    def on_hide(self):
+        self.velocity = 0
 
 
 class MEA120GridVisualization(Visualization):

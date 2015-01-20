@@ -38,7 +38,9 @@ class VisualizationCanvas(app.Canvas):
         if self.visualization is not None:
             self.raster_visualization.t0 = self.visualization.t0
             self.raster_visualization.dt = self.visualization.dt
+            self.visualization.on_hide()
         self.visualization = self.raster_visualization
+        self.visualization.on_show()
 
     def show_flashing_spike(self):
         if self.flashing_spike_visualization is None:
@@ -50,7 +52,9 @@ class VisualizationCanvas(app.Canvas):
         if self.visualization is not None:
             self.flashing_spike_visualization.t0 = self.visualization.t0
             self.flashing_spike_visualization.dt = self.visualization.dt
+            self.visualization.on_hide()
         self.visualization = self.flashing_spike_visualization
+        self.visualization.on_show()
 
     def show_analog_grid(self):
         if self.analog_visualization is None:
@@ -62,9 +66,11 @@ class VisualizationCanvas(app.Canvas):
         if self.visualization is not None:
             self.analog_visualization.t0 = self.visualization.t0
             self.analog_visualization.dt = self.visualization.dt
+            self.visualization.on_hide()
         self.analog_visualization.y_scale_index = \
             self.controller.analogGridScaleComboBox.currentIndex()
         self.visualization = self.analog_visualization
+        self.visualization.on_show()
 
     def _normalize(self, x_y):
         x, y = x_y
@@ -145,13 +151,14 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         self.canvas = VisualizationCanvas(self)
         self.canvas.show_raster()
 
+        self.canvas.native.setFocusPolicy(QtCore.Qt.ClickFocus)
         self.mainLayout.addWidget(self.canvas.native)
 
         self.rasterRowCountSlider.setValue(
             self.canvas.raster_visualization.row_count)
         self.analogGridScaleComboBox.setCurrentIndex(4)
 
-        self.flashingSpikeSpeedComboBox.setCurrentIndex(4)
+        self.flashingSpikeTimescaleComboBox.setCurrentIndex(4)
 
     def load_spike_data(self):
         self.spike_data = pd.read_csv(self.spike_file)
@@ -197,6 +204,39 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
             else:
                 self.flashingSpikePlayButton.setText('Play')
             self.canvas.flashing_spike_visualization.toggle_play()
+
+    @QtCore.Slot(str)
+    def on_flashingSpikeTimescaleComboBox_currentIndexChanged(self, text):
+        if self.canvas.flashing_spike_visualization is None:
+            return
+        if text == '1x':
+            self.canvas.flashing_spike_visualization.time_scale = 1
+        elif text == '1/2x':
+            self.canvas.flashing_spike_visualization.time_scale = 1/2
+        elif text == '1/20x':
+            self.canvas.flashing_spike_visualization.time_scale = 1/20
+        elif text == '1/100x':
+            self.canvas.flashing_spike_visualization.time_scale = 1/100
+        elif text == '1/200x':
+            self.canvas.flashing_spike_visualization.time_scale = 1/200
+        elif text == '1/400x':
+            self.canvas.flashing_spike_visualization.time_scale = 1/400
+        elif text == '1/800x':
+            self.canvas.flashing_spike_visualization.time_scale = 1/800
+        elif text == '1/1600x':
+            self.canvas.flashing_spike_visualization.time_scale = 1/1600
+
+    @QtCore.Slot()
+    def on_actionRaster_activated(self):
+        self.visualizationComboBox.setCurrentIndex(0)
+
+    @QtCore.Slot()
+    def on_actionFlashingSpikes_activated(self):
+        self.visualizationComboBox.setCurrentIndex(1)
+
+    @QtCore.Slot()
+    def on_actionAnalogGrid_activated(self):
+        self.visualizationComboBox.setCurrentIndex(2)
 
 
 def run(fname):
