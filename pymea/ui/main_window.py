@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'pymea/ui/PyMEAMainWindow.ui'
 #
-# Created: Fri Jan 16 13:51:47 2015
-#      by: pyside-uic 0.2.15 running on PySide 1.2.2
+# Created: Tue Jan 20 14:00:56 2015
+#      by: pyside-uic 0.2.15 running on PySide 1.2.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -33,6 +33,7 @@ class Ui_MainWindow(object):
         self.label.setObjectName("label")
         self.verticalLayout_2.addWidget(self.label)
         self.formLayout = QtGui.QFormLayout()
+        self.formLayout.setHorizontalSpacing(6)
         self.formLayout.setObjectName("formLayout")
         self.label_4 = QtGui.QLabel(self.centralwidget)
         font = QtGui.QFont()
@@ -142,14 +143,17 @@ class Ui_MainWindow(object):
         self.mainLayout.addLayout(self.verticalLayout_2)
         self.verticalLayout.addLayout(self.mainLayout)
         MainWindow.setCentralWidget(self.centralwidget)
-        self.menubar = QtGui.QMenuBar()
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1392, 22))
+        self.menubar = QtGui.QMenuBar(MainWindow)
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1392, 25))
         self.menubar.setObjectName("menubar")
         self.menuFile = QtGui.QMenu(self.menubar)
         self.menuFile.setObjectName("menuFile")
         self.menuView = QtGui.QMenu(self.menubar)
         self.menuView.setObjectName("menuView")
         MainWindow.setMenuBar(self.menubar)
+        self.statusBar = MEAViewerStatusBar(MainWindow)
+        self.statusBar.setObjectName("statusBar")
+        MainWindow.setStatusBar(self.statusBar)
         self.actionSave_to_Spreadsheet = QtGui.QAction(MainWindow)
         self.actionSave_to_Spreadsheet.setEnabled(False)
         self.actionSave_to_Spreadsheet.setObjectName("actionSave_to_Spreadsheet")
@@ -207,3 +211,4 @@ class Ui_MainWindow(object):
         self.actionDefault.setText(QtGui.QApplication.translate("MainWindow", "Default", None, QtGui.QApplication.UnicodeUTF8))
         self.actionAnalog_Waveform.setText(QtGui.QApplication.translate("MainWindow", "Analog Waveform", None, QtGui.QApplication.UnicodeUTF8))
 
+from pymea.ui.widgets import MEAViewerStatusBar

@@ -45,7 +45,7 @@
         <item>
          <layout class="QFormLayout" name="formLayout">
           <property name="horizontalSpacing">
-           <number>-1</number>
+           <number>6</number>
           </property>
           <item row="0" column="0">
            <widget class="QLabel" name="label_4">
@@ -330,7 +330,7 @@
      <x>0</x>
      <y>0</y>
      <width>1392</width>
-     <height>22</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -347,6 +347,7 @@
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
   </widget>
+  <widget class="MEAViewerStatusBar" name="statusBar"/>
   <action name="actionSave_to_Spreadsheet">
    <property name="enabled">
     <bool>false</bool>
@@ -377,6 +378,13 @@
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>MEAViewerStatusBar</class>
+   <extends>QStatusBar</extends>
+   <header>pymea.ui.widgets</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
