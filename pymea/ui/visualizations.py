@@ -129,7 +129,6 @@ class FlashingSpikeElectrode:
         self.value = util.clip(self.value, 0.0, 1.0)
 
 
-
 class FlashingSpikeVisualization(Visualization):
     VERTEX_SHADER = """
     attribute vec2 a_position;
@@ -630,7 +629,6 @@ class MEA120GridVisualization(Visualization):
             self.electrode = ''
         else:
             self.electrode = '%s%d' % (self.electrode_cols[col], row)
-
 
     def on_mouse_wheel(self, event):
         sec_per_pixel = self.dt / (self.canvas.size[0] / 12)

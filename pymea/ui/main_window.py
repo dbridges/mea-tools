@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'pymea/ui/PyMEAMainWindow.ui'
 #
-# Created: Tue Jan 20 15:05:21 2015
-#      by: pyside-uic 0.2.15 running on PySide 1.2.1
+# Created: Tue Jan 20 20:24:16 2015
+#      by: pyside-uic 0.2.14 running on PySide 1.2.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -143,7 +143,7 @@ class Ui_MainWindow(object):
         self.mainLayout.addLayout(self.verticalLayout_2)
         self.verticalLayout.addLayout(self.mainLayout)
         MainWindow.setCentralWidget(self.centralwidget)
-        self.menubar = QtGui.QMenuBar(MainWindow)
+        self.menubar = QtGui.QMenuBar()
         self.menubar.setGeometry(QtCore.QRect(0, 0, 1392, 25))
         self.menubar.setObjectName("menubar")
         self.menuFile = QtGui.QMenu(self.menubar)
