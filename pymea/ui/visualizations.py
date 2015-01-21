@@ -531,6 +531,7 @@ class MEA120GridVisualization(Visualization):
         self.program['u_color'] = Theme.blue
         self.grid = LineCollection()
         self.create_grid()
+        self.electrode_cols = [c for c in 'ABCDEFGHJKLM']
 
         self.resample()
 
@@ -619,6 +620,17 @@ class MEA120GridVisualization(Visualization):
             self.t0 = util.clip(self.t0 + dx * sperpx,
                                 0, self.data.index[-1])
             self.update()
+
+        x, y = event.pos
+        cell_width = self.canvas.size[0] / 12
+        cell_height = self.canvas.size[1] / 12
+        col = int(x / cell_width)
+        row = int(y / cell_height + 1)
+        if row < 1 or row > 12 or col < 0 or col > 11:
+            self.electrode = ''
+        else:
+            self.electrode = '%s%d' % (self.electrode_cols[col], row)
+
 
     def on_mouse_wheel(self, event):
         sec_per_pixel = self.dt / (self.canvas.size[0] / 12)
