@@ -3,9 +3,10 @@ from PySide import QtGui, QtCore  # noqa
 class MEAViewerStatusBar(QtGui.QStatusBar):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._text_fmt = 't0: %1.3f\tdt: %1.3f'
+        self._text_fmt = 't0: %1.3f    dt: %1.3f    electrode: %s'
         self._t0 = 0
         self._dt = 0
+        self._electrode = ''
 
     @property
     def t0(self):
@@ -25,5 +26,15 @@ class MEAViewerStatusBar(QtGui.QStatusBar):
         self._dt = val
         self._update()
 
+    @property
+    def electrode(self):
+        return self._electrode
+
+    @electrode.setter
+    def electrode(self, val):
+        self._electrode = val.upper()
+        self._update()
+
     def _update(self):
-        self.showMessage(self._text_fmt % (self._t0, self._dt))
+        self.showMessage(self._text_fmt %
+                         (self._t0, self._dt, self._electrode))

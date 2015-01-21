@@ -129,6 +129,7 @@ class FlashingSpikeElectrode:
         self.value = util.clip(self.value, 0.0, 1.0)
 
 
+
 class FlashingSpikeVisualization(Visualization):
     VERTEX_SHADER = """
     attribute vec2 a_position;
@@ -171,6 +172,7 @@ class FlashingSpikeVisualization(Visualization):
         self._t0 = 0
         self._dt = 10
         self._interval = 1/30.0
+        self.electrode = ''
         self.time_scale = 1/200
         self._vert = np.zeros((120*6, 2), dtype=np.float32)
         self._color = np.zeros(120*6, dtype=np.float32)
@@ -185,6 +187,7 @@ class FlashingSpikeVisualization(Visualization):
         self.program['a_color'] = self._color
         self.program.vert['transform'] = canvas.tr_sys.get_full_transform()
         self.outline = visuals.LineVisual(color=Theme.yellow)
+        self.electrode_cols = [c for c in 'ABCDEFGHJKLM']
         self._rescale_outline()
 
     @property
@@ -260,6 +263,22 @@ class FlashingSpikeVisualization(Visualization):
         self.t0 += self.time_scale * self._interval
         self.update()
 
+    def on_key_release(self, event):
+        if event.key == 'space':
+            self.toggle_play()
+        elif event.key == 'Left':
+            self.t0 -= 4*self.time_scale  # Jump back in time
+
+    def on_mouse_move(self, event):
+        x, y = event.pos
+        cell_size = self.canvas.size[1] / 14
+        row = int((y - cell_size) / cell_size) + 1
+        col = int((x - self.canvas.width/2) / cell_size + 6)
+        if row < 1 or row > 12 or col < 0 or col > 11:
+            self.electrode = ''
+        else:
+            self.electrode = '%s%d' % (self.electrode_cols[col], row)
+
 
 class RasterPlotVisualization(Visualization):
     VERTEX_SHADER = """
@@ -298,6 +317,7 @@ class RasterPlotVisualization(Visualization):
                                     RasterPlotVisualization.FRAGMENT_SHADER)
         self._t0 = 0
         self._dt = self.spikes['time'].max()
+        self.electrode = ''
         self.program['u_pan'] = self._t0
         self.program['u_y_scale'] = self._dt/2
         self.program['u_top_margin'] = 20.0 * 2.0 / canvas.size[1]
@@ -308,6 +328,8 @@ class RasterPlotVisualization(Visualization):
         d.sort(ascending=False)
         for i, tag in enumerate(d.index):
             self.electrode_row[tag] = i
+        self._row_for_electrode = {v: k for
+                                   k, v in self.electrode_row.items()}
         verticies = []
         colors = []
         for e, t in self.spikes[['electrode', 'time']].values:
@@ -414,6 +436,11 @@ class RasterPlotVisualization(Visualization):
             self.last_dx = dx
             sperpx = self.dt / self.canvas.size[0]
             self.t0 += dx * sperpx
+        row_height = ((self.canvas.height - self.margin['top']) /
+                      self._row_count)
+        row = util.clip(int((event.pos[1] - self.margin['top']) / row_height),
+                        0, 119)
+        self.electrode = self._row_for_electrode[row]
 
     def on_mouse_wheel(self, event):
         sec_per_pixel = self.dt / self.canvas.size[0]
@@ -493,6 +520,7 @@ class MEA120GridVisualization(Visualization):
         self.data = data
         self._t0 = 0
         self._dt = 20
+        self.electrode = ''
         self.scales = [10.0, 25.0, 50.0, 100.0, 150.0, 200.0, 250.0, 500.0,
                        1000.0]
         self.y_scale_i = 2
