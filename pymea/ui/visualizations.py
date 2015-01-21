@@ -320,7 +320,6 @@ class RasterPlotVisualization(Visualization):
         self.program['u_pan'] = self._t0
         self.program['u_y_scale'] = self._dt/2
         self.program['u_top_margin'] = 20.0 * 2.0 / canvas.size[1]
-        print(self.program['u_top_margin'])
         self.spikes[['electrode', 'time']].values
         self.electrode_row = {}
         d = self.spikes.groupby('electrode').size()
@@ -525,12 +524,13 @@ class MEA120GridVisualization(Visualization):
         self.y_scale_i = 2
 
         # Create shaders
-        self.program = gloo.Program(MEA120GridVisualization.VERTEX_SHADER,
-                                    MEA120GridVisualization.FRAGMENT_SHADER)
+        self.program = gloo.Program(self.VERTEX_SHADER,
+                                    self.FRAGMENT_SHADER)
         self.program['u_color'] = Theme.blue
         self.grid = LineCollection()
         self.create_grid()
         self.electrode_cols = [c for c in 'ABCDEFGHJKLM']
+        self.sample_rate = 1.0 / (self.data.index[1] - self.data.index[0])
 
         self.resample()
 
@@ -577,9 +577,8 @@ class MEA120GridVisualization(Visualization):
             self.grid.append((0, y), (width, y), Theme.grid_line)
 
     def resample(self, bin_count=250):
-        sample_rate = 1 / (self.data.index[1] - self.data.index[0])
-        start_i = int(self.t0 * sample_rate)
-        end_i = util.clip(start_i + int(self.dt * sample_rate),
+        start_i = int(self.t0 * self.sample_rate)
+        end_i = util.clip(start_i + int(self.dt * self.sample_rate),
                           start_i, sys.maxsize)
         bin_size = (end_i - start_i) // bin_count
         if bin_size < 1:
@@ -594,7 +593,7 @@ class MEA120GridVisualization(Visualization):
             col, row = mea.coordinates_for_electrode(column)
             x = np.full_like(v, col, dtype=np.float32)
             y = np.full_like(v, row, dtype=np.float32)
-            t = np.arange(0, (2*bin_count) / 2, 0.5, dtype=np.float32)
+            t = np.arange(0, bin_count, 0.5, dtype=np.float32)
             data[i] = np.column_stack((x, y, t, v))
 
         # Update shader
@@ -615,14 +614,13 @@ class MEA120GridVisualization(Visualization):
             x1, y1 = event.last_event.pos
             x, y = event.pos
             dx = x1 - x
-            sperpx = self.dt / (self.canvas.size[0] / 12)
+            sperpx = self.dt / (self.canvas.width / 12.0)
             self.t0 = util.clip(self.t0 + dx * sperpx,
                                 0, self.data.index[-1])
-            self.update()
 
         x, y = event.pos
-        cell_width = self.canvas.size[0] / 12
-        cell_height = self.canvas.size[1] / 12
+        cell_width = self.canvas.size[0] / 12.0
+        cell_height = self.canvas.size[1] / 12.0
         col = int(x / cell_width)
         row = int(y / cell_height + 1)
         if row < 1 or row > 12 or col < 0 or col > 11:
@@ -640,8 +638,6 @@ class MEA120GridVisualization(Visualization):
 
         sec_per_pixel = self.dt / (self.canvas.size[0] / 12)
         self.t0 = target_time - (rel_x * sec_per_pixel)
-
-        self.update()
 
     def on_tick(self, event):
         pass

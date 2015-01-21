@@ -41,7 +41,6 @@ class VisualizationCanvas(app.Canvas):
             self.visualization.on_hide()
         self.visualization = self.raster_visualization
         self.visualization.on_show()
-        self._timer.start()
 
     def show_flashing_spike(self):
         if self.flashing_spike_visualization is None:
@@ -56,7 +55,6 @@ class VisualizationCanvas(app.Canvas):
             self.visualization.on_hide()
         self.visualization = self.flashing_spike_visualization
         self.visualization.on_show()
-        self._timer.start()
 
     def show_analog_grid(self):
         if self.analog_visualization is None:
@@ -73,7 +71,6 @@ class VisualizationCanvas(app.Canvas):
             self.controller.analogGridScaleComboBox.currentIndex()
         self.visualization = self.analog_visualization
         self.visualization.on_show()
-        self._timer.stop()
 
     def _normalize(self, x_y):
         x, y = x_y
