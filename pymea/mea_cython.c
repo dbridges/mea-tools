@@ -1157,12 +1157,12 @@ static char __pyx_k_array[] = "array";
 static char __pyx_k_btype[] = "btype";
 static char __pyx_k_dtype[] = "dtype";
 static char __pyx_k_edges[] = "edges";
+static char __pyx_k_empty[] = "empty";
 static char __pyx_k_index[] = "index";
 static char __pyx_k_numpy[] = "numpy";
 static char __pyx_k_peaks[] = "peaks";
 static char __pyx_k_range[] = "range";
 static char __pyx_k_scipy[] = "scipy";
-static char __pyx_k_zeros[] = "zeros";
 static char __pyx_k_arange[] = "arange";
 static char __pyx_k_butter[] = "butter";
 static char __pyx_k_import[] = "__import__";
@@ -1229,6 +1229,7 @@ static PyObject *__pyx_n_s_data;
 static PyObject *__pyx_n_s_dt;
 static PyObject *__pyx_n_s_dtype;
 static PyObject *__pyx_n_s_edges;
+static PyObject *__pyx_n_s_empty;
 static PyObject *__pyx_n_s_filtfilt;
 static PyObject *__pyx_n_s_find_series_peaks;
 static PyObject *__pyx_n_s_float32;
@@ -1268,7 +1269,6 @@ static PyObject *__pyx_kp_u_unknown_dtype_code_in_numpy_pxd;
 static PyObject *__pyx_n_s_vals;
 static PyObject *__pyx_n_s_values;
 static PyObject *__pyx_n_s_x;
-static PyObject *__pyx_n_s_zeros;
 static PyObject *__pyx_float_0_6745;
 static PyObject *__pyx_int_0;
 static PyObject *__pyx_int_1;
@@ -2613,7 +2613,7 @@ static PyObject *__pyx_pf_5pymea_10mea_cython_4min_max_bin(CYTHON_UNUSED PyObjec
  * def min_max_bin(np.ndarray[float] series, int bin_size, int bin_count):
  *     cdef np.ndarray[float] sub
  *     cdef np.ndarray[long] edges = np.arange(0, bin_count * bin_size, bin_size)             # <<<<<<<<<<<<<<
- *     cdef np.ndarray[float] vals = np.zeros(len(edges)*2 - 2, np.float32)
+ *     cdef np.ndarray[float] vals = np.empty(len(edges)*2 - 2, np.float32)
  * 
  */
   __pyx_t_2 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 63; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -2672,13 +2672,13 @@ static PyObject *__pyx_pf_5pymea_10mea_cython_4min_max_bin(CYTHON_UNUSED PyObjec
   /* "pymea/mea_cython.pyx":64
  *     cdef np.ndarray[float] sub
  *     cdef np.ndarray[long] edges = np.arange(0, bin_count * bin_size, bin_size)
- *     cdef np.ndarray[float] vals = np.zeros(len(edges)*2 - 2, np.float32)             # <<<<<<<<<<<<<<
+ *     cdef np.ndarray[float] vals = np.empty(len(edges)*2 - 2, np.float32)             # <<<<<<<<<<<<<<
  * 
  *     for n in range(len(edges) - 1):
  */
   __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s_np); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 64; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_zeros); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 64; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_empty); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 64; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_7);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __pyx_t_6 = PyObject_Length(((PyObject *)__pyx_v_edges)); if (unlikely(__pyx_t_6 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 64; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -2731,7 +2731,7 @@ static PyObject *__pyx_pf_5pymea_10mea_cython_4min_max_bin(CYTHON_UNUSED PyObjec
   __pyx_t_1 = 0;
 
   /* "pymea/mea_cython.pyx":66
- *     cdef np.ndarray[float] vals = np.zeros(len(edges)*2 - 2, np.float32)
+ *     cdef np.ndarray[float] vals = np.empty(len(edges)*2 - 2, np.float32)
  * 
  *     for n in range(len(edges) - 1):             # <<<<<<<<<<<<<<
  *         sub = series[edges[n]:edges[n+1]]
@@ -2946,7 +2946,7 @@ static PyObject *__pyx_pf_5pymea_10mea_cython_4min_max_bin(CYTHON_UNUSED PyObjec
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
     /* "pymea/mea_cython.pyx":66
- *     cdef np.ndarray[float] vals = np.zeros(len(edges)*2 - 2, np.float32)
+ *     cdef np.ndarray[float] vals = np.empty(len(edges)*2 - 2, np.float32)
  * 
  *     for n in range(len(edges) - 1):             # <<<<<<<<<<<<<<
  *         sub = series[edges[n]:edges[n+1]]
@@ -5058,6 +5058,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_dt, __pyx_k_dt, sizeof(__pyx_k_dt), 0, 0, 1, 1},
   {&__pyx_n_s_dtype, __pyx_k_dtype, sizeof(__pyx_k_dtype), 0, 0, 1, 1},
   {&__pyx_n_s_edges, __pyx_k_edges, sizeof(__pyx_k_edges), 0, 0, 1, 1},
+  {&__pyx_n_s_empty, __pyx_k_empty, sizeof(__pyx_k_empty), 0, 0, 1, 1},
   {&__pyx_n_s_filtfilt, __pyx_k_filtfilt, sizeof(__pyx_k_filtfilt), 0, 0, 1, 1},
   {&__pyx_n_s_find_series_peaks, __pyx_k_find_series_peaks, sizeof(__pyx_k_find_series_peaks), 0, 0, 1, 1},
   {&__pyx_n_s_float32, __pyx_k_float32, sizeof(__pyx_k_float32), 0, 0, 1, 1},
@@ -5097,7 +5098,6 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_vals, __pyx_k_vals, sizeof(__pyx_k_vals), 0, 0, 1, 1},
   {&__pyx_n_s_values, __pyx_k_values, sizeof(__pyx_k_values), 0, 0, 1, 1},
   {&__pyx_n_s_x, __pyx_k_x, sizeof(__pyx_k_x), 0, 0, 1, 1},
-  {&__pyx_n_s_zeros, __pyx_k_zeros, sizeof(__pyx_k_zeros), 0, 0, 1, 1},
   {0, 0, 0, 0, 0, 0, 0}
 };
 static int __Pyx_InitCachedBuiltins(void) {

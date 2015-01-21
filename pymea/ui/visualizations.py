@@ -576,7 +576,7 @@ class MEA120GridVisualization(Visualization):
         for y in np.arange(cell_height, height, cell_height):
             self.grid.append((0, y), (width, y), Theme.grid_line)
 
-    def resample(self, bin_count=250):
+    def resample(self, bin_count=200):
         start_i = int(self.t0 * self.sample_rate)
         end_i = util.clip(start_i + int(self.dt * self.sample_rate),
                           start_i, sys.maxsize)
@@ -597,7 +597,7 @@ class MEA120GridVisualization(Visualization):
             data[i] = np.column_stack((x, y, t, v))
 
         # Update shader
-        self.program['a_position'] = data.reshape(120*(2*bin_count), 4)
+        self.program['a_position'] = data.reshape(240*bin_count, 4)
         self.program['u_width'] = bin_count
 
     def update(self):
