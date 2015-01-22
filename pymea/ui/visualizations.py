@@ -427,11 +427,11 @@ class RasterPlotVisualization(Visualization):
 
     def on_mouse_move(self, event):
         if event.is_dragging:
-            x0, y0 = event.press_event.pos
             x1, y1 = event.last_event.pos
             x, y = event.pos
             dx = x1 - x
             self.last_dx = dx
+            self.last_x = x
             sperpx = self.dt / self.canvas.size[0]
             self.t0 += dx * sperpx
         row_height = ((self.canvas.height - self.margin['top']) /
@@ -445,7 +445,7 @@ class RasterPlotVisualization(Visualization):
         rel_x = event.pos[0]
 
         target_time = rel_x * sec_per_pixel + self.t0
-        dx = np.sign(event.delta[1]) * 0.05
+        dx = -np.sign(event.delta[1]) * 0.10
         self.dt *= math.exp(2.5 * dx)
 
         sec_per_pixel = self.dt / self.canvas.size[0]
@@ -610,7 +610,6 @@ class MEA120GridVisualization(Visualization):
 
     def on_mouse_move(self, event):
         if event.is_dragging:
-            x0, y0 = event.press_event.pos
             x1, y1 = event.last_event.pos
             x, y = event.pos
             dx = x1 - x
@@ -633,7 +632,7 @@ class MEA120GridVisualization(Visualization):
         rel_x = event.pos[0] % (self.canvas.size[0] / 12)
 
         target_time = rel_x * sec_per_pixel + self.t0
-        dx = np.sign(event.delta[1]) * 0.05
+        dx = -np.sign(event.delta[1]) * 0.10
         self.dt *= math.exp(2.5 * dx)
 
         sec_per_pixel = self.dt / (self.canvas.size[0] / 12)

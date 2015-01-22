@@ -16,7 +16,7 @@ from .main_window import Ui_MainWindow
 
 class VisualizationCanvas(app.Canvas):
     def __init__(self, controller):
-        app.Canvas.__init__(self, keys='interactive', size=(1280, 768))
+        app.Canvas.__init__(self)
         self.controller = controller
 
         self.analog_visualization = None
@@ -152,7 +152,9 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         self.canvas.show_raster()
 
         self.canvas.native.setFocusPolicy(QtCore.Qt.ClickFocus)
+        self.mainLayout.removeWidget(self.widget)
         self.mainLayout.addWidget(self.canvas.native)
+        self.mainLayout.setStretchFactor(self.canvas.native, 1)
 
         self.rasterRowCountSlider.setValue(
             self.canvas.raster_visualization.row_count)

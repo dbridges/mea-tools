@@ -22,7 +22,7 @@
      <number>0</number>
     </property>
     <item>
-     <layout class="QHBoxLayout" name="mainLayout">
+     <layout class="QHBoxLayout" name="mainLayout" stretch="0,1">
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <property name="margin">
@@ -319,6 +319,16 @@
          </spacer>
         </item>
        </layout>
+      </item>
+      <item>
+       <widget class="QWidget" name="widget" native="true">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
       </item>
      </layout>
     </item>
