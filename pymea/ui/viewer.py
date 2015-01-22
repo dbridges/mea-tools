@@ -16,7 +16,7 @@ from .main_window import Ui_MainWindow
 
 class VisualizationCanvas(app.Canvas):
     def __init__(self, controller):
-        app.Canvas.__init__(self)
+        app.Canvas.__init__(self, vsync=True)
         self.controller = controller
 
         self.analog_visualization = None

@@ -591,6 +591,7 @@ class MEA120GridVisualization(Visualization):
             v = meac.min_max_bin(self.data[column].values[start_i:end_i],
                                  bin_size, bin_count+1)
             col, row = mea.coordinates_for_electrode(column)
+            row = 12 - row - 1
             x = np.full_like(v, col, dtype=np.float32)
             y = np.full_like(v, row, dtype=np.float32)
             t = np.arange(0, bin_count, 0.5, dtype=np.float32)
