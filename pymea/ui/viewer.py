@@ -241,6 +241,9 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
     def on_actionAnalogGrid_activated(self):
         self.visualizationComboBox.setCurrentIndex(2)
 
+    def closeEvent(self, event):
+        sys.exit()
+
 
 def run(fname):
     appQt = QtGui.QApplication(sys.argv)
