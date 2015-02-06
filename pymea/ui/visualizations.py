@@ -346,7 +346,6 @@ class RasterPlotVisualization(Visualization):
         self._row_count = len(self.electrode_row)
         self.program['u_count'] = self._row_count
         self.velocity = 0
-        self.last_dx = 0
         self.tick_separtion = 50
         self.tick_labels = [visuals.TextVisual('', font_size=10, color='w')
                             for x in range(18)]
@@ -430,8 +429,6 @@ class RasterPlotVisualization(Visualization):
             x1, y1 = event.last_event.pos
             x, y = event.pos
             dx = x1 - x
-            self.last_dx = dx
-            self.last_x = x
             sperpx = self.dt / self.canvas.size[0]
             self.t0 += dx * sperpx
         row_height = ((self.canvas.height - self.margin['top']) /
@@ -455,11 +452,11 @@ class RasterPlotVisualization(Visualization):
         pass
 
     def on_mouse_release(self, event):
-        self.velocity = -self.dt * self.last_dx / self.canvas.size[0]
+        dx = self.canvas.mouse_pos[0] - self.canvas.prev_mouse_pos[0]
+        self.velocity = self.dt * dx / self.canvas.size[0]
 
     def on_mouse_press(self, event):
         self.velocity = 0
-        self.last_dx = 0
 
     def on_resize(self, event):
         self.program['u_top_margin'] = 20.0 * 2.0 / self.canvas.size[1]

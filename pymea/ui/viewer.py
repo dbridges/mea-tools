@@ -28,6 +28,9 @@ class VisualizationCanvas(app.Canvas):
         self.tr_sys = visuals.transforms.TransformSystem(self)
         self._timer = app.Timer(1/30, connect=self.on_tick, start=True)
 
+        self.mouse_pos = (0, 0)
+        self.prev_mouse_pos = (0, 0)
+
     def show_raster(self):
         if self.raster_visualization is None:
             if self.controller.spike_data is None:
@@ -113,9 +116,14 @@ class VisualizationCanvas(app.Canvas):
             self.visualization.on_key_release(event)
 
     def on_tick(self, event):
+        mouse_pos = self.native.mapFromGlobal(self.native.cursor().pos())
+        self.prev_mouse_pos = self.mouse_pos
+        self.mouse_pos = (mouse_pos.x(), mouse_pos.y())
+
         if self.visualization is not None:
             self.visualization.on_tick(event)
             self.controller.on_visualization_updated()
+
         self.update()
 
 
