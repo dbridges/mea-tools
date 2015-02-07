@@ -5,7 +5,6 @@ import time
 
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 from scipy import signal
 import h5py
 
@@ -13,7 +12,7 @@ from . import util
 from . import mea_cython
 
 __all__ = ['MEARecording', 'coordinates_for_electrode', 'condense_spikes',
-           'raster_plot', 'filter', 'export_peaks']
+           'filter', 'export_peaks']
 
 input_dir = os.path.expanduser(
     '~/Dropbox/Hansma/ncp/IA6787/2014_08_20_Baseline')
@@ -122,31 +121,6 @@ def condense_spikes(srcdir, fname):
                 for line in src:
                     if len(line) > 0 and line[0].isdigit():
                         dest.write('%s,%s' % (label, line))
-
-
-def raster_plot(df):
-    """
-    Generates a raster plot of the given data.
-
-    Parameters
-    ----------
-    df : pandas.DataFrame
-        `df` must have an electrode and time column, ex:
-            a9, 0.05
-            h12, 0.09
-    """
-    plt.figure()
-    plt.grid(False)
-    plt.gca().tick_params(axis='y', which='major', labelsize=8)
-    plt.gca().set_rasterized(True)
-
-    ticks = []
-    for i, e in enumerate(df.electrode.value_counts(ascending=True).keys()):
-        plt.vlines(df[df.electrode == e].time, i - 0.5, i + 0.5)
-        ticks.append(e)
-
-    plt.yticks(np.arange(len(ticks)), ticks)
-    plt.ylim(-0.5, len(ticks) - 0.5)
 
 
 def read_binary(fname, no_channels, columns, part=(0, -1),
