@@ -1,9 +1,11 @@
 import os
 import sys
 import platform
+import time
 
 import pymea.pymea as mea
 from pymea.ui.visualizations import (MEA120GridVisualization,
+                                     MEAAnalogVisualization,
                                      RasterPlotVisualization,
                                      FlashingSpikeVisualization)
 
@@ -19,9 +21,10 @@ class VisualizationCanvas(app.Canvas):
         app.Canvas.__init__(self, vsync=True)
         self.controller = controller
 
-        self.analog_visualization = None
-        self.raster_visualization = None
-        self.flashing_spike_visualization = None
+        self.analog_grid_vis = None
+        self.analog_vis = None
+        self.raster_vis = None
+        self.flashing_spike_vis = None
 
         self.visualization = None
 
@@ -31,48 +34,66 @@ class VisualizationCanvas(app.Canvas):
         self.mouse_pos = (0, 0)
         self.prev_mouse_pos = (0, 0)
 
+        self.last_mouse_release_t = time.time()
+
     def show_raster(self):
-        if self.raster_visualization is None:
+        if self.raster_vis is None:
             if self.controller.spike_data is None:
                 raise IOError('Spike data is unavailable.')
             else:
-                self.raster_visualization = RasterPlotVisualization(
+                self.raster_vis = RasterPlotVisualization(
                     self, self.controller.spike_data)
         if self.visualization is not None:
-            self.raster_visualization.t0 = self.visualization.t0
-            self.raster_visualization.dt = self.visualization.dt
+            self.raster_vis.t0 = self.visualization.t0
+            self.raster_vis.dt = self.visualization.dt
             self.visualization.on_hide()
-        self.visualization = self.raster_visualization
+        self.visualization = self.raster_vis
         self.visualization.on_show()
 
     def show_flashing_spike(self):
-        if self.flashing_spike_visualization is None:
+        if self.flashing_spike_vis is None:
             if self.controller.spike_data is None:
                 raise IOError('Spike data is unavailable.')
             else:
-                self.flashing_spike_visualization = FlashingSpikeVisualization(
+                self.flashing_spike_vis = FlashingSpikeVisualization(
                     self, self.controller.spike_data)
         if self.visualization is not None:
-            self.flashing_spike_visualization.t0 = self.visualization.t0
-            self.flashing_spike_visualization.dt = self.visualization.dt
+            self.flashing_spike_vis.t0 = self.visualization.t0
+            self.flashing_spike_vis.dt = self.visualization.dt
             self.visualization.on_hide()
-        self.visualization = self.flashing_spike_visualization
+        self.visualization = self.flashing_spike_vis
         self.visualization.on_show()
 
     def show_analog_grid(self):
-        if self.analog_visualization is None:
+        if self.analog_grid_vis is None:
             if self.controller.analog_data is None:
                 raise IOError('Analog data is unavailable.')
             else:
-                self.analog_visualization = MEA120GridVisualization(
+                self.analog_grid_vis = MEA120GridVisualization(
                     self, self.controller.analog_data)
         if self.visualization is not None:
-            self.analog_visualization.t0 = self.visualization.t0
-            self.analog_visualization.dt = self.visualization.dt
+            self.analog_grid_vis.t0 = self.visualization.t0
+            self.analog_grid_vis.dt = self.visualization.dt
             self.visualization.on_hide()
-        self.analog_visualization.y_scale_index = \
+        self.analog_grid_vis.y_scale_index = \
             self.controller.analogGridScaleComboBox.currentIndex()
-        self.visualization = self.analog_visualization
+        self.visualization = self.analog_grid_vis
+        self.visualization.on_show()
+
+    def show_analog(self):
+        if self.analog_vis is None:
+            if self.controller.analog_data is None:
+                raise IOError('Analog data is unavailable.')
+            else:
+                self.analog_vis = MEAAnalogVisualization(
+                    self, self.controller.analog_data)
+        if self.visualization is not None:
+            self.analog_vis.t0 = self.visualization.t0
+            self.analog_vis.dt = self.visualization.dt
+            self.visualization.on_hide()
+        self.visualization = self.analog_vis
+        self.analog_vis.electrodes = [s.lower() for s in
+                                      self.analog_grid_vis.selected_electrodes]
         self.visualization.on_show()
 
     def _normalize(self, x_y):
@@ -108,8 +129,17 @@ class VisualizationCanvas(app.Canvas):
             self.visualization.on_mouse_press(event)
 
     def on_mouse_release(self, event):
+        event_time = time.time()
+        if event_time - self.last_mouse_release_t < 0.3:
+            self.on_mouse_double_click(event)
+        else:
+            if self.visualization is not None:
+                self.visualization.on_mouse_release(event)
+        self.last_mouse_release_t = event_time
+
+    def on_mouse_double_click(self, event):
         if self.visualization is not None:
-            self.visualization.on_mouse_release(event)
+            self.visualization.on_mouse_double_click(event)
 
     def on_key_release(self, event):
         if self.visualization is not None:
@@ -165,7 +195,7 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         self.mainLayout.setStretchFactor(self.canvas.native, 1)
 
         self.rasterRowCountSlider.setValue(
-            self.canvas.raster_visualization.row_count)
+            self.canvas.raster_vis.row_count)
         self.analogGridScaleComboBox.setCurrentIndex(4)
 
         self.flashingSpikeTimescaleComboBox.setCurrentIndex(4)
@@ -184,7 +214,7 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
 
     @QtCore.Slot(int)
     def on_rasterRowCountSlider_valueChanged(self, val):
-        self.canvas.raster_visualization.row_count = val
+        self.canvas.raster_vis.row_count = val
 
     @QtCore.Slot(str)
     def on_visualizationComboBox_currentIndexChanged(self, text):
@@ -203,39 +233,39 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
 
     @QtCore.Slot(int)
     def on_analogGridScaleComboBox_currentIndexChanged(self, index):
-        if self.canvas.analog_visualization is not None:
-            self.canvas.analog_visualization.y_scale_index = index
+        if self.canvas.analog_grid_vis is not None:
+            self.canvas.analog_grid_vis.y_scale_index = index
 
     @QtCore.Slot()
     def on_flashingSpikePlayButton_clicked(self):
         if (self.canvas.visualization is
-                self.canvas.flashing_spike_visualization):
-            if self.canvas.flashing_spike_visualization.paused:
+                self.canvas.flashing_spike_vis):
+            if self.canvas.flashing_spike_vis.paused:
                 self.flashingSpikePlayButton.setText('Pause')
             else:
                 self.flashingSpikePlayButton.setText('Play')
-            self.canvas.flashing_spike_visualization.toggle_play()
+            self.canvas.flashing_spike_vis.toggle_play()
 
     @QtCore.Slot(str)
     def on_flashingSpikeTimescaleComboBox_currentIndexChanged(self, text):
-        if self.canvas.flashing_spike_visualization is None:
+        if self.canvas.flashing_spike_vis is None:
             return
         if text == '1x':
-            self.canvas.flashing_spike_visualization.time_scale = 1
+            self.canvas.flashing_spike_vis.time_scale = 1
         elif text == '1/2x':
-            self.canvas.flashing_spike_visualization.time_scale = 1/2
+            self.canvas.flashing_spike_vis.time_scale = 1/2
         elif text == '1/20x':
-            self.canvas.flashing_spike_visualization.time_scale = 1/20
+            self.canvas.flashing_spike_vis.time_scale = 1/20
         elif text == '1/100x':
-            self.canvas.flashing_spike_visualization.time_scale = 1/100
+            self.canvas.flashing_spike_vis.time_scale = 1/100
         elif text == '1/200x':
-            self.canvas.flashing_spike_visualization.time_scale = 1/200
+            self.canvas.flashing_spike_vis.time_scale = 1/200
         elif text == '1/400x':
-            self.canvas.flashing_spike_visualization.time_scale = 1/400
+            self.canvas.flashing_spike_vis.time_scale = 1/400
         elif text == '1/800x':
-            self.canvas.flashing_spike_visualization.time_scale = 1/800
+            self.canvas.flashing_spike_vis.time_scale = 1/800
         elif text == '1/1600x':
-            self.canvas.flashing_spike_visualization.time_scale = 1/1600
+            self.canvas.flashing_spike_vis.time_scale = 1/1600
 
     @QtCore.Slot()
     def on_actionRaster_activated(self):
@@ -250,6 +280,7 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         self.visualizationComboBox.setCurrentIndex(2)
 
     def closeEvent(self, event):
+        self.canvas.close()
         sys.exit()
 
 

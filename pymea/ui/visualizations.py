@@ -99,6 +99,9 @@ class Visualization:
     def on_mouse_press(self, event):
         pass
 
+    def on_mouse_double_click(self, event):
+        pass
+
     def on_tick(self, event):
         pass
 
@@ -470,6 +473,126 @@ class RasterPlotVisualization(Visualization):
         self.velocity = 0
 
 
+class MEAAnalogVisualization(Visualization):
+    VERTEX_SHADER = """
+    attribute vec2 a_position;
+
+    uniform vec4 u_color;
+    uniform float u_pan;
+    uniform float u_y_scale;
+    uniform float u_count;
+    uniform float u_top_margin;
+
+    varying vec4 v_color;
+
+    void main(void)
+    {
+        float height = (2.0 - u_top_margin) / u_count;
+        gl_Position = vec4((a_position.x - u_pan) / u_y_scale - 1,
+                           1 - a_position.y * height - u_top_margin, 0.0, 1.0);
+        v_color = u_color;
+    }
+    """
+
+    FRAGMENT_SHADER = """
+    varying vec4 v_color;
+
+    void main()
+    {
+        gl_FragColor = v_color;
+    }
+    """
+
+    def __init__(self, canvas, data):
+        self.canvas = canvas
+        self.data = data
+        self._t0 = 0
+        self._dt = 20
+        self.electrode = ''
+        self.electrodes = ['h11']  # l5, m5
+
+        self.program = gloo.Program(self.VERTEX_SHADER,
+                                    self.FRAGMENT_SHADER)
+        self.program['u_pan'] = self._t0
+        self.program['u_y_scale'] = self._dt/2
+        self.program['u_top_margin'] = 20.0 * 2.0 / canvas.size[1]
+        self.program['u_count'] = len(self.electrodes)
+        self.program['u_color'] = Theme.blue
+
+        self.margin = {}
+        self.margin['top'] = 20
+
+        self.velocity = 0
+
+        self.resample()
+
+    @property
+    def t0(self):
+        return self._t0
+
+    @t0.setter
+    def t0(self, val):
+        self._t0 = util.clip(val, 0, self.data.index[-1])
+        self.update()
+
+    @property
+    def dt(self):
+        return self._dt
+
+    @dt.setter
+    def dt(self, val):
+        self._dt = util.clip(val, 0.0025, 20)
+        self.update()
+
+    def draw(self):
+        gloo.clear((0.5, 0.5, 0.5, 1))
+        self.program.draw('line_strip')
+
+    def resample(self):
+        # height = (2.0 - u_top_margin) / u_count
+        e = self.electrodes[0]
+        x = self.data[e].values
+        y = self.data[e].index.values.astype(np.float32)
+        self.program['a_position'] = np.column_stack((x, y))
+
+    def update(self):
+        self.program['u_pan'] = self.t0
+        self.program['u_y_scale'] = self.dt / 2
+
+    def on_show(self):
+        self.resample()
+
+    def on_mouse_move(self, event):
+        if event.is_dragging:
+            x1, y1 = event.last_event.pos
+            x, y = event.pos
+            dx = x1 - x
+            sperpx = self.dt / self.canvas.size[0]
+            self.t0 += dx * sperpx
+
+    def on_mouse_release(self, event):
+        dx = self.canvas.mouse_pos[0] - self.canvas.prev_mouse_pos[0]
+        self.velocity = self.dt * dx / self.canvas.size[0]
+
+    def on_mouse_press(self, event):
+        self.velocity = 0
+
+    def on_mouse_double_click(self, event):
+        self.canvas.show_analog_grid()
+
+    def on_resize(self, event):
+        self.program['u_top_margin'] = (self.margin['top'] * 2.0 /
+                                        self.canvas.size[1])
+
+    def on_tick(self, event):
+        self.velocity *= 0.98
+        self.t0 -= self.velocity
+        self.update()
+
+    def on_hide(self):
+        self.velocity = 0
+
+
 class MEA120GridVisualization(Visualization):
     VERTEX_SHADER = """
     attribute vec4 a_position;
@@ -530,6 +653,8 @@ class MEA120GridVisualization(Visualization):
         self.sample_rate = 1.0 / (self.data.index[1] - self.data.index[0])
 
         self.resample()
+
+        self.selected_electrodes = []
 
     @property
     def t0(self):
@@ -624,6 +749,10 @@ class MEA120GridVisualization(Visualization):
             self.electrode = ''
         else:
             self.electrode = '%s%d' % (self.electrode_cols[col], row)
+
+    def on_mouse_double_click(self, event):
+        self.selected_electrodes = [self.electrode]
+        self.canvas.show_analog()
 
     def on_mouse_wheel(self, event):
         sec_per_pixel = self.dt / (self.canvas.size[0] / 12)
