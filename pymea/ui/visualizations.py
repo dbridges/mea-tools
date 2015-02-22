@@ -355,6 +355,7 @@ class RasterPlotVisualization(Visualization):
         self.tick_labels = [visuals.TextVisual('', font_size=10, color='w')
                             for x in range(18)]
         self.tick_marks = LineCollection()
+        self.mouse_t = 0
 
     @property
     def t0(self):
@@ -365,7 +366,6 @@ class RasterPlotVisualization(Visualization):
         self._t0 = util.clip(val,
                              -self.spikes.time.max(),
                              self.spikes.time.max())
-        self.mouse_t = self._t0
 
     @property
     def dt(self):
@@ -431,17 +431,18 @@ class RasterPlotVisualization(Visualization):
         self.tick_marks.draw(self.canvas.tr_sys)
 
     def on_mouse_move(self, event):
+        x1, y1 = event.last_event.pos
+        x, y = event.pos
+        sec_per_pixel = self.dt / self.canvas.size[0]
         if event.is_dragging:
-            x1, y1 = event.last_event.pos
-            x, y = event.pos
             dx = x1 - x
-            sperpx = self.dt / self.canvas.size[0]
-            self.t0 += dx * sperpx
+            self.t0 += dx * sec_per_pixel
         row_height = ((self.canvas.height - self.margin['top']) /
                       self._row_count)
         row = util.clip(int((event.pos[1] - self.margin['top']) / row_height),
                         0, 119)
         self.electrode = self._row_for_electrode[row]
+        self.mouse_t = self.t0 + sec_per_pixel * x
 
     def on_mouse_wheel(self, event):
         sec_per_pixel = self.dt / self.canvas.size[0]
@@ -511,6 +512,7 @@ class MEAAnalogVisualization(Visualization):
         self.data = data
         self._t0 = 0
         self._dt = 20
+        self.mouse_t = 0
         self.electrode = ''
         self.electrodes = ['h11']  # l5, m5
 
@@ -537,7 +539,6 @@ class MEAAnalogVisualization(Visualization):
     def t0(self, val):
         self._t0 = util.clip(val, 0 - self.dt/2,
                              self.data.index[-1] - self.dt/2)
-        self.mouse_t = self._t0
         self.update()
 
     @property
@@ -568,12 +569,13 @@ class MEAAnalogVisualization(Visualization):
         self.resample()
 
     def on_mouse_move(self, event):
+        x, y = event.pos
+        x1, y1 = event.last_event.pos
+        sec_per_pixel = self.dt / self.canvas.size[0]
         if event.is_dragging:
-            x1, y1 = event.last_event.pos
-            x, y = event.pos
             dx = x1 - x
-            sperpx = self.dt / self.canvas.size[0]
-            self.t0 += dx * sperpx
+            self.t0 += dx * sec_per_pixel
+        self.mouse_t = self.t0 + sec_per_pixel * x
 
     def on_mouse_release(self, event):
         dx = self.canvas.mouse_pos[0] - self.canvas.prev_mouse_pos[0]
@@ -654,6 +656,7 @@ class MEA120GridVisualization(Visualization):
         self.data = data
         self._t0 = 0
         self._dt = 20
+        self.mouse_t = 0
         self.electrode = ''
         self.scales = [10.0, 25.0, 50.0, 100.0, 150.0, 200.0, 250.0, 500.0,
                        1000.0]
@@ -749,12 +752,12 @@ class MEA120GridVisualization(Visualization):
         self.grid.draw(self.canvas.tr_sys)
 
     def on_mouse_move(self, event):
+        x, y = event.pos
+        sec_per_pixel = self.dt / (self.canvas.width / 12.0)
         if event.is_dragging:
             x1, y1 = event.last_event.pos
-            x, y = event.pos
             dx = x1 - x
-            sperpx = self.dt / (self.canvas.width / 12.0)
-            self.t0 = util.clip(self.t0 + dx * sperpx,
+            self.t0 = util.clip(self.t0 + dx * sec_per_pixel,
                                 0, self.data.index[-1])
 
         x, y = event.pos
@@ -766,6 +769,7 @@ class MEA120GridVisualization(Visualization):
             self.electrode = ''
         else:
             self.electrode = '%s%d' % (self.electrode_cols[col], row)
+        self.mouse_t = self.t0 + sec_per_pixel * (x % cell_width)
 
     def on_mouse_double_click(self, event):
         self.selected_electrodes = [self.electrode]
