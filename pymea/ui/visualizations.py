@@ -480,6 +480,7 @@ class RasterPlotVisualization(Visualization):
 class MEAAnalogVisualization(Visualization):
     VERTEX_SHADER = """
     attribute vec2 a_position;
+    attribute float a_index;
 
     uniform vec4 u_color;
     uniform vec2 u_scale;
@@ -488,11 +489,16 @@ class MEAAnalogVisualization(Visualization):
     uniform float u_top_margin;
 
     varying vec4 v_color;
+    varying float v_index;
 
     void main(void)
     {
+        v_index = a_index;
+        float adj_y_scale = u_scale.y / u_count;
+        float height = 2.0 / u_count;
+        float y_offset = height * (a_index + 0.5);
         gl_Position = vec4(u_scale.x * (a_position.x - u_pan) - 1,
-                           u_scale.y * a_position.y,
+                           adj_y_scale * a_position.y + 1 - y_offset,
                            0.0, 1.0);
         v_color = u_color;
     }
@@ -500,10 +506,16 @@ class MEAAnalogVisualization(Visualization):
 
     FRAGMENT_SHADER = """
     varying vec4 v_color;
+    varying float v_index;
 
     void main()
     {
         gl_FragColor = v_color;
+
+        if (fract(v_index) > 0.0) {
+            discard;
+        }
+
     }
     """
 
@@ -566,10 +578,20 @@ class MEAAnalogVisualization(Visualization):
 
     def resample(self):
         # height = (2.0 - u_top_margin) / u_count
-        e = self.electrodes[0]
-        x = self.data[e].index.values.astype(np.float32)
-        y = self.data[e].values
-        self.program['a_position'] = np.column_stack((x, y))
+        xs = []
+        ys = []
+        zs = []
+        for i, e in enumerate(self.electrodes):
+            x = self.data[e].index.values.astype(np.float32)
+            y = self.data[e].values
+            z = np.full_like(x, i)
+            xs.append(x)
+            ys.append(y)
+            zs.append(z)
+        self.program['a_position'] = np.column_stack((np.concatenate(xs),
+                                                      np.concatenate(ys)))
+        self.program['a_index'] = np.concatenate(zs)
+        self.program['u_count'] = len(self.electrodes)
 
     def update(self):
         self.program['u_pan'] = self.t0
@@ -783,6 +805,17 @@ class MEA120GridVisualization(Visualization):
     def on_mouse_double_click(self, event):
         self.selected_electrodes = [self.electrode]
         self.canvas.show_analog()
+
+    def on_mouse_release(self, event):
+        if 'shift' in event.modifiers:
+            if self.electrode in self.selected_electrodes:
+                self.selected_electrodes.remove(self.electrode)
+            else:
+                self.selected_electrodes.append(self.electrode)
+
+    def on_key_release(self, event):
+        if event.key == 'Enter' and len(self.selected_electrodes) > 0:
+            self.canvas.show_analog()
 
     def on_mouse_wheel(self, event):
         sec_per_pixel = self.dt / (self.canvas.size[0] / 12)
