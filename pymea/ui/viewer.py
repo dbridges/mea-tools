@@ -208,9 +208,9 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         self.analog_data = store.get('all')
 
     def on_visualization_updated(self):
-        self.statusBar.t0 = self.canvas.visualization.t0
         self.statusBar.dt = self.canvas.visualization.dt
         self.statusBar.electrode = self.canvas.visualization.electrode
+        self.statusBar.mouse_t = self.canvas.visualization.mouse_t
 
     @QtCore.Slot(int)
     def on_rasterRowCountSlider_valueChanged(self, val):

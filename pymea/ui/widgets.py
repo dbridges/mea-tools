@@ -1,21 +1,13 @@
 from PySide import QtGui, QtCore  # noqa
 
+
 class MEAViewerStatusBar(QtGui.QStatusBar):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._text_fmt = 't0: %1.3f    dt: %1.3f    electrode: %s'
-        self._t0 = 0
+        self._text_fmt = 't: %1.4f    dt: %1.3f    electrode: %s'
         self._dt = 0
         self._electrode = ''
-
-    @property
-    def t0(self):
-        return self._t0
-
-    @t0.setter
-    def t0(self, val):
-        self._t0 = val
-        self._update()
+        self._mouse_t = 0
 
     @property
     def dt(self):
@@ -35,6 +27,15 @@ class MEAViewerStatusBar(QtGui.QStatusBar):
         self._electrode = val.upper()
         self._update()
 
+    @property
+    def mouse_t(self):
+        return self._mouse_t
+
+    @mouse_t.setter
+    def mouse_t(self, val):
+        self._mouse_t = val
+        self._update()
+
     def _update(self):
         self.showMessage(self._text_fmt %
-                         (self._t0, self._dt, self._electrode))
+                         (self._mouse_t, self._dt, self._electrode))

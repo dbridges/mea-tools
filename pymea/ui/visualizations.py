@@ -173,6 +173,7 @@ class FlashingSpikeVisualization(Visualization):
                                       self.FRAGMENT_SHADER)
         self._t0 = 0
         self._dt = 10
+        self.mouse_t = self.t0
         self._interval = 1/30.0
         self.electrode = ''
         self.time_scale = 1/200
@@ -201,6 +202,7 @@ class FlashingSpikeVisualization(Visualization):
         self._t0 = util.clip(val,
                              -self.spikes.time.max(),
                              self.spikes.time.max())
+        self.mouse_t = self._t0
 
     @property
     def dt(self):
@@ -363,6 +365,7 @@ class RasterPlotVisualization(Visualization):
         self._t0 = util.clip(val,
                              -self.spikes.time.max(),
                              self.spikes.time.max())
+        self.mouse_t = self._t0
 
     @property
     def dt(self):
@@ -478,8 +481,8 @@ class MEAAnalogVisualization(Visualization):
     attribute vec2 a_position;
 
     uniform vec4 u_color;
+    uniform vec2 u_scale;
     uniform float u_pan;
-    uniform float u_y_scale;
     uniform float u_count;
     uniform float u_top_margin;
 
@@ -487,9 +490,9 @@ class MEAAnalogVisualization(Visualization):
 
     void main(void)
     {
-        float height = (2.0 - u_top_margin) / u_count;
-        gl_Position = vec4((a_position.x - u_pan) / u_y_scale - 1,
-                           1 - a_position.y * height - u_top_margin, 0.0, 1.0);
+        gl_Position = vec4(u_scale.x * (a_position.x - u_pan) - 1,
+                           u_scale.y * a_position.y,
+                           0.0, 1.0);
         v_color = u_color;
     }
     """
@@ -514,7 +517,7 @@ class MEAAnalogVisualization(Visualization):
         self.program = gloo.Program(self.VERTEX_SHADER,
                                     self.FRAGMENT_SHADER)
         self.program['u_pan'] = self._t0
-        self.program['u_y_scale'] = self._dt/2
+        self.program['u_scale'] = (2.0/self._dt, 1/200)
         self.program['u_top_margin'] = 20.0 * 2.0 / canvas.size[1]
         self.program['u_count'] = len(self.electrodes)
         self.program['u_color'] = Theme.blue
@@ -532,7 +535,9 @@ class MEAAnalogVisualization(Visualization):
 
     @t0.setter
     def t0(self, val):
-        self._t0 = util.clip(val, 0, self.data.index[-1])
+        self._t0 = util.clip(val, 0 - self.dt/2,
+                             self.data.index[-1] - self.dt/2)
+        self.mouse_t = self._t0
         self.update()
 
     @property
@@ -551,13 +556,13 @@ class MEAAnalogVisualization(Visualization):
     def resample(self):
         # height = (2.0 - u_top_margin) / u_count
         e = self.electrodes[0]
-        x = self.data[e].values
-        y = self.data[e].index.values.astype(np.float32)
+        x = self.data[e].index.values.astype(np.float32)
+        y = self.data[e].values
         self.program['a_position'] = np.column_stack((x, y))
 
     def update(self):
         self.program['u_pan'] = self.t0
-        self.program['u_y_scale'] = self.dt / 2
+        self.program['u_scale'] = (2.0 / self.dt, 1/200)
 
     def on_show(self):
         self.resample()
@@ -576,6 +581,17 @@ class MEAAnalogVisualization(Visualization):
 
     def on_mouse_press(self, event):
         self.velocity = 0
+
+    def on_mouse_wheel(self, event):
+        sec_per_pixel = self.dt / self.canvas.size[0]
+        rel_x = event.pos[0]
+
+        target_time = rel_x * sec_per_pixel + self.t0
+        dx = -np.sign(event.delta[1]) * 0.025
+        self.dt *= math.exp(2.5 * dx)
+
+        sec_per_pixel = self.dt / self.canvas.size[0]
+        self.t0 = target_time - (rel_x * sec_per_pixel)
 
     def on_mouse_double_click(self, event):
         self.canvas.show_analog_grid()
@@ -672,6 +688,7 @@ class MEA120GridVisualization(Visualization):
     @dt.setter
     def dt(self, val):
         self._dt = util.clip(val, 0.0025, 20)
+        self.mouse_t = self._t0
         self.update()
 
     @property
