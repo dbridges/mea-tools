@@ -431,10 +431,10 @@ class RasterPlotVisualization(Visualization):
         self.tick_marks.draw(self.canvas.tr_sys)
 
     def on_mouse_move(self, event):
-        x1, y1 = event.last_event.pos
         x, y = event.pos
         sec_per_pixel = self.dt / self.canvas.size[0]
         if event.is_dragging:
+            x1, y1 = event.last_event.pos
             dx = x1 - x
             self.t0 += dx * sec_per_pixel
         row_height = ((self.canvas.height - self.margin['top']) /
@@ -512,6 +512,7 @@ class MEAAnalogVisualization(Visualization):
         self.data = data
         self._t0 = 0
         self._dt = 20
+        self._y_scale = 150
         self.mouse_t = 0
         self.electrode = ''
         self.electrodes = ['h11']  # l5, m5
@@ -519,7 +520,7 @@ class MEAAnalogVisualization(Visualization):
         self.program = gloo.Program(self.VERTEX_SHADER,
                                     self.FRAGMENT_SHADER)
         self.program['u_pan'] = self._t0
-        self.program['u_scale'] = (2.0/self._dt, 1/200)
+        self.program['u_scale'] = (2.0/self._dt, 1/self._y_scale)
         self.program['u_top_margin'] = 20.0 * 2.0 / canvas.size[1]
         self.program['u_count'] = len(self.electrodes)
         self.program['u_color'] = Theme.blue
@@ -550,6 +551,15 @@ class MEAAnalogVisualization(Visualization):
         self._dt = util.clip(val, 0.0025, 20)
         self.update()
 
+    @property
+    def y_scale(self):
+        return self._y_scale
+
+    @y_scale.setter
+    def y_scale(self, val):
+        self._y_scale = val
+        self.update()
+
     def draw(self):
         gloo.clear((0.5, 0.5, 0.5, 1))
         self.program.draw('line_strip')
@@ -563,7 +573,7 @@ class MEAAnalogVisualization(Visualization):
 
     def update(self):
         self.program['u_pan'] = self.t0
-        self.program['u_scale'] = (2.0 / self.dt, 1/200)
+        self.program['u_scale'] = (2.0 / self.dt, 1 / self._y_scale)
 
     def on_show(self):
         self.resample()
@@ -658,14 +668,13 @@ class MEA120GridVisualization(Visualization):
         self._dt = 20
         self.mouse_t = 0
         self.electrode = ''
-        self.scales = [10.0, 25.0, 50.0, 100.0, 150.0, 200.0, 250.0, 500.0,
-                       1000.0]
-        self.y_scale_i = 2
+        self._y_scale = 150
 
         # Create shaders
         self.program = gloo.Program(self.VERTEX_SHADER,
                                     self.FRAGMENT_SHADER)
         self.program['u_color'] = Theme.blue
+        self.program['u_y_scale'] = self._y_scale
         self.grid = LineCollection()
         self.create_grid()
         self.electrode_cols = [c for c in 'ABCDEFGHJKLM']
@@ -695,13 +704,13 @@ class MEA120GridVisualization(Visualization):
         self.update()
 
     @property
-    def y_scale_index(self):
-        return self.y_scale_i
+    def y_scale(self):
+        return self._y_scale
 
-    @y_scale_index.setter
-    def y_scale_index(self, val):
-        self.y_scale_i = util.clip(val, 0, len(self.scales) - 1)
-        self.program['u_y_scale'] = self.scales[self.y_scale_i]
+    @y_scale.setter
+    def y_scale(self, val):
+        self.program['u_y_scale'] = val
+        self._y_scale = val
         self.update()
 
     def create_grid(self):

@@ -94,6 +94,7 @@ class VisualizationCanvas(app.Canvas):
         self.visualization = self.analog_vis
         self.analog_vis.electrodes = [s.lower() for s in
                                       self.analog_grid_vis.selected_electrodes]
+        self.analog_vis.y_scale = self.analog_grid_vis.y_scale
         self.visualization.on_show()
 
     def _normalize(self, x_y):
@@ -231,10 +232,16 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
                 self.load_analog_data()
             self.canvas.show_analog_grid()
 
-    @QtCore.Slot(int)
-    def on_analogGridScaleComboBox_currentIndexChanged(self, index):
+    @QtCore.Slot(str)
+    def on_analogGridScaleComboBox_currentIndexChanged(self, text):
+        try:
+            scale = float(text.split(' ')[0])
+        except:
+            scale = 150
         if self.canvas.analog_grid_vis is not None:
-            self.canvas.analog_grid_vis.y_scale_index = index
+            self.canvas.analog_grid_vis.y_scale = scale
+        if self.canvas.analog_vis is not None:
+            self.canvas.analog_vis.y_scale = scale
 
     @QtCore.Slot()
     def on_flashingSpikePlayButton_clicked(self):
