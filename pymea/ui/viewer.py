@@ -102,6 +102,16 @@ class VisualizationCanvas(app.Canvas):
         w, h = float(self.width), float(self.height)
         return x/(w/2.)-1., y/(h/2.)-1.
 
+    def enable_antialiasing(self):
+        gl.glEnable(gl.GL_LINE_SMOOTH)
+        gl.glHint(gl.GL_LINE_SMOOTH_HINT, gl.GL_NICEST)
+        gl.glEnable(gl.GL_BLEND)
+        gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
+
+    def disable_antialiasing(self):
+        gl.glDisable(gl.GL_LINE_SMOOTH)
+        gl.glDisable(gl.GL_BLEND)
+
     def on_resize(self, event):
         self.width, self.height = event.size
         gloo.set_viewport(0, 0, *event.size)
@@ -110,10 +120,6 @@ class VisualizationCanvas(app.Canvas):
             self.visualization.on_resize(event)
 
     def on_draw(self, event):
-        gl.glEnable(gl.GL_LINE_SMOOTH)
-        gl.glHint(gl.GL_LINE_SMOOTH_HINT, gl.GL_NICEST)
-        gl.glEnable(gl.GL_BLEND)
-        gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
         if self.visualization is not None:
             self.visualization.draw()
 

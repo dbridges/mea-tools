@@ -473,6 +473,9 @@ class RasterPlotVisualization(Visualization):
         self.t0 -= self.velocity
         self.update()
 
+    def on_show(self):
+        self.canvas.enable_antialiasing()
+
     def on_hide(self):
         self.velocity = 0
 
@@ -597,9 +600,6 @@ class MEAAnalogVisualization(Visualization):
         self.program['u_pan'] = self.t0
         self.program['u_scale'] = (2.0 / self.dt, 1 / self._y_scale)
 
-    def on_show(self):
-        self.resample()
-
     def on_mouse_move(self, event):
         x, y = event.pos
         x1, y1 = event.last_event.pos
@@ -638,6 +638,10 @@ class MEAAnalogVisualization(Visualization):
         self.velocity *= 0.98
         self.t0 -= self.velocity
         self.update()
+
+    def on_show(self):
+        self.canvas.disable_antialiasing()
+        self.resample()
 
     def on_hide(self):
         self.velocity = 0
@@ -833,3 +837,6 @@ class MEA120GridVisualization(Visualization):
 
     def on_resize(self, event):
         self.create_grid()
+
+    def on_show(self):
+        self.canvas.disable_antialiasing()
