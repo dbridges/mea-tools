@@ -104,7 +104,7 @@ class VisualizationCanvas(app.Canvas):
 
     def enable_antialiasing(self):
         gl.glEnable(gl.GL_LINE_SMOOTH)
-        gl.glHint(gl.GL_LINE_SMOOTH_HINT, gl.GL_NICEST)
+        gl.glHint(gl.GL_LINE_SMOOTH_HINT, gl.GL_FASTEST)
         gl.glEnable(gl.GL_BLEND)
         gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
 
@@ -194,15 +194,17 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         # UI initialization
         self.setupUi(self)
         self.canvas = VisualizationCanvas(self)
-        self.canvas.show_raster()
+        if input_file.endswith('.csv'):
+            self.canvas.show_raster()
+        else:
+            self.canvas.show_analog_grid()
 
         self.canvas.native.setFocusPolicy(QtCore.Qt.ClickFocus)
         self.mainLayout.removeWidget(self.widget)
         self.mainLayout.addWidget(self.canvas.native)
         self.mainLayout.setStretchFactor(self.canvas.native, 1)
 
-        self.rasterRowCountSlider.setValue(
-            self.canvas.raster_vis.row_count)
+        self.rasterRowCountSlider.setValue(120)
         self.analogGridScaleComboBox.setCurrentIndex(4)
 
         self.flashingSpikeTimescaleComboBox.setCurrentIndex(4)
@@ -221,7 +223,10 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
 
     @QtCore.Slot(int)
     def on_rasterRowCountSlider_valueChanged(self, val):
-        self.canvas.raster_vis.row_count = val
+        try:
+            self.canvas.raster_vis.row_count = val
+        except AttributeError:
+            pass
 
     @QtCore.Slot(str)
     def on_visualizationComboBox_currentIndexChanged(self, text):
@@ -229,6 +234,8 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
             if self.spike_data is None:
                 self.load_spike_data()
             self.canvas.show_raster()
+            self.rasterRowCountSlider.setValue(
+                self.canvas.raster_vis.row_count)
         elif text == 'Flashing Spike':
             if self.spike_data is None:
                 self.load_spike_data()

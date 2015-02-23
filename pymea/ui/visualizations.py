@@ -8,6 +8,7 @@ import pymea.mea_cython as meac
 from vispy import gloo, visuals
 from vispy.visuals.shaders import ModularProgram
 import numpy as np
+import OpenGL.GL as gl
 
 
 class Theme:
@@ -474,6 +475,7 @@ class RasterPlotVisualization(Visualization):
         self.update()
 
     def on_show(self):
+        gl.glLineWidth(1.0)
         self.canvas.enable_antialiasing()
 
     def on_hide(self):
@@ -488,8 +490,9 @@ class MEAAnalogVisualization(Visualization):
     uniform vec4 u_color;
     uniform vec2 u_scale;
     uniform float u_pan;
-    uniform float u_count;
     uniform float u_top_margin;
+    uniform float u_height;
+    uniform float u_adj_y_scale;
 
     varying vec4 v_color;
     varying float v_index;
@@ -497,11 +500,9 @@ class MEAAnalogVisualization(Visualization):
     void main(void)
     {
         v_index = a_index;
-        float adj_y_scale = u_scale.y / u_count;
-        float height = 2.0 / u_count;
-        float y_offset = height * (a_index + 0.5);
+        float y_offset = u_height * (a_index + 0.5);
         gl_Position = vec4(u_scale.x * (a_position.x - u_pan) - 1,
-                           adj_y_scale * a_position.y + 1 - y_offset,
+                           u_adj_y_scale * a_position.y + 1 - y_offset,
                            0.0, 1.0);
         v_color = u_color;
     }
@@ -537,7 +538,6 @@ class MEAAnalogVisualization(Visualization):
         self.program['u_pan'] = self._t0
         self.program['u_scale'] = (2.0/self._dt, 1/self._y_scale)
         self.program['u_top_margin'] = 20.0 * 2.0 / canvas.size[1]
-        self.program['u_count'] = len(self.electrodes)
         self.program['u_color'] = Theme.blue
 
         self.margin = {}
@@ -573,6 +573,9 @@ class MEAAnalogVisualization(Visualization):
     @y_scale.setter
     def y_scale(self, val):
         self._y_scale = val
+        self.program['u_adj_y_scale'] = 1 / (
+            self._y_scale * len(self.electrodes))
+        self.program['u_height'] = 2.0 / len(self.electrodes)
         self.update()
 
     def draw(self):
@@ -580,7 +583,6 @@ class MEAAnalogVisualization(Visualization):
         self.program.draw('line_strip')
 
     def resample(self):
-        # height = (2.0 - u_top_margin) / u_count
         xs = []
         ys = []
         zs = []
@@ -594,7 +596,9 @@ class MEAAnalogVisualization(Visualization):
         self.program['a_position'] = np.column_stack((np.concatenate(xs),
                                                       np.concatenate(ys)))
         self.program['a_index'] = np.concatenate(zs)
-        self.program['u_count'] = len(self.electrodes)
+        self.program['u_adj_y_scale'] = 1 / (
+            self._y_scale * len(self.electrodes))
+        self.program['u_height'] = 2.0 / len(self.electrodes)
 
     def update(self):
         self.program['u_pan'] = self.t0
@@ -641,6 +645,7 @@ class MEAAnalogVisualization(Visualization):
 
     def on_show(self):
         self.canvas.disable_antialiasing()
+        gl.glLineWidth(1.5)
         self.resample()
 
     def on_hide(self):
@@ -839,4 +844,5 @@ class MEA120GridVisualization(Visualization):
         self.create_grid()
 
     def on_show(self):
+        gl.glLineWidth(1.0)
         self.canvas.disable_antialiasing()
