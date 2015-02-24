@@ -21,12 +21,11 @@ def info(args):
 
 def export_spikes(args):
     if len(args.FILES) == 1:
-        files = [f for f in glob.glob(args.FILES)
+        files = [f for f in glob.glob(args.FILES[0])
                  if f.endswith('.h5') and os.path.exists(f)]
     else:
         files = [f for f in args.FILES
                  if f.endswith('.h5') and os.path.exists(f)]
-
     import pymea as mea
     for i, f in enumerate(files):
         mea.export_peaks(f)
