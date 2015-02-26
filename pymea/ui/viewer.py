@@ -212,9 +212,10 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         self.flashingSpikeTimescaleComboBox.setCurrentIndex(4)
 
         if input_file.endswith('.csv'):
+            self.visualizationComboBox.setCurrentIndex(0)
             self.canvas.show_raster()
         else:
-            self.canvas.show_analog_grid()
+            self.visualizationComboBox.setCurrentIndex(2)
 
     def load_spike_data(self):
         self.spike_data = pd.read_csv(self.spike_file)
