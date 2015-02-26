@@ -199,10 +199,10 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         else:
             self.canvas.show_analog_grid()
 
+        self.toolBar.addWidget(self.toolbarWidget)
         self.canvas.native.setFocusPolicy(QtCore.Qt.ClickFocus)
         self.mainLayout.removeWidget(self.widget)
         self.mainLayout.addWidget(self.canvas.native)
-        self.mainLayout.setStretchFactor(self.canvas.native, 1)
 
         self.rasterRowCountSlider.setValue(120)
         self.analogGridScaleComboBox.setCurrentIndex(4)
@@ -255,16 +255,6 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
             self.canvas.analog_grid_vis.y_scale = scale
         if self.canvas.analog_vis is not None:
             self.canvas.analog_vis.y_scale = scale
-
-    @QtCore.Slot()
-    def on_flashingSpikePlayButton_clicked(self):
-        if (self.canvas.visualization is
-                self.canvas.flashing_spike_vis):
-            if self.canvas.flashing_spike_vis.paused:
-                self.flashingSpikePlayButton.setText('Pause')
-            else:
-                self.flashingSpikePlayButton.setText('Play')
-            self.canvas.flashing_spike_vis.toggle_play()
 
     @QtCore.Slot(str)
     def on_flashingSpikeTimescaleComboBox_currentIndexChanged(self, text):

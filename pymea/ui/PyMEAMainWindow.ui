@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1392</width>
-    <height>685</height>
+    <width>1146</width>
+    <height>664</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,309 +17,277 @@
    <bool>true</bool>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout">
+   <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,1">
     <property name="margin">
      <number>0</number>
     </property>
     <item>
-     <layout class="QHBoxLayout" name="mainLayout" stretch="0,1">
-      <item>
-       <layout class="QVBoxLayout" name="verticalLayout_2">
-        <property name="margin">
-         <number>10</number>
-        </property>
-        <item>
-         <widget class="QLabel" name="label">
-          <property name="font">
-           <font>
-            <pointsize>12</pointsize>
-            <weight>75</weight>
-            <bold>true</bold>
-           </font>
-          </property>
+     <widget class="QWidget" name="toolbarWidget" native="true">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>0</height>
+       </size>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="0,0,0,1">
+       <property name="sizeConstraint">
+        <enum>QLayout::SetMinimumSize</enum>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="QComboBox" name="visualizationComboBox">
+         <item>
           <property name="text">
-           <string>Application</string>
+           <string>Raster</string>
           </property>
-         </widget>
-        </item>
-        <item>
-         <layout class="QFormLayout" name="formLayout">
-          <property name="horizontalSpacing">
-           <number>6</number>
-          </property>
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_4">
-            <property name="font">
-             <font>
-              <pointsize>12</pointsize>
-             </font>
-            </property>
-            <property name="text">
-             <string>Visualization</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QComboBox" name="visualizationComboBox">
-            <property name="font">
-             <font>
-              <pointsize>12</pointsize>
-             </font>
-            </property>
-            <item>
-             <property name="text">
-              <string>Raster</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Flashing Spike</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Analog Grid</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <widget class="QLabel" name="label_2">
-          <property name="font">
-           <font>
-            <pointsize>12</pointsize>
-            <weight>75</weight>
-            <bold>true</bold>
-           </font>
-          </property>
+         </item>
+         <item>
           <property name="text">
-           <string>Raster Plot Options</string>
+           <string>Flashing Spike</string>
           </property>
-         </widget>
-        </item>
-        <item>
-         <layout class="QFormLayout" name="formLayout_2">
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_6">
-            <property name="font">
-             <font>
-              <pointsize>12</pointsize>
-             </font>
-            </property>
-            <property name="text">
-             <string>Row Count</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QSlider" name="rasterRowCountSlider">
-            <property name="minimumSize">
-             <size>
-              <width>160</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="font">
-             <font>
-              <pointsize>12</pointsize>
-             </font>
-            </property>
-            <property name="minimum">
-             <number>2</number>
-            </property>
-            <property name="maximum">
-             <number>120</number>
-            </property>
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="tickPosition">
-             <enum>QSlider::TicksBelow</enum>
-            </property>
-            <property name="tickInterval">
-             <number>0</number>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <widget class="QLabel" name="label_5">
-          <property name="font">
-           <font>
-            <pointsize>12</pointsize>
-            <weight>75</weight>
-            <bold>true</bold>
-           </font>
-          </property>
+         </item>
+         <item>
           <property name="text">
-           <string>Flashing Spike Options</string>
+           <string>Analog Grid</string>
           </property>
+         </item>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Fixed</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QStackedWidget" name="stackedWidget">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="currentIndex">
+          <number>0</number>
+         </property>
+         <widget class="QWidget" name="rasterPage">
+          <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="0,1">
+           <property name="margin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="rowCountLabel">
+             <property name="text">
+              <string>Row Count</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="rasterRowCountSlider">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>200</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>12</pointsize>
+              </font>
+             </property>
+             <property name="minimum">
+              <number>2</number>
+             </property>
+             <property name="maximum">
+              <number>120</number>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="tickPosition">
+              <enum>QSlider::TicksBelow</enum>
+             </property>
+             <property name="tickInterval">
+              <number>0</number>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </widget>
-        </item>
-        <item>
-         <layout class="QFormLayout" name="formLayout_5">
-          <item row="1" column="0">
-           <widget class="QLabel" name="speedLabel">
-            <property name="text">
-             <string>Speed</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QComboBox" name="flashingSpikeTimescaleComboBox">
-            <item>
+         <widget class="QWidget" name="flashingSpikePage">
+          <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="0,1">
+           <property name="margin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="speedLabel_2">
              <property name="text">
-              <string>1x</string>
+              <string>Speed</string>
              </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>1/2x</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>1/20x</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>1/100x</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>1/200x</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>1/400x</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>1/800x</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>1/1600x</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="playbackLabel">
-            <property name="text">
-             <string>Playback</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QPushButton" name="flashingSpikePlayButton">
-            <property name="text">
-             <string>Play</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <widget class="QLabel" name="label_3">
-          <property name="font">
-           <font>
-            <pointsize>12</pointsize>
-            <weight>75</weight>
-            <bold>true</bold>
-           </font>
-          </property>
-          <property name="text">
-           <string>Analog Grid Options</string>
-          </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="flashingSpikeTimescaleComboBox">
+             <item>
+              <property name="text">
+               <string>1x</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>1/2x</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>1/20x</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>1/100x</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>1/200x</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>1/400x</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>1/800x</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>1/1600x</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+          </layout>
          </widget>
-        </item>
-        <item>
-         <layout class="QFormLayout" name="formLayout_3">
-          <property name="fieldGrowthPolicy">
-           <enum>QFormLayout::FieldsStayAtSizeHint</enum>
-          </property>
-          <item row="0" column="0">
-           <widget class="QLabel" name="analogGridScaleLabel">
-            <property name="text">
-             <string>Scale</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QComboBox" name="analogGridScaleComboBox">
-            <item>
-             <property name="text">
-              <string>10 uV</string>
+         <widget class="QWidget" name="analogPage">
+          <layout class="QHBoxLayout" name="horizontalLayout_7" stretch="0,1">
+           <property name="margin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="scaleLabel">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
              </property>
-            </item>
-            <item>
              <property name="text">
-              <string>25 uV</string>
+              <string>Scale</string>
              </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>50 uV</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>100 uV</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>150 uV</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>200 uV</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>250 uV</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>500 uV</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>1000 uV</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <spacer name="verticalSpacer">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>40</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-       </layout>
-      </item>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="analogGridScaleComboBox">
+             <item>
+              <property name="text">
+               <string>10 uV</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>25 uV</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>50 uV</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>100 uV</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>150 uV</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>200 uV</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>250 uV</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>500 uV</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>1000 uV</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <layout class="QVBoxLayout" name="mainLayout">
       <item>
        <widget class="QWidget" name="widget" native="true">
         <property name="sizePolicy">
@@ -327,6 +295,12 @@
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>200</height>
+         </size>
         </property>
        </widget>
       </item>
@@ -339,7 +313,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1392</width>
+     <width>1146</width>
      <height>25</height>
     </rect>
    </property>
@@ -361,6 +335,23 @@
    <addaction name="menuView"/>
   </widget>
   <widget class="MEAViewerStatusBar" name="statusBar"/>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <property name="movable">
+    <bool>false</bool>
+   </property>
+   <property name="floatable">
+    <bool>false</bool>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
   <action name="actionSave_to_Spreadsheet">
    <property name="enabled">
     <bool>false</bool>
@@ -423,5 +414,22 @@
   </customwidget>
  </customwidgets>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>visualizationComboBox</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>stackedWidget</receiver>
+   <slot>setCurrentIndex(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>186</x>
+     <y>50</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>140</x>
+     <y>214</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>
