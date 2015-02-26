@@ -93,9 +93,8 @@ class RasterPlotVisualization(Visualization):
 
     @t0.setter
     def t0(self, val):
-        self._t0 = util.clip(val,
-                             -self.spikes.time.max(),
-                             self.spikes.time.max())
+        self._t0 = util.clip(val, 0 - self.dt/2,
+                             self.spikes.time.max() - self.dt/2)
 
     @property
     def dt(self):
