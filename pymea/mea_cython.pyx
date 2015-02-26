@@ -1,3 +1,5 @@
+import sys
+
 import numpy as np
 import pandas as pd
 cimport numpy as np
@@ -70,3 +72,11 @@ def min_max_bin(np.ndarray[float] series, int bin_size, int bin_count):
         vals[2*n+1] = maxval
 
     return vals
+
+def delay_from(np.ndarray[float] data, float t):
+    # Assumes data is sorted.
+    for val in data:
+        if val > t:
+            return val - t
+    return sys.float_info.max
+

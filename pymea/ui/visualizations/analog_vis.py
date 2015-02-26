@@ -95,7 +95,7 @@ class MEAAnalogVisualization(Visualization):
 
     @dt.setter
     def dt(self, val):
-        self._dt = util.clip(val, 0.0025, 20)
+        self._dt = util.clip(val, 0.0025, self.data.index[-1])
         self.update()
 
     @property

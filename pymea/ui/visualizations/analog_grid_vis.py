@@ -208,5 +208,6 @@ class MEA120GridVisualization(Visualization):
         self.create_grid()
 
     def on_show(self):
+        self.selected_electrodes = []
         gl.glLineWidth(1.0)
         self.canvas.disable_antialiasing()

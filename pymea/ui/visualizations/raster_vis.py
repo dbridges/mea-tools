@@ -14,6 +14,12 @@ from .base import LineCollection, Visualization, Theme
 import pymea.util as util
 
 
+class ElectrodeData:
+    def __init__(self, tag, data=[]):
+        self.tag = tag
+        self.data = data
+
+
 class RasterPlotVisualization(Visualization):
     VERTEX_SHADER = """
     attribute vec2 a_position;

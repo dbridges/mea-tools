@@ -103,10 +103,13 @@ class VisualizationCanvas(app.Canvas):
         return x/(w/2.)-1., y/(h/2.)-1.
 
     def enable_antialiasing(self):
-        gl.glEnable(gl.GL_LINE_SMOOTH)
-        gl.glHint(gl.GL_LINE_SMOOTH_HINT, gl.GL_FASTEST)
-        gl.glEnable(gl.GL_BLEND)
-        gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
+        try:
+            gl.glEnable(gl.GL_LINE_SMOOTH)
+            gl.glHint(gl.GL_LINE_SMOOTH_HINT, gl.GL_FASTEST)
+            gl.glEnable(gl.GL_BLEND)
+            gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
+        except:
+            pass
 
     def disable_antialiasing(self):
         gl.glDisable(gl.GL_LINE_SMOOTH)
@@ -194,13 +197,9 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         # UI initialization
         self.setupUi(self)
         self.canvas = VisualizationCanvas(self)
-        if input_file.endswith('.csv'):
-            self.canvas.show_raster()
-        else:
-            self.canvas.show_analog_grid()
 
         self.toolBar.addWidget(self.toolbarWidget)
-        self.canvas.native.setFocusPolicy(QtCore.Qt.ClickFocus)
+        self.canvas.native.setFocusPolicy(QtCore.Qt.WheelFocus)
         self.mainLayout.removeWidget(self.widget)
         self.mainLayout.addWidget(self.canvas.native)
 
@@ -208,6 +207,11 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         self.analogGridScaleComboBox.setCurrentIndex(4)
 
         self.flashingSpikeTimescaleComboBox.setCurrentIndex(4)
+
+        if input_file.endswith('.csv'):
+            self.canvas.show_raster()
+        else:
+            self.canvas.show_analog_grid()
 
     def load_spike_data(self):
         self.spike_data = pd.read_csv(self.spike_file)
