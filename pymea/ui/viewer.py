@@ -112,8 +112,11 @@ class VisualizationCanvas(app.Canvas):
             pass
 
     def disable_antialiasing(self):
-        gl.glDisable(gl.GL_LINE_SMOOTH)
-        gl.glDisable(gl.GL_BLEND)
+        try:
+            gl.glDisable(gl.GL_LINE_SMOOTH)
+            gl.glDisable(gl.GL_BLEND)
+        except:
+            pass
 
     def on_resize(self, event):
         self.width, self.height = event.size
