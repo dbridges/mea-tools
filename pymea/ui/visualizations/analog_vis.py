@@ -8,7 +8,6 @@ import math
 
 import numpy as np
 from vispy import gloo
-import OpenGL.GL as gl
 
 from .base import Visualization, Theme
 import pymea.util as util
@@ -177,7 +176,6 @@ class MEAAnalogVisualization(Visualization):
 
     def on_show(self):
         self.canvas.disable_antialiasing()
-        gl.glLineWidth(1.5)
         self.resample()
 
     def on_hide(self):
