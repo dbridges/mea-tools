@@ -9,7 +9,6 @@ import math
 
 import numpy as np
 from vispy import gloo
-import OpenGL.GL as gl
 
 from .base import LineCollection, Visualization, Theme
 import pymea as mea
@@ -209,5 +208,4 @@ class MEA120GridVisualization(Visualization):
 
     def on_show(self):
         self.selected_electrodes = []
-        gl.glLineWidth(1.0)
         self.canvas.disable_antialiasing()

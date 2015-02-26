@@ -8,7 +8,6 @@ import math
 
 import numpy as np
 from vispy import gloo, visuals
-import OpenGL.GL as gl
 
 from .base import LineCollection, Visualization, Theme
 import pymea.util as util
@@ -209,7 +208,6 @@ class RasterPlotVisualization(Visualization):
         self.update()
 
     def on_show(self):
-        gl.glLineWidth(1.0)
         self.canvas.enable_antialiasing()
 
     def on_hide(self):
