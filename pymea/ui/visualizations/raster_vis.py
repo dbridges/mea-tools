@@ -91,6 +91,7 @@ class RasterPlotVisualization(Visualization):
                             for x in range(18)]
         self.tick_marks = LineCollection()
         self.mouse_t = 0
+        self.extra_text = ''
 
     @property
     def t0(self):

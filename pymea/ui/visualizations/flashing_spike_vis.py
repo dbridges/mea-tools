@@ -90,6 +90,7 @@ class FlashingSpikeVisualization(Visualization):
         self.outline = visuals.LineVisual(color=Theme.yellow)
         self.electrode_cols = [c for c in 'ABCDEFGHJKLM']
         self._rescale_outline()
+        self.extra_text = ''
 
     @property
     def t0(self):

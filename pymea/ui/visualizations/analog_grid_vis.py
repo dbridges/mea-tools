@@ -77,6 +77,7 @@ class MEA120GridVisualization(Visualization):
         self.resample()
 
         self.selected_electrodes = []
+        self.extra_text = ''
 
     @property
     def t0(self):

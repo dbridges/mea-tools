@@ -7,7 +7,7 @@
 import math
 
 import numpy as np
-from vispy import gloo
+from vispy import gloo, visuals
 
 from .base import Visualization, Theme
 import pymea.util as util
@@ -76,6 +76,11 @@ class MEAAnalogVisualization(Visualization):
 
         self.velocity = 0
 
+        self.measuring = False
+        self.measure_start = (0, 0)
+        self.measure_line = visuals.LineVisual(np.array(((0, 0), (100, 100))),
+                                               Theme.grid_line)
+        self.extra_text = ''
         self.resample()
 
     @property
@@ -112,6 +117,8 @@ class MEAAnalogVisualization(Visualization):
     def draw(self):
         gloo.clear((0.5, 0.5, 0.5, 1))
         self.program.draw('line_strip')
+        if self.measuring:
+            self.measure_line.draw(self.canvas.tr_sys)
 
     def resample(self):
         xs = []
@@ -140,16 +147,28 @@ class MEAAnalogVisualization(Visualization):
         x1, y1 = event.last_event.pos
         sec_per_pixel = self.dt / self.canvas.size[0]
         if event.is_dragging:
-            dx = x1 - x
-            self.t0 += dx * sec_per_pixel
+            if event.button == 1:
+                dx = x1 - x
+                self.t0 += dx * sec_per_pixel
+            elif event.button == 2:
+                self.measuring = True
+                self.extra_text = 'dx: %1.4f' % (
+                    sec_per_pixel * (x - self.measure_start[0]))
+                self.measure_line.set_data(np.array((self.measure_start,
+                                                     event.pos)))
         self.mouse_t = self.t0 + sec_per_pixel * x
 
     def on_mouse_release(self, event):
-        dx = self.canvas.mouse_pos[0] - self.canvas.prev_mouse_pos[0]
-        self.velocity = self.dt * dx / self.canvas.size[0]
+        if event.button == 1:
+            dx = self.canvas.mouse_pos[0] - self.canvas.prev_mouse_pos[0]
+            self.velocity = self.dt * dx / self.canvas.size[0]
+        self.measuring = False
+        self.extra_text = ''
 
     def on_mouse_press(self, event):
         self.velocity = 0
+        if event.button == 2:
+            self.measure_start = event.pos
 
     def on_mouse_wheel(self, event):
         sec_per_pixel = self.dt / self.canvas.size[0]
