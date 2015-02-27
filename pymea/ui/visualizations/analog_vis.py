@@ -157,6 +157,8 @@ class MEAAnalogVisualization(Visualization):
                 self.measure_line.set_data(np.array((self.measure_start,
                                                      event.pos)))
         self.mouse_t = self.t0 + sec_per_pixel * x
+        self.electrode = self.electrodes[int(
+            y // (self.canvas.size[1] / len(self.electrodes)))]
 
     def on_mouse_release(self, event):
         if event.button == 1:
