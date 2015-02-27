@@ -83,6 +83,8 @@ class MEAAnalogVisualization(Visualization):
         self.extra_text = ''
         self.resample()
 
+        self.background_color = Theme.background
+
     @property
     def t0(self):
         return self._t0
@@ -115,10 +117,10 @@ class MEAAnalogVisualization(Visualization):
         self.update()
 
     def draw(self):
-        gloo.clear((0.5, 0.5, 0.5, 1))
-        self.program.draw('line_strip')
+        gloo.clear(self.background_color)
         if self.measuring:
             self.measure_line.draw(self.canvas.tr_sys)
+        self.program.draw('line_strip')
 
     def resample(self):
         xs = []
@@ -152,13 +154,16 @@ class MEAAnalogVisualization(Visualization):
                 self.t0 += dx * sec_per_pixel
             elif event.button == 2:
                 self.measuring = True
-                self.extra_text = 'dx: %1.4f' % (
+                self.extra_text = 'dt: %1.4f' % (
                     sec_per_pixel * (x - self.measure_start[0]))
                 self.measure_line.set_data(np.array((self.measure_start,
                                                      event.pos)))
         self.mouse_t = self.t0 + sec_per_pixel * x
-        self.electrode = self.electrodes[int(
-            y // (self.canvas.size[1] / len(self.electrodes)))]
+        try:
+            self.electrode = self.electrodes[int(
+                y // (self.canvas.size[1] / len(self.electrodes)))]
+        except IndexError:
+            self.electrode = ''
 
     def on_mouse_release(self, event):
         if event.button == 1:
@@ -194,6 +199,13 @@ class MEAAnalogVisualization(Visualization):
         self.velocity *= 0.98
         self.t0 -= self.velocity
         self.update()
+
+    def on_key_release(self, event):
+        if event.key == 'b':
+            if self.background_color == Theme.background:
+                self.background_color = Theme.white
+            else:
+                self.background_color = Theme.background
 
     def on_show(self):
         self.canvas.disable_antialiasing()

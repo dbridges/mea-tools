@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'pymea/ui/PyMEAMainWindow.ui'
 #
-# Created: Thu Feb 26 10:12:24 2015
+# Created: Fri Feb 27 09:35:38 2015
 #      by: pyside-uic 0.2.15 running on PySide 1.2.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -140,14 +140,6 @@ class Ui_MainWindow(object):
         self.verticalLayout_2.addLayout(self.mainLayout)
         self.verticalLayout_2.setStretch(1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
-        self.menubar = QtGui.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1146, 25))
-        self.menubar.setObjectName("menubar")
-        self.menuFile = QtGui.QMenu(self.menubar)
-        self.menuFile.setObjectName("menuFile")
-        self.menuView = QtGui.QMenu(self.menubar)
-        self.menuView.setObjectName("menuView")
-        MainWindow.setMenuBar(self.menubar)
         self.statusBar = MEAViewerStatusBar(MainWindow)
         self.statusBar.setObjectName("statusBar")
         MainWindow.setStatusBar(self.statusBar)
@@ -171,12 +163,6 @@ class Ui_MainWindow(object):
         self.actionFlashingSpikes.setObjectName("actionFlashingSpikes")
         self.actionAnalogGrid = QtGui.QAction(MainWindow)
         self.actionAnalogGrid.setObjectName("actionAnalogGrid")
-        self.menuFile.addAction(self.actionOpen)
-        self.menuView.addAction(self.actionRaster)
-        self.menuView.addAction(self.actionFlashingSpikes)
-        self.menuView.addAction(self.actionAnalogGrid)
-        self.menubar.addAction(self.menuFile.menuAction())
-        self.menubar.addAction(self.menuView.menuAction())
 
         self.retranslateUi(MainWindow)
         self.stackedWidget.setCurrentIndex(0)
@@ -208,8 +194,6 @@ class Ui_MainWindow(object):
         self.analogGridScaleComboBox.setItemText(6, QtGui.QApplication.translate("MainWindow", "250 uV", None, QtGui.QApplication.UnicodeUTF8))
         self.analogGridScaleComboBox.setItemText(7, QtGui.QApplication.translate("MainWindow", "500 uV", None, QtGui.QApplication.UnicodeUTF8))
         self.analogGridScaleComboBox.setItemText(8, QtGui.QApplication.translate("MainWindow", "1000 uV", None, QtGui.QApplication.UnicodeUTF8))
-        self.menuFile.setTitle(QtGui.QApplication.translate("MainWindow", "File", None, QtGui.QApplication.UnicodeUTF8))
-        self.menuView.setTitle(QtGui.QApplication.translate("MainWindow", "View", None, QtGui.QApplication.UnicodeUTF8))
         self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
         self.actionSave_to_Spreadsheet.setText(QtGui.QApplication.translate("MainWindow", "Save to Spreadsheet...", None, QtGui.QApplication.UnicodeUTF8))
         self.actionSave_to_Spreadsheet.setShortcut(QtGui.QApplication.translate("MainWindow", "Ctrl+S", None, QtGui.QApplication.UnicodeUTF8))

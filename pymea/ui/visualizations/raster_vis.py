@@ -176,7 +176,10 @@ class RasterPlotVisualization(Visualization):
                       self._row_count)
         row = util.clip(int((event.pos[1] - self.margin['top']) / row_height),
                         0, 119)
-        self.electrode = self._row_for_electrode[row]
+        try:
+            self.electrode = self._row_for_electrode[row]
+        except IndexError:
+            self.electrode = ''
         self.mouse_t = self.t0 + sec_per_pixel * x
 
     def on_mouse_wheel(self, event):

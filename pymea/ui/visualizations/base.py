@@ -15,6 +15,7 @@ class Theme:
     white = (1.0, 1.0, 1.0, 1.0)
     grid_line = (0.7, 0.7, 0.7, 1.0)
     plot_colors = (yellow, purple, blue)
+    background = (0.5, 0.5, 0.5, 1.0)
 
 
 class LineCollection:
