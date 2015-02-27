@@ -217,6 +217,23 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         else:
             self.visualizationComboBox.setCurrentIndex(2)
 
+        self.load_settings()
+        # Load gui settings and restore window geometery
+        self.settings = QtCore.QSettings('UCSB', 'meaview')
+
+    def load_settings(self):
+        # Load gui settings and restore window geometery
+        self.settings = QtCore.QSettings('UCSB', 'meaview')
+        try:
+            self.settings.beginGroup('MainWindow')
+            self.restoreGeometry(self.settings.value('geometry'))
+        except:
+            pass
+
+    def save_settings(self):
+        self.settings.beginGroup('MainWindow')
+        self.settings.setValue('geometry', self.saveGeometry())
+
     def load_spike_data(self):
         self.spike_data = pd.read_csv(self.spike_file)
 
@@ -298,6 +315,7 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         self.visualizationComboBox.setCurrentIndex(2)
 
     def closeEvent(self, event):
+        self.save_settings()
         self.canvas.close()
         sys.exit()
 
