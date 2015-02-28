@@ -32,8 +32,7 @@ def export_spikes(args):
         print('%d of %d exported.' % (i + 1, len(files)))
 
 
-
-if __name__ == '__main__':
+def main():
     parser = argparse.ArgumentParser(prog='mea')
     subparsers = parser.add_subparsers()
 
@@ -51,8 +50,8 @@ if __name__ == '__main__':
                              help='File name or path.')
     parser_info.set_defaults(func=info)
 
-    parser_export_spikes = subparsers.add_parser('export_spikes',
-                                                 help='Detect spikes in h5 files.')
+    parser_export_spikes = subparsers.add_parser(
+        'export_spikes', help='Detect spikes in h5 files.')
     parser_export_spikes.add_argument('FILES',
                                       help='Files to convert.',
                                       nargs='+')
@@ -64,3 +63,6 @@ if __name__ == '__main__':
         parser.print_usage()
     else:
         args.func(args)
+
+if __name__ == '__main__':
+    main()
