@@ -177,6 +177,7 @@ class MEA120GridVisualization(Visualization):
 
     def on_mouse_double_click(self, event):
         self.selected_electrodes = [self.electrode]
+        self.update_extra_text()
         self.canvas.show_analog()
 
     def on_mouse_release(self, event):
@@ -185,10 +186,14 @@ class MEA120GridVisualization(Visualization):
                 self.selected_electrodes.remove(self.electrode)
             else:
                 self.selected_electrodes.append(self.electrode)
+            self.update_extra_text()
 
     def on_key_release(self, event):
         if event.key == 'Enter' and len(self.selected_electrodes) > 0:
             self.canvas.show_analog()
+        elif event.key == 'Escape':
+            self.selected_electrodes = []
+            self.update_extra_text()
 
     def on_mouse_wheel(self, event):
         sec_per_pixel = self.dt / (self.canvas.size[0] / 12)
@@ -201,6 +206,13 @@ class MEA120GridVisualization(Visualization):
         sec_per_pixel = self.dt / (self.canvas.size[0] / 12)
         self.t0 = target_time - (rel_x * sec_per_pixel)
 
+    def update_extra_text(self):
+        if len(self.selected_electrodes) > 0:
+            self.extra_text = ('Selected: %s' %
+                                ', '.join(self.selected_electrodes))
+        else:
+            self.extra_text = ''
+
     def on_tick(self, event):
         pass
 
@@ -209,4 +221,5 @@ class MEA120GridVisualization(Visualization):
 
     def on_show(self):
         self.selected_electrodes = []
+        self.update_extra_text()
         self.canvas.disable_antialiasing()
