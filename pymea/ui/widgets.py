@@ -1,4 +1,4 @@
-from PySide import QtGui, QtCore  # noqa
+from PyQt4 import QtGui, QtCore  # noqa
 
 
 class MEAViewerStatusBar(QtGui.QStatusBar):

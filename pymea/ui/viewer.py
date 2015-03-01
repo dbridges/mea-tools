@@ -12,7 +12,7 @@ from pymea.ui.visualizations import (MEA120GridVisualization,
 import pandas as pd
 from vispy import app, gloo, visuals
 import OpenGL.GL as gl
-from PySide import QtGui, QtCore  # noqa
+from PyQt4 import QtGui, QtCore  # noqa
 from .main_window import Ui_MainWindow
 
 
@@ -247,14 +247,14 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         self.statusBar.electrode = self.canvas.visualization.electrode
         self.statusBar.mouse_t = self.canvas.visualization.mouse_t
 
-    @QtCore.Slot(int)
+    @QtCore.pyqtSlot(int)
     def on_rasterRowCountSlider_valueChanged(self, val):
         try:
             self.canvas.raster_vis.row_count = val
         except AttributeError:
             pass
 
-    @QtCore.Slot(str)
+    @QtCore.pyqtSlot(str)
     def on_visualizationComboBox_currentIndexChanged(self, text):
         if text == 'Raster':
             if self.spike_data is None:
@@ -271,7 +271,7 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
                 self.load_analog_data()
             self.canvas.show_analog_grid()
 
-    @QtCore.Slot(str)
+    @QtCore.pyqtSlot(str)
     def on_analogGridScaleComboBox_currentIndexChanged(self, text):
         try:
             scale = float(text.split(' ')[0])
@@ -282,7 +282,7 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         if self.canvas.analog_vis is not None:
             self.canvas.analog_vis.y_scale = scale
 
-    @QtCore.Slot(str)
+    @QtCore.pyqtSlot(str)
     def on_flashingSpikeTimescaleComboBox_currentIndexChanged(self, text):
         if self.canvas.flashing_spike_vis is None:
             return
@@ -303,15 +303,15 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         elif text == '1/1600x':
             self.canvas.flashing_spike_vis.time_scale = 1/1600
 
-    @QtCore.Slot()
+    @QtCore.pyqtSlot()
     def on_actionRaster_activated(self):
         self.visualizationComboBox.setCurrentIndex(0)
 
-    @QtCore.Slot()
+    @QtCore.pyqtSlot()
     def on_actionFlashingSpikes_activated(self):
         self.visualizationComboBox.setCurrentIndex(1)
 
-    @QtCore.Slot()
+    @QtCore.pyqtSlot()
     def on_actionAnalogGrid_activated(self):
         self.visualizationComboBox.setCurrentIndex(2)
 
