@@ -9,7 +9,7 @@ long_descr = """`Full Documentation
 
 setup(
     name='pymea',
-    version='0.1.0',
+    version='0.1.1',
     author='Dan Bridges',
     license='GPL3',
     description='Tools for analyzing MEA data.',
