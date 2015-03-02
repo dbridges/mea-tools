@@ -21,7 +21,6 @@ class MEAAnalogVisualization(Visualization):
     uniform vec4 u_color;
     uniform vec2 u_scale;
     uniform float u_pan;
-    uniform float u_top_margin;
     uniform float u_height;
     uniform float u_adj_y_scale;
 
@@ -68,11 +67,7 @@ class MEAAnalogVisualization(Visualization):
                                     self.FRAGMENT_SHADER)
         self.program['u_pan'] = self._t0
         self.program['u_scale'] = (2.0/self._dt, 1/self._y_scale)
-        self.program['u_top_margin'] = 20.0 * 2.0 / canvas.size[1]
         self.program['u_color'] = Theme.blue
-
-        self.margin = {}
-        self.margin['top'] = 20
 
         self.velocity = 0
 
@@ -190,10 +185,6 @@ class MEAAnalogVisualization(Visualization):
 
     def on_mouse_double_click(self, event):
         self.canvas.show_analog_grid()
-
-    def on_resize(self, event):
-        self.program['u_top_margin'] = (self.margin['top'] * 2.0 /
-                                        self.canvas.size[1])
 
     def on_tick(self, event):
         self.velocity *= 0.98
