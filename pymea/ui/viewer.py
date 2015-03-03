@@ -239,6 +239,7 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
 
     def load_analog_data(self):
         store = mea.MEARecording(self.analog_file)
+        print('Loading data...')
         self.analog_data = store.get('all')
 
     def on_visualization_updated(self):
