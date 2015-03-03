@@ -2,7 +2,7 @@
 
 OS := $(shell uname)
 
-ifneq (,$(findstring NT-5.1,$(OS)))
+ifneq (,$(findstring NT-,$(OS)))
 DFLAGS=-DMS_WIN64
 PYTHON=python
 else
