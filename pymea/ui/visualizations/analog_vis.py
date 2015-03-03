@@ -19,13 +19,11 @@ class MEAAnalogVisualization(Visualization):
     // two electrodes.
     attribute vec3 a_position;
 
-    uniform vec4 u_color;
     uniform vec2 u_scale;
     uniform float u_pan;
     uniform float u_height;
     uniform float u_adj_y_scale;
 
-    varying vec4 v_color;
     varying float v_index;
 
     void main(void)
@@ -35,17 +33,16 @@ class MEAAnalogVisualization(Visualization):
         gl_Position = vec4(u_scale.x * (a_position.x - u_pan) - 1,
                            u_adj_y_scale * a_position.y + 1 - y_offset,
                            0.0, 1.0);
-        v_color = u_color;
     }
     """
 
     FRAGMENT_SHADER = """
-    varying vec4 v_color;
+    uniform vec4 u_color;
     varying float v_index;
 
     void main()
     {
-        gl_FragColor = v_color;
+        gl_FragColor = u_color;
 
         if (fract(v_index) > 0.0) {
             discard;
@@ -178,8 +175,9 @@ class MEAAnalogVisualization(Visualization):
         rel_x = event.pos[0]
 
         target_time = rel_x * sec_per_pixel + self.t0
-        dx = -np.sign(event.delta[1]) * self.scroll_factor
-        self.dt *= math.exp(2.5 * dx)
+        scale = math.exp(2.5 * -np.sign(event.delta[1]) * self.scroll_factor)
+        self.dt *= scale
+        self.velocity *= scale
 
         sec_per_pixel = self.dt / self.canvas.size[0]
         self.t0 = target_time - (rel_x * sec_per_pixel)

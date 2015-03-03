@@ -187,8 +187,9 @@ class RasterPlotVisualization(Visualization):
         rel_x = event.pos[0]
 
         target_time = rel_x * sec_per_pixel + self.t0
-        dx = -np.sign(event.delta[1]) * self.scroll_factor
-        self.dt *= math.exp(2.5 * dx)
+        scale = math.exp(2.5 * -np.sign(event.delta[1]) * self.scroll_factor)
+        self.dt *= scale
+        self.velocity *= scale
 
         sec_per_pixel = self.dt / self.canvas.size[0]
         self.t0 = target_time - (rel_x * sec_per_pixel)
