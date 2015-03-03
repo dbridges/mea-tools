@@ -15,8 +15,9 @@ import pymea.util as util
 
 class MEAAnalogVisualization(Visualization):
     VERTEX_SHADER = """
-    attribute vec2 a_position;
-    attribute float a_index;
+    // x, y is position, z is index to avoid connecting traces from
+    // two electrodes.
+    attribute vec3 a_position;
 
     uniform vec4 u_color;
     uniform vec2 u_scale;
@@ -29,8 +30,8 @@ class MEAAnalogVisualization(Visualization):
 
     void main(void)
     {
-        v_index = a_index;
-        float y_offset = u_height * (a_index + 0.5);
+        v_index = a_position.z;
+        float y_offset = u_height * (a_position.z + 0.5);
         gl_Position = vec4(u_scale.x * (a_position.x - u_pan) - 1,
                            u_adj_y_scale * a_position.y + 1 - y_offset,
                            0.0, 1.0);
@@ -129,8 +130,8 @@ class MEAAnalogVisualization(Visualization):
             ys.append(y)
             zs.append(z)
         self.program['a_position'] = np.column_stack((np.concatenate(xs),
-                                                      np.concatenate(ys)))
-        self.program['a_index'] = np.concatenate(zs)
+                                                      np.concatenate(ys),
+                                                      np.concatenate(zs)))
         self.program['u_adj_y_scale'] = 1 / (
             self._y_scale * len(self.electrodes))
         self.program['u_height'] = 2.0 / len(self.electrodes)
@@ -177,7 +178,7 @@ class MEAAnalogVisualization(Visualization):
         rel_x = event.pos[0]
 
         target_time = rel_x * sec_per_pixel + self.t0
-        dx = -np.sign(event.delta[1]) * 0.025
+        dx = -np.sign(event.delta[1]) * self.scroll_factor
         self.dt *= math.exp(2.5 * dx)
 
         sec_per_pixel = self.dt / self.canvas.size[0]

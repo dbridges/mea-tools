@@ -200,7 +200,7 @@ class MEA120GridVisualization(Visualization):
         rel_x = event.pos[0] % (self.canvas.size[0] / 12)
 
         target_time = rel_x * sec_per_pixel + self.t0
-        dx = -np.sign(event.delta[1]) * 0.10
+        dx = -np.sign(event.delta[1]) * 2*self.scroll_factor
         self.dt *= math.exp(2.5 * dx)
 
         sec_per_pixel = self.dt / (self.canvas.size[0] / 12)
@@ -209,7 +209,7 @@ class MEA120GridVisualization(Visualization):
     def update_extra_text(self):
         if len(self.selected_electrodes) > 0:
             self.extra_text = ('Selected: %s' %
-                                ', '.join(self.selected_electrodes))
+                               ', '.join(self.selected_electrodes))
         else:
             self.extra_text = ''
 

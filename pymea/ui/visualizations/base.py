@@ -4,6 +4,8 @@
 # Originally written by Daniel Bridges
 
 
+import sys
+
 import numpy as np
 from vispy.visuals.shaders import ModularProgram
 
@@ -74,6 +76,8 @@ class LineCollection:
 
 
 class Visualization:
+    scroll_factor = 0.025 if sys.platform == 'darwin' else 0.125
+
     def __init__(self):
         pass
 
