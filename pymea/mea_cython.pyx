@@ -55,7 +55,7 @@ def min_max(np.ndarray[float] d):
     for n in range(len(d)):
         if d[n] > maxval:
             maxval = d[n]
-        if d[n] < minval:
+        elif d[n] < minval:
             minval = d[n]
     return minval, maxval
 
