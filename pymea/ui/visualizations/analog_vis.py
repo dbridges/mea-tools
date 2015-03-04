@@ -9,6 +9,7 @@ import math
 import numpy as np
 from vispy import gloo, visuals
 
+import pymea as mea
 from .base import Visualization, Theme
 import pymea.util as util
 
@@ -74,6 +75,7 @@ class MEAAnalogVisualization(Visualization):
         self.measure_line = visuals.LineVisual(np.array(((0, 0), (100, 100))),
                                                Theme.grid_line)
         self.extra_text = ''
+        self._filtered = False
         self.resample()
 
         self.background_color = Theme.background
@@ -109,6 +111,15 @@ class MEAAnalogVisualization(Visualization):
         self.program['u_height'] = 2.0 / len(self.electrodes)
         self.update()
 
+    @property
+    def filtered(self):
+        return self._filtered
+
+    @filtered.setter
+    def filtered(self, val):
+        self._filtered = val
+        self.resample()
+
     def draw(self):
         gloo.clear(self.background_color)
         if self.measuring:
@@ -121,7 +132,10 @@ class MEAAnalogVisualization(Visualization):
         zs = []
         for i, e in enumerate(self.electrodes):
             x = self.data[e].index.values.astype(np.float32)
-            y = self.data[e].values
+            if self.filtered:
+                y = mea.filter(self.data[e]).values
+            else:
+                y = self.data[e].values
             z = np.full_like(x, i)
             xs.append(x)
             ys.append(y)
@@ -132,6 +146,10 @@ class MEAAnalogVisualization(Visualization):
         self.program['u_adj_y_scale'] = 1 / (
             self._y_scale * len(self.electrodes))
         self.program['u_height'] = 2.0 / len(self.electrodes)
+        if self.filtered:
+            self.program['u_color'] = Theme.pink
+        else:
+            self.program['u_color'] = Theme.blue
 
     def update(self):
         self.program['u_pan'] = self.t0

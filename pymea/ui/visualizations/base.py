@@ -15,6 +15,7 @@ class Theme:
     purple = (0.396, 0.09, 0.62, 1.0)
     blue = (0.09, 0.365, 0.596, 1.0)
     white = (1.0, 1.0, 1.0, 1.0)
+    pink = (0.529, 0.075, 0.349, 1.0)
     grid_line = (0.7, 0.7, 0.7, 1.0)
     plot_colors = (yellow, purple, blue)
     background = (0.5, 0.5, 0.5, 1.0)

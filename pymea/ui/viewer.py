@@ -304,6 +304,12 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         elif text == '1/1600x':
             self.canvas.flashing_spike_vis.time_scale = 1/1600
 
+    @QtCore.pyqtSlot(bool)
+    def on_filterCheckBox_toggled(self, checked):
+        if self.canvas.analog_vis is None:
+            return
+        self.canvas.analog_vis.filtered = checked
+
     @QtCore.pyqtSlot()
     def on_actionRaster_activated(self):
         self.visualizationComboBox.setCurrentIndex(0)

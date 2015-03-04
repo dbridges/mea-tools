@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'pymea/ui/PyMEAMainWindow.ui'
 #
-# Created: Sat Feb 28 19:34:44 2015
+# Created: Wed Mar  4 12:07:38 2015
 #      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -96,6 +96,11 @@ class Ui_MainWindow(object):
         self.speedLabel_2.setObjectName(_fromUtf8("speedLabel_2"))
         self.horizontalLayout_6.addWidget(self.speedLabel_2)
         self.flashingSpikeTimescaleComboBox = QtGui.QComboBox(self.flashingSpikePage)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.flashingSpikeTimescaleComboBox.sizePolicy().hasHeightForWidth())
+        self.flashingSpikeTimescaleComboBox.setSizePolicy(sizePolicy)
         self.flashingSpikeTimescaleComboBox.setObjectName(_fromUtf8("flashingSpikeTimescaleComboBox"))
         self.flashingSpikeTimescaleComboBox.addItem(_fromUtf8(""))
         self.flashingSpikeTimescaleComboBox.addItem(_fromUtf8(""))
@@ -106,6 +111,8 @@ class Ui_MainWindow(object):
         self.flashingSpikeTimescaleComboBox.addItem(_fromUtf8(""))
         self.flashingSpikeTimescaleComboBox.addItem(_fromUtf8(""))
         self.horizontalLayout_6.addWidget(self.flashingSpikeTimescaleComboBox)
+        spacerItem1 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_6.addItem(spacerItem1)
         self.horizontalLayout_6.setStretch(1, 1)
         self.stackedWidget.addWidget(self.flashingSpikePage)
         self.analogPage = QtGui.QWidget()
@@ -122,6 +129,11 @@ class Ui_MainWindow(object):
         self.scaleLabel.setObjectName(_fromUtf8("scaleLabel"))
         self.horizontalLayout_7.addWidget(self.scaleLabel)
         self.analogGridScaleComboBox = QtGui.QComboBox(self.analogPage)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.analogGridScaleComboBox.sizePolicy().hasHeightForWidth())
+        self.analogGridScaleComboBox.setSizePolicy(sizePolicy)
         self.analogGridScaleComboBox.setObjectName(_fromUtf8("analogGridScaleComboBox"))
         self.analogGridScaleComboBox.addItem(_fromUtf8(""))
         self.analogGridScaleComboBox.addItem(_fromUtf8(""))
@@ -133,11 +145,14 @@ class Ui_MainWindow(object):
         self.analogGridScaleComboBox.addItem(_fromUtf8(""))
         self.analogGridScaleComboBox.addItem(_fromUtf8(""))
         self.horizontalLayout_7.addWidget(self.analogGridScaleComboBox)
+        self.filterCheckBox = QtGui.QCheckBox(self.analogPage)
+        self.filterCheckBox.setObjectName(_fromUtf8("filterCheckBox"))
+        self.horizontalLayout_7.addWidget(self.filterCheckBox)
         self.horizontalLayout_7.setStretch(1, 1)
         self.stackedWidget.addWidget(self.analogPage)
         self.horizontalLayout_8.addWidget(self.stackedWidget)
-        spacerItem1 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.horizontalLayout_8.addItem(spacerItem1)
+        spacerItem2 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_8.addItem(spacerItem2)
         self.horizontalLayout_8.setStretch(3, 1)
         self.verticalLayout_2.addWidget(self.toolbarWidget)
         self.mainLayout = QtGui.QVBoxLayout()
@@ -179,7 +194,7 @@ class Ui_MainWindow(object):
         self.actionAnalogGrid.setObjectName(_fromUtf8("actionAnalogGrid"))
 
         self.retranslateUi(MainWindow)
-        self.stackedWidget.setCurrentIndex(0)
+        self.stackedWidget.setCurrentIndex(2)
         QtCore.QObject.connect(self.visualizationComboBox, QtCore.SIGNAL(_fromUtf8("currentIndexChanged(int)")), self.stackedWidget.setCurrentIndex)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
@@ -208,6 +223,7 @@ class Ui_MainWindow(object):
         self.analogGridScaleComboBox.setItemText(6, _translate("MainWindow", "250 uV", None))
         self.analogGridScaleComboBox.setItemText(7, _translate("MainWindow", "500 uV", None))
         self.analogGridScaleComboBox.setItemText(8, _translate("MainWindow", "1000 uV", None))
+        self.filterCheckBox.setText(_translate("MainWindow", "Filter (Comparison Only)", None))
         self.toolBar.setWindowTitle(_translate("MainWindow", "toolBar", None))
         self.actionSave_to_Spreadsheet.setText(_translate("MainWindow", "Save to Spreadsheet...", None))
         self.actionSave_to_Spreadsheet.setShortcut(_translate("MainWindow", "Ctrl+S", None))
