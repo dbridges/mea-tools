@@ -85,7 +85,7 @@ class MEA120GridVisualization(Visualization):
 
     @t0.setter
     def t0(self, val):
-        self._t0 = util.clip(val, 0, self.data.index[-1])
+        self._t0 = util.clip(val, 0, self.data.index[-1] - self.dt/2)
         self.update()
 
     @property
@@ -94,7 +94,7 @@ class MEA120GridVisualization(Visualization):
 
     @dt.setter
     def dt(self, val):
-        self._dt = util.clip(val, 0.0025, 20)
+        self._dt = util.clip(val, 0.0025, 10)
         self.mouse_t = self._t0
         self.update()
 
@@ -122,7 +122,7 @@ class MEA120GridVisualization(Visualization):
         for y in np.arange(cell_height, height, cell_height):
             self.grid.append((0, y), (width, y), Theme.grid_line)
 
-    def resample(self, bin_count=200):
+    def resample(self, bin_count=120):
         start_i = int(self.t0 * self.sample_rate)
         end_i = util.clip(start_i + int(self.dt * self.sample_rate),
                           start_i, sys.maxsize)
@@ -161,8 +161,7 @@ class MEA120GridVisualization(Visualization):
         if event.is_dragging:
             x1, y1 = event.last_event.pos
             dx = x1 - x
-            self.t0 = util.clip(self.t0 + dx * sec_per_pixel,
-                                0, self.data.index[-1])
+            self.t0 += dx * sec_per_pixel
 
         x, y = event.pos
         cell_width = self.canvas.size[0] / 12.0
