@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'pymea/ui/PyMEAMainWindow.ui'
 #
-# Created: Wed Mar  4 12:07:38 2015
+# Created: Mon Mar  9 15:22:22 2015
 #      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -148,6 +148,19 @@ class Ui_MainWindow(object):
         self.filterCheckBox = QtGui.QCheckBox(self.analogPage)
         self.filterCheckBox.setObjectName(_fromUtf8("filterCheckBox"))
         self.horizontalLayout_7.addWidget(self.filterCheckBox)
+        self.filterLowSpinBox = QtGui.QDoubleSpinBox(self.analogPage)
+        self.filterLowSpinBox.setMaximum(50000.0)
+        self.filterLowSpinBox.setProperty("value", 200.0)
+        self.filterLowSpinBox.setObjectName(_fromUtf8("filterLowSpinBox"))
+        self.horizontalLayout_7.addWidget(self.filterLowSpinBox)
+        self.label = QtGui.QLabel(self.analogPage)
+        self.label.setObjectName(_fromUtf8("label"))
+        self.horizontalLayout_7.addWidget(self.label)
+        self.filterHighSpinBox = QtGui.QDoubleSpinBox(self.analogPage)
+        self.filterHighSpinBox.setMaximum(50000.0)
+        self.filterHighSpinBox.setProperty("value", 4000.0)
+        self.filterHighSpinBox.setObjectName(_fromUtf8("filterHighSpinBox"))
+        self.horizontalLayout_7.addWidget(self.filterHighSpinBox)
         self.horizontalLayout_7.setStretch(1, 1)
         self.stackedWidget.addWidget(self.analogPage)
         self.horizontalLayout_8.addWidget(self.stackedWidget)
@@ -194,7 +207,7 @@ class Ui_MainWindow(object):
         self.actionAnalogGrid.setObjectName(_fromUtf8("actionAnalogGrid"))
 
         self.retranslateUi(MainWindow)
-        self.stackedWidget.setCurrentIndex(2)
+        self.stackedWidget.setCurrentIndex(0)
         QtCore.QObject.connect(self.visualizationComboBox, QtCore.SIGNAL(_fromUtf8("currentIndexChanged(int)")), self.stackedWidget.setCurrentIndex)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
@@ -223,7 +236,10 @@ class Ui_MainWindow(object):
         self.analogGridScaleComboBox.setItemText(6, _translate("MainWindow", "250 uV", None))
         self.analogGridScaleComboBox.setItemText(7, _translate("MainWindow", "500 uV", None))
         self.analogGridScaleComboBox.setItemText(8, _translate("MainWindow", "1000 uV", None))
-        self.filterCheckBox.setText(_translate("MainWindow", "Filter (Comparison Only)", None))
+        self.filterCheckBox.setText(_translate("MainWindow", "Bandpass Filter", None))
+        self.filterLowSpinBox.setSuffix(_translate("MainWindow", " Hz", None))
+        self.label.setText(_translate("MainWindow", "to", None))
+        self.filterHighSpinBox.setSuffix(_translate("MainWindow", " Hz", None))
         self.toolBar.setWindowTitle(_translate("MainWindow", "toolBar", None))
         self.actionSave_to_Spreadsheet.setText(_translate("MainWindow", "Save to Spreadsheet...", None))
         self.actionSave_to_Spreadsheet.setShortcut(_translate("MainWindow", "Ctrl+S", None))

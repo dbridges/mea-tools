@@ -145,7 +145,7 @@ def read_binary(fname, no_channels, columns, part=(0, -1),
     return d
 
 
-def filter(series):
+def filter(series, low=200.0, high=4000.0):
     """
     Filters given series with a 2nd order bandpass filter with cutoff
     frequencies of 100Hz and 4kHz
@@ -161,7 +161,7 @@ def filter(series):
     """
     dt = series.index[1] - series.index[0]
     fs_nyquist = (1.0/dt) / 2.0
-    bf, af = signal.butter(2, (200.0/fs_nyquist, 4000.0/fs_nyquist),
+    bf, af = signal.butter(2, (low/fs_nyquist, high/fs_nyquist),
                            btype='bandpass')
     return pd.Series(signal.filtfilt(bf, af, series).astype(np.float32),
                      index=series.index)

@@ -4,6 +4,7 @@ import platform
 import time
 
 import pymea.pymea as mea
+import pymea.util as util
 from pymea.ui.visualizations import (MEA120GridVisualization,
                                      MEAAnalogVisualization,
                                      RasterPlotVisualization,
@@ -321,6 +322,24 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
     @QtCore.pyqtSlot()
     def on_actionAnalogGrid_activated(self):
         self.visualizationComboBox.setCurrentIndex(2)
+
+    @QtCore.pyqtSlot(float)
+    def on_filterLowSpinBox_valueChanged(self, val):
+        if self.canvas.analog_vis is None:
+            return
+        self.canvas.analog_vis.filter_cutoff = [
+            self.filterLowSpinBox.value(),
+            self.filterHighSpinBox.value()
+        ]
+
+    @QtCore.pyqtSlot(float)
+    def on_filterHighSpinBox_valueChanged(self, val):
+        if self.canvas.analog_vis is None:
+            return
+        self.canvas.analog_vis.filter_cutoff = [
+            self.filterLowSpinBox.value(),
+            self.filterHighSpinBox.value()
+        ]
 
     def closeEvent(self, event):
         self.save_settings()

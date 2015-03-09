@@ -76,6 +76,7 @@ class MEAAnalogVisualization(Visualization):
                                                Theme.grid_line)
         self.extra_text = ''
         self._filtered = False
+        self._filter_cutoff = [200, 4000]
         self.resample()
 
         self.background_color = Theme.background
@@ -120,6 +121,15 @@ class MEAAnalogVisualization(Visualization):
         self._filtered = val
         self.resample()
 
+    @property
+    def filter_cutoff(self):
+        return self._filter_cutoff
+
+    @filter_cutoff.setter
+    def filter_cutoff(self, val):
+        self._filter_cutoff = val
+        self.resample()
+
     def draw(self):
         gloo.clear(self.background_color)
         if self.measuring:
@@ -133,7 +143,7 @@ class MEAAnalogVisualization(Visualization):
         for i, e in enumerate(self.electrodes):
             x = self.data[e].index.values.astype(np.float32)
             if self.filtered:
-                y = mea.filter(self.data[e]).values
+                y = mea.filter(self.data[e], *self._filter_cutoff).values
             else:
                 y = self.data[e].values
             z = np.full_like(x, i)
