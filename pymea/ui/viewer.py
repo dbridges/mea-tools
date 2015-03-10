@@ -4,7 +4,6 @@ import platform
 import time
 
 import pymea.pymea as mea
-import pymea.util as util
 from pymea.ui.visualizations import (MEA120GridVisualization,
                                      MEAAnalogVisualization,
                                      RasterPlotVisualization,
@@ -76,8 +75,8 @@ class VisualizationCanvas(app.Canvas):
             self.analog_grid_vis.t0 = self.visualization.t0
             self.analog_grid_vis.dt = self.visualization.dt
             self.visualization.on_hide()
-        self.analog_grid_vis.y_scale_index = \
-            self.controller.analogGridScaleComboBox.currentIndex()
+        self.analog_grid_vis.y_scale = \
+            self.controller.analogScaleSpinBox.value()
         self.visualization = self.analog_grid_vis
         self.visualization.on_show()
 
@@ -208,7 +207,6 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         self.mainLayout.addWidget(self.canvas.native)
 
         self.rasterRowCountSlider.setValue(120)
-        self.analogGridScaleComboBox.setCurrentIndex(4)
 
         self.flashingSpikeTimescaleComboBox.setCurrentIndex(4)
 
@@ -273,16 +271,12 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
                 self.load_analog_data()
             self.canvas.show_analog_grid()
 
-    @QtCore.pyqtSlot(str)
-    def on_analogGridScaleComboBox_currentIndexChanged(self, text):
-        try:
-            scale = float(text.split(' ')[0])
-        except:
-            scale = 150
+    @QtCore.pyqtSlot(float)
+    def on_analogScaleSpinBox_valueChanged(self, val):
         if self.canvas.analog_grid_vis is not None:
-            self.canvas.analog_grid_vis.y_scale = scale
+            self.canvas.analog_grid_vis.y_scale = val
         if self.canvas.analog_vis is not None:
-            self.canvas.analog_vis.y_scale = scale
+            self.canvas.analog_vis.y_scale = val
 
     @QtCore.pyqtSlot(str)
     def on_flashingSpikeTimescaleComboBox_currentIndexChanged(self, text):

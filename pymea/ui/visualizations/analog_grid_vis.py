@@ -131,7 +131,7 @@ class MEA120GridVisualization(Visualization):
             bin_size = 1
         bin_count = len(np.arange(start_i, end_i, bin_size))
 
-        data = np.empty((120, 2*bin_count, 4), dtype=np.float32)
+        data = np.empty((self.data.shape[1], 2*bin_count, 4), dtype=np.float32)
 
         for i, column in enumerate(self.data):
             v = mea.min_max_bin(self.data[column].values[start_i:end_i],
@@ -144,7 +144,8 @@ class MEA120GridVisualization(Visualization):
             data[i] = np.column_stack((x, y, t, v))
 
         # Update shader
-        self.program['a_position'] = data.reshape(240*bin_count, 4)
+        self.program['a_position'] = data.reshape(
+            2*self.data.shape[1]*bin_count, 4)
         self.program['u_width'] = bin_count
 
     def update(self):

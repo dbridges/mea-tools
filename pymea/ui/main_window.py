@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'pymea/ui/PyMEAMainWindow.ui'
 #
-# Created: Tue Mar 10 13:24:44 2015
+# Created: Tue Mar 10 14:20:11 2015
 #      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -128,23 +128,14 @@ class Ui_MainWindow(object):
         self.scaleLabel.setSizePolicy(sizePolicy)
         self.scaleLabel.setObjectName(_fromUtf8("scaleLabel"))
         self.horizontalLayout_7.addWidget(self.scaleLabel)
-        self.analogGridScaleComboBox = QtGui.QComboBox(self.analogPage)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.analogGridScaleComboBox.sizePolicy().hasHeightForWidth())
-        self.analogGridScaleComboBox.setSizePolicy(sizePolicy)
-        self.analogGridScaleComboBox.setObjectName(_fromUtf8("analogGridScaleComboBox"))
-        self.analogGridScaleComboBox.addItem(_fromUtf8(""))
-        self.analogGridScaleComboBox.addItem(_fromUtf8(""))
-        self.analogGridScaleComboBox.addItem(_fromUtf8(""))
-        self.analogGridScaleComboBox.addItem(_fromUtf8(""))
-        self.analogGridScaleComboBox.addItem(_fromUtf8(""))
-        self.analogGridScaleComboBox.addItem(_fromUtf8(""))
-        self.analogGridScaleComboBox.addItem(_fromUtf8(""))
-        self.analogGridScaleComboBox.addItem(_fromUtf8(""))
-        self.analogGridScaleComboBox.addItem(_fromUtf8(""))
-        self.horizontalLayout_7.addWidget(self.analogGridScaleComboBox)
+        self.analogScaleSpinBox = QtGui.QDoubleSpinBox(self.analogPage)
+        self.analogScaleSpinBox.setDecimals(0)
+        self.analogScaleSpinBox.setMinimum(1.0)
+        self.analogScaleSpinBox.setMaximum(20000.0)
+        self.analogScaleSpinBox.setSingleStep(20.0)
+        self.analogScaleSpinBox.setProperty("value", 150.0)
+        self.analogScaleSpinBox.setObjectName(_fromUtf8("analogScaleSpinBox"))
+        self.horizontalLayout_7.addWidget(self.analogScaleSpinBox)
         self.filterCheckBox = QtGui.QCheckBox(self.analogPage)
         self.filterCheckBox.setObjectName(_fromUtf8("filterCheckBox"))
         self.horizontalLayout_7.addWidget(self.filterCheckBox)
@@ -163,7 +154,6 @@ class Ui_MainWindow(object):
         self.filterHighSpinBox.setProperty("value", 4000.0)
         self.filterHighSpinBox.setObjectName(_fromUtf8("filterHighSpinBox"))
         self.horizontalLayout_7.addWidget(self.filterHighSpinBox)
-        self.horizontalLayout_7.setStretch(1, 1)
         self.stackedWidget.addWidget(self.analogPage)
         self.horizontalLayout_8.addWidget(self.stackedWidget)
         spacerItem2 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
@@ -209,7 +199,7 @@ class Ui_MainWindow(object):
         self.actionAnalogGrid.setObjectName(_fromUtf8("actionAnalogGrid"))
 
         self.retranslateUi(MainWindow)
-        self.stackedWidget.setCurrentIndex(2)
+        self.stackedWidget.setCurrentIndex(0)
         QtCore.QObject.connect(self.visualizationComboBox, QtCore.SIGNAL(_fromUtf8("currentIndexChanged(int)")), self.stackedWidget.setCurrentIndex)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
@@ -229,15 +219,7 @@ class Ui_MainWindow(object):
         self.flashingSpikeTimescaleComboBox.setItemText(6, _translate("MainWindow", "1/800x", None))
         self.flashingSpikeTimescaleComboBox.setItemText(7, _translate("MainWindow", "1/1600x", None))
         self.scaleLabel.setText(_translate("MainWindow", "Scale", None))
-        self.analogGridScaleComboBox.setItemText(0, _translate("MainWindow", "10 uV", None))
-        self.analogGridScaleComboBox.setItemText(1, _translate("MainWindow", "25 uV", None))
-        self.analogGridScaleComboBox.setItemText(2, _translate("MainWindow", "50 uV", None))
-        self.analogGridScaleComboBox.setItemText(3, _translate("MainWindow", "100 uV", None))
-        self.analogGridScaleComboBox.setItemText(4, _translate("MainWindow", "150 uV", None))
-        self.analogGridScaleComboBox.setItemText(5, _translate("MainWindow", "200 uV", None))
-        self.analogGridScaleComboBox.setItemText(6, _translate("MainWindow", "250 uV", None))
-        self.analogGridScaleComboBox.setItemText(7, _translate("MainWindow", "500 uV", None))
-        self.analogGridScaleComboBox.setItemText(8, _translate("MainWindow", "1000 uV", None))
+        self.analogScaleSpinBox.setSuffix(_translate("MainWindow", " uV", None))
         self.filterCheckBox.setText(_translate("MainWindow", "Bandpass Filter", None))
         self.filterLowSpinBox.setSuffix(_translate("MainWindow", " Hz", None))
         self.label.setText(_translate("MainWindow", "to", None))

@@ -42,6 +42,15 @@ class MEARecording:
         self.data_len = self.electrode_data.shape[1]
         self.duration = self.data_len / self.sample_rate
         self.peaks = []
+        # Get 1st channel analog data if it exists:
+        if 'Data/Recording_0/AnalogStream/Stream_1' in self.store:
+            info = self.store[
+                '/Data/Recording_0/AnalogStream/Stream_1/InfoChannel']
+            self.analog_conv = 1e-3 * info[0][9]
+            self.analog_data = self.store[
+                'Data/Recording_0/AnalogStream/Stream_1/ChannelData']
+        else:
+            self.analog_data = None
 
     def get(self, channels, start_time=0, end_time=None):
         if channels == 'all':
@@ -56,6 +65,13 @@ class MEARecording:
         data = (self.conv *
                 self.electrode_data[rows, start_i:end_i]
                 .astype(np.float32).transpose())
+        if self.analog_data is not None:
+            analog_data = (self.analog_conv *
+                           self.analog_data[[0], start_i:end_i]
+                           .astype(np.float32).transpose())
+            data = np.concatenate((data, analog_data), axis=1)
+            channels.append('a1')
+
         return pd.DataFrame(data,
                             index=np.arange(start_i, end_i)/self.sample_rate,
                             columns=channels, dtype=np.float32)
