@@ -161,7 +161,14 @@ def filter(series, low=200.0, high=4000.0):
     """
     dt = series.index[1] - series.index[0]
     fs_nyquist = (1.0/dt) / 2.0
-    bf, af = signal.butter(2, (low/fs_nyquist, high/fs_nyquist),
-                           btype='bandpass')
+    if low < 0.1:
+        # Lowpass filter only.
+        bf, af = signal.butter(2, high/fs_nyquist, btype='lowpass')
+    elif high > 10000:
+        # Highpass filter only.
+        bf, af = signal.butter(2, low/fs_nyquist, btype='highpass')
+    else:
+        bf, af = signal.butter(2, (low/fs_nyquist, high/fs_nyquist),
+                               btype='bandpass')
     return pd.Series(signal.filtfilt(bf, af, series).astype(np.float32),
                      index=series.index)

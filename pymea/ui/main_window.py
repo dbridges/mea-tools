@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'pymea/ui/PyMEAMainWindow.ui'
 #
-# Created: Mon Mar  9 15:22:22 2015
+# Created: Tue Mar 10 13:24:44 2015
 #      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -149,6 +149,7 @@ class Ui_MainWindow(object):
         self.filterCheckBox.setObjectName(_fromUtf8("filterCheckBox"))
         self.horizontalLayout_7.addWidget(self.filterCheckBox)
         self.filterLowSpinBox = QtGui.QDoubleSpinBox(self.analogPage)
+        self.filterLowSpinBox.setKeyboardTracking(False)
         self.filterLowSpinBox.setMaximum(50000.0)
         self.filterLowSpinBox.setProperty("value", 200.0)
         self.filterLowSpinBox.setObjectName(_fromUtf8("filterLowSpinBox"))
@@ -157,6 +158,7 @@ class Ui_MainWindow(object):
         self.label.setObjectName(_fromUtf8("label"))
         self.horizontalLayout_7.addWidget(self.label)
         self.filterHighSpinBox = QtGui.QDoubleSpinBox(self.analogPage)
+        self.filterHighSpinBox.setKeyboardTracking(False)
         self.filterHighSpinBox.setMaximum(50000.0)
         self.filterHighSpinBox.setProperty("value", 4000.0)
         self.filterHighSpinBox.setObjectName(_fromUtf8("filterHighSpinBox"))
@@ -207,7 +209,7 @@ class Ui_MainWindow(object):
         self.actionAnalogGrid.setObjectName(_fromUtf8("actionAnalogGrid"))
 
         self.retranslateUi(MainWindow)
-        self.stackedWidget.setCurrentIndex(0)
+        self.stackedWidget.setCurrentIndex(2)
         QtCore.QObject.connect(self.visualizationComboBox, QtCore.SIGNAL(_fromUtf8("currentIndexChanged(int)")), self.stackedWidget.setCurrentIndex)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 

@@ -89,7 +89,7 @@
           </sizepolicy>
          </property>
          <property name="currentIndex">
-          <number>0</number>
+          <number>2</number>
          </property>
          <widget class="QWidget" name="rasterPage">
           <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="0,1">
@@ -300,6 +300,9 @@
            </item>
            <item>
             <widget class="QDoubleSpinBox" name="filterLowSpinBox">
+             <property name="keyboardTracking">
+              <bool>false</bool>
+             </property>
              <property name="suffix">
               <string> Hz</string>
              </property>
@@ -320,6 +323,9 @@
            </item>
            <item>
             <widget class="QDoubleSpinBox" name="filterHighSpinBox">
+             <property name="keyboardTracking">
+              <bool>false</bool>
+             </property>
              <property name="suffix">
               <string> Hz</string>
              </property>
