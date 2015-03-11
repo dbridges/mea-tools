@@ -217,21 +217,25 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
             self.visualizationComboBox.setCurrentIndex(2)
 
         self.load_settings()
-        # Load gui settings and restore window geometery
-        self.settings = QtCore.QSettings('UCSB', 'meaview')
 
     def load_settings(self):
         # Load gui settings and restore window geometery
-        self.settings = QtCore.QSettings('UCSB', 'meaview')
+        settings = QtCore.QSettings('UCSB', 'meaview')
         try:
-            self.settings.beginGroup('MainWindow')
-            self.restoreGeometry(self.settings.value('geometry'))
+            settings.beginGroup('MainWindow')
+            self.restoreGeometry(settings.value('geometry'))
+            self.analogScaleSpinBox.setValue(
+                settings.value('analogScale', 100, type=float))
+            settings.endGroup()
         except:
             pass
 
     def save_settings(self):
-        self.settings.beginGroup('MainWindow')
-        self.settings.setValue('geometry', self.saveGeometry())
+        settings = QtCore.QSettings('UCSB', 'meaview')
+        settings.beginGroup('MainWindow')
+        settings.setValue('geometry', self.saveGeometry())
+        settings.setValue('analogScale', self.analogScaleSpinBox.value())
+        settings.endGroup()
 
     def load_spike_data(self):
         self.spike_data = pd.read_csv(self.spike_file)
