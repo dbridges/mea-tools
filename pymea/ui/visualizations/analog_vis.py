@@ -146,8 +146,6 @@ class MEAAnalogVisualization(Visualization):
                 y = mea.filter(self.data[e], *self._filter_cutoff).values
             else:
                 y = self.data[e].values
-            if e == 'a1':
-                y /= 300
             z = np.full_like(x, i)
             xs.append(x)
             ys.append(y)

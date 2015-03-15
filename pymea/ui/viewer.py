@@ -241,9 +241,10 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         self.spike_data = pd.read_csv(self.spike_file)
 
     def load_analog_data(self):
+        print('Loading data...', end='')
         store = mea.MEARecording(self.analog_file)
-        print('Loading data...')
         self.analog_data = store.get('all')
+        print('done.')
 
     def on_visualization_updated(self):
         self.statusBar.extra_text = self.canvas.visualization.extra_text
