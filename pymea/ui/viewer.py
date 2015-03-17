@@ -218,6 +218,8 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
 
         self.load_settings()
 
+        self.setWindowTitle('MEA Viewer - ' + os.path.basename(input_file))
+
     def load_settings(self):
         # Load gui settings and restore window geometery
         settings = QtCore.QSettings('UCSB', 'meaview')
