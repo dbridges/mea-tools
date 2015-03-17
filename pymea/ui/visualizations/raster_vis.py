@@ -5,6 +5,7 @@
 
 
 import math
+from collections import Sequence
 
 import numpy as np
 from vispy import gloo, visuals
@@ -13,10 +14,16 @@ from .base import LineCollection, Visualization, Theme
 import pymea.util as util
 
 
-class ElectrodeData:
-    def __init__(self, tag, data=[]):
+class ElectrodeData(Sequence):
+    def __init__(self, tag, data=np.array([])):
         self.tag = tag
         self.data = data
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, index):
+        return self.data[index]
 
 
 class RasterPlotVisualization(Visualization):
@@ -61,30 +68,17 @@ class RasterPlotVisualization(Visualization):
         self.program['u_y_scale'] = self._dt/2
         self.program['u_top_margin'] = 20.0 * 2.0 / canvas.size[1]
         self.spikes[['electrode', 'time']].values
-        self.electrode_row = {}
-        d = self.spikes.groupby('electrode').size()
-        d.sort(ascending=False)
-        for i, tag in enumerate(d.index):
-            self.electrode_row[tag] = i
-        self._row_for_electrode = {v: k for
-                                   k, v in self.electrode_row.items()}
-        verticies = []
-        colors = []
-        for e, t in self.spikes[['electrode', 'time']].values:
-            row = self.electrode_row[e]
-            verticies.append((t, row))
-            verticies.append((t, row + 1))
-            color = Theme.plot_colors[row % 3]
-            colors.append(color)
-            colors.append(color)
 
+        # Load data
+        self.data = []
+        for e in self.spikes.groupby('electrode'):
+            self.data.append(ElectrodeData(e[0], e[1]['time'].values))
+        self.data.sort(key=lambda e: len(e), reverse=True)
+
+        self.resample()
         self.margin = {}
         self.margin['top'] = 20
 
-        self.program['a_position'] = verticies
-        self.program['a_color'] = colors
-        self._row_count = len(self.electrode_row)
-        self.program['u_count'] = self._row_count
         self.velocity = 0
         self.tick_separtion = 50
         self.tick_labels = [visuals.TextVisual('', font_size=10, color='w')
@@ -112,12 +106,27 @@ class RasterPlotVisualization(Visualization):
 
     @property
     def row_count(self):
-        return len(self.electrode_row)
+        return len(self.data)
 
     @row_count.setter
     def row_count(self, val):
         self.program['u_count'] = val
         self._row_count = val
+
+    def resample(self):
+        verticies = []
+        colors = []
+        for i, e in enumerate(self.data):
+            for t in e:
+                verticies.append((t, i))
+                verticies.append((t, i + 1))
+                color = Theme.plot_colors[i % 3]
+                colors.append(color)
+                colors.append(color)
+        self.program['a_position'] = verticies
+        self.program['a_color'] = colors
+        self._row_count = len(self.data)
+        self.program['u_count'] = self._row_count
 
     def create_labels(self):
         self.tick_marks.clear()
@@ -177,7 +186,7 @@ class RasterPlotVisualization(Visualization):
         row = util.clip(int((event.pos[1] - self.margin['top']) / row_height),
                         0, 119)
         try:
-            self.electrode = self._row_for_electrode[row]
+            self.electrode = self.data[row].tag
         except IndexError:
             self.electrode = ''
         self.mouse_t = self.t0 + sec_per_pixel * x
