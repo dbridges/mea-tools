@@ -143,7 +143,7 @@ class VisualizationCanvas(app.Canvas):
 
     def on_mouse_release(self, event):
         event_time = time.time()
-        if event_time - self.last_mouse_release_t < 0.3:
+        if event_time - self.last_mouse_release_t < 0.25:
             self.on_mouse_double_click(event)
         else:
             if self.visualization is not None:

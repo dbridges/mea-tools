@@ -69,6 +69,9 @@ class RasterPlotVisualization(Visualization):
         self.program['u_top_margin'] = 20.0 * 2.0 / canvas.size[1]
         self.spikes[['electrode', 'time']].values
 
+        self.display_selected = False
+        self.selected_electrodes = []
+
         # Load data
         self.data = []
         for e in self.spikes.groupby('electrode'):
@@ -116,7 +119,12 @@ class RasterPlotVisualization(Visualization):
     def resample(self):
         verticies = []
         colors = []
-        for i, e in enumerate(self.data):
+        if self.display_selected:
+            data = [d for d in self.data
+                    if d.tag in self.selected_electrodes]
+        else:
+            data = self.data
+        for i, e in enumerate(data):
             for t in e:
                 verticies.append((t, i))
                 verticies.append((t, i + 1))
@@ -125,8 +133,7 @@ class RasterPlotVisualization(Visualization):
                 colors.append(color)
         self.program['a_position'] = verticies
         self.program['a_color'] = colors
-        self._row_count = len(self.data)
-        self.program['u_count'] = self._row_count
+        self.row_count = len(data)
 
     def create_labels(self):
         self.tick_marks.clear()
@@ -204,14 +211,38 @@ class RasterPlotVisualization(Visualization):
         self.t0 = target_time - (rel_x * sec_per_pixel)
 
     def on_key_release(self, event):
-        pass
+        if event.key == 'Enter' and len(self.selected_electrodes) > 0:
+            self.display_selected = True
+            self.resample()
+        elif event.key == 'Escape':
+            self.display_selected = False
+            self.selected_electrodes = []
+            self.resample()
+        self.update_extra_text()
 
     def on_mouse_release(self, event):
         dx = self.canvas.mouse_pos[0] - self.canvas.prev_mouse_pos[0]
         self.velocity = self.dt * dx / self.canvas.size[0]
 
+        if 'shift' in event.modifiers:
+            if self.electrode in self.selected_electrodes:
+                self.selected_electrodes.remove(self.electrode)
+            else:
+                self.selected_electrodes.append(self.electrode)
+            self.update_extra_text()
+
     def on_mouse_press(self, event):
         self.velocity = 0
+
+    def on_mouse_double_click(self, event):
+        if self.display_selected:
+            self.display_selected = False
+            self.selected_electrodes = []
+        else:
+            self.display_selected = True
+            self.selected_electrodes = [self.electrode]
+        self.resample()
+        self.update_extra_text()
 
     def on_resize(self, event):
         self.program['u_top_margin'] = 20.0 * 2.0 / self.canvas.size[1]
@@ -226,3 +257,10 @@ class RasterPlotVisualization(Visualization):
 
     def on_hide(self):
         self.velocity = 0
+
+    def update_extra_text(self):
+        if len(self.selected_electrodes) > 0:
+            self.extra_text = ('Selected: %s' %
+                               ', '.join(self.selected_electrodes))
+        else:
+            self.extra_text = ''
