@@ -69,7 +69,9 @@ class RasterPlotVisualization(Visualization):
         self.program['u_top_margin'] = 20.0 * 2.0 / canvas.size[1]
         self.spikes[['electrode', 'time']].values
 
-        self.display_selected = False
+        self._row_count = 120
+        self._display_selected = False
+        self._unselected_row_count = 120
         self.selected_electrodes = []
 
         # Load data
@@ -78,6 +80,7 @@ class RasterPlotVisualization(Visualization):
             self.data.append(ElectrodeData(e[0], e[1]['time'].values))
         self.data.sort(key=lambda e: len(e), reverse=True)
 
+        self.row_count = len(self.data)
         self.resample()
         self.margin = {}
         self.margin['top'] = 20
@@ -109,12 +112,25 @@ class RasterPlotVisualization(Visualization):
 
     @property
     def row_count(self):
-        return len(self.data)
+        return self._row_count
 
     @row_count.setter
     def row_count(self, val):
         self.program['u_count'] = val
         self._row_count = val
+
+    @property
+    def display_selected(self):
+        return self._display_selected
+
+    @display_selected.setter
+    def display_selected(self, val):
+        self._display_selected = val
+        if self._display_selected:
+            self._unselected_row_count = self.row_count
+            self.row_count = len(self.selected_electrodes)
+        else:
+            self.row_count = self._unselected_row_count
 
     def resample(self):
         verticies = []
@@ -133,7 +149,6 @@ class RasterPlotVisualization(Visualization):
                 colors.append(color)
         self.program['a_position'] = verticies
         self.program['a_color'] = colors
-        self.row_count = len(data)
 
     def create_labels(self):
         self.tick_marks.clear()
@@ -193,7 +208,10 @@ class RasterPlotVisualization(Visualization):
         row = util.clip(int((event.pos[1] - self.margin['top']) / row_height),
                         0, 119)
         try:
-            self.electrode = self.data[row].tag
+            if self.display_selected:
+                self.electrode = self.selected_electrodes[row]
+            else:
+                self.electrode = self.data[row].tag
         except IndexError:
             self.electrode = ''
         self.mouse_t = self.t0 + sec_per_pixel * x
@@ -215,8 +233,8 @@ class RasterPlotVisualization(Visualization):
             self.display_selected = True
             self.resample()
         elif event.key == 'Escape':
-            self.display_selected = False
             self.selected_electrodes = []
+            self.display_selected = False
             self.resample()
         self.update_extra_text()
 
@@ -236,11 +254,11 @@ class RasterPlotVisualization(Visualization):
 
     def on_mouse_double_click(self, event):
         if self.display_selected:
-            self.display_selected = False
             self.selected_electrodes = []
+            self.display_selected = False
         else:
-            self.display_selected = True
             self.selected_electrodes = [self.electrode]
+            self.display_selected = True
         self.resample()
         self.update_extra_text()
 
