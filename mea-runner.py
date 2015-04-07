@@ -28,7 +28,7 @@ def export_spikes(args):
                  if f.endswith('.h5') and os.path.exists(f)]
     import pymea as mea
     for i, f in enumerate(files):
-        mea.export_peaks(f)
+        mea.export_peaks(f, args.amplitude)
         print('%d of %d exported.' % (i + 1, len(files)))
 
 
@@ -52,6 +52,10 @@ def main():
 
     parser_export_spikes = subparsers.add_parser(
         'export_spikes', help='Detect spikes in h5 files.')
+    parser_export_spikes.add_argument('--amplitude',
+                                      type=float,
+                                      default=6.0,
+                                      help='Amplitude threshold in std devs.')
     parser_export_spikes.add_argument('FILES',
                                       help='Files to convert.',
                                       nargs='+')
