@@ -2,13 +2,13 @@
 
 Tools for viewing, analyzing, and processing multi-electrode array data.
 
-The core of the package is a python module, pymea, which has many components for interacting with data acquired by MultiChannel Systems software. Data files must be converted to HDF5 files using [MultiChannel Systems Data Manager]( http://www.multichannelsystems.com/software/multi-channel-datamanager) before they can be viewed or analyzed with pymea.
+The core of the package is a Python 3 module, pymea, which has many components for interacting with data acquired by MultiChannel Systems software. Data files must be converted to HDF5 files using [MultiChannel Systems Data Manager]( http://www.multichannelsystems.com/software/multi-channel-datamanager) before they can be viewed or analyzed with pymea.
 
 This package also contains useful Mathematica functions for interacting with analog data and spike data.
 
-## Commands
+## Command Line Usage
 
-The MEA Tools package has a command line script `mea-runner.py` to interact with data files. It may be useful to add an alias to it in your bashrc file.
+The MEA Tools package has a command line script `mea-runner.py` to interact with data files. It may be useful to add an alias to it in your bashrc file (i.e. add `alias mea='python3 ~/mea-tools/mea-runner.py'` to your appropriate shell startup file.).
 
 ### view
 

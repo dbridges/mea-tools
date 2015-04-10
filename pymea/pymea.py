@@ -19,12 +19,12 @@ input_dir = os.path.expanduser(
 
 
 class MEARecording:
-    def __init__(self, store):
-        store = os.path.expanduser(store)
-        if not os.path.exists(store):
+    def __init__(self, store_path):
+        store_path = os.path.expanduser(store_path)
+        if not os.path.exists(store_path):
             raise IOError('File not found.')
-        self.store_path = store
-        self.store = h5py.File(store)
+        self.store_path = store_path
+        self.store = h5py.File(store_path)
         info = self.store[
             '/Data/Recording_0/AnalogStream/Stream_0/InfoChannel']
         self.sample_rate = 1e6/info[0][8]
