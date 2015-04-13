@@ -19,7 +19,7 @@ def info(args):
             print(store)
 
 
-def export_spikes(args):
+def detect_spikes(args):
     if len(args.FILES) == 1:
         files = [f for f in glob.glob(args.FILES[0])
                  if f.endswith('.h5') and os.path.exists(f)]
@@ -50,16 +50,16 @@ def main():
                              help='File name or path.')
     parser_info.set_defaults(func=info)
 
-    parser_export_spikes = subparsers.add_parser(
-        'export_spikes', help='Detect spikes in h5 files.')
-    parser_export_spikes.add_argument('--amplitude',
+    parser_detect_spikes = subparsers.add_parser(
+        'detect', help='Detect spikes in h5 files.', aliases=['export_spikes'])
+    parser_detect_spikes.add_argument('--amplitude',
                                       type=float,
                                       default=6.0,
                                       help='Amplitude threshold in std devs.')
-    parser_export_spikes.add_argument('FILES',
+    parser_detect_spikes.add_argument('FILES',
                                       help='Files to convert.',
                                       nargs='+')
-    parser_export_spikes.set_defaults(func=export_spikes)
+    parser_detect_spikes.set_defaults(func=detect_spikes)
 
     args = parser.parse_args()
 
