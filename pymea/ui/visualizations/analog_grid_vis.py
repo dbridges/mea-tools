@@ -172,7 +172,7 @@ class MEA120GridVisualization(Visualization):
         if row < 1 or row > 12 or col < 0 or col > 11:
             self.electrode = ''
         else:
-            self.electrode = '%s%d' % (self.electrode_cols[col], row)
+            self.electrode = mea.tag_for_electrode((col, row))
         self.mouse_t = self.t0 + sec_per_pixel * (x % cell_width)
 
     def on_mouse_double_click(self, event):
