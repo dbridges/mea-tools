@@ -62,11 +62,8 @@ class MEAAnalogVisualization(Visualization):
     uniform float u_height;
     uniform float u_adj_y_scale;
 
-    varying float v_index;
-
     void main(void)
     {
-        v_index = a_position.z;
         float y_offset = u_height * (a_position.z + 0.5);
         gl_Position = vec4(u_scale.x * (a_position.x - u_pan) - 1,
                            u_adj_y_scale * a_position.y + 1 - y_offset,
@@ -77,7 +74,6 @@ class MEAAnalogVisualization(Visualization):
 
     POINT_FRAGMENT_SHADER = """
     uniform vec4 u_color;
-    varying float v_index;
 
     void main()
     {
