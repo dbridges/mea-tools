@@ -66,11 +66,8 @@ class VisualizationCanvas(app.Canvas):
 
     def show_analog_grid(self):
         if self.analog_grid_vis is None:
-            if self.controller.analog_data is None:
-                raise IOError('Analog data is unavailable.')
-            else:
-                self.analog_grid_vis = MEA120GridVisualization(
-                    self, self.controller.analog_data)
+            self.analog_grid_vis = MEA120GridVisualization(
+                self, self.controller.analog_data)
         if self.visualization is not None:
             self.analog_grid_vis.t0 = self.visualization.t0
             self.analog_grid_vis.dt = self.visualization.dt
@@ -82,11 +79,8 @@ class VisualizationCanvas(app.Canvas):
 
     def show_analog(self):
         if self.analog_vis is None:
-            if self.controller.analog_data is None:
-                raise IOError('Analog data is unavailable.')
-            else:
-                self.analog_vis = MEAAnalogVisualization(
-                    self, self.controller.analog_data)
+            self.analog_vis = MEAAnalogVisualization(
+                self, self.controller.analog_data)
         if self.visualization is not None:
             self.analog_vis.t0 = self.visualization.t0
             self.analog_vis.dt = self.visualization.dt
