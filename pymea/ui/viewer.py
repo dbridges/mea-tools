@@ -171,8 +171,6 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
     def __init__(self, input_file, parent=None):
         super().__init__(parent)
 
-        self._spike_data = None
-        self._analog_data = None
 
         if input_file.endswith('.csv'):
             self.spike_file = input_file
@@ -191,6 +189,10 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
 
         # UI initialization
         self.setupUi(self)
+
+        self._spike_data = None
+        self._analog_data = None
+
         self.canvas = VisualizationCanvas(self)
 
         self.toolBar.addWidget(self.toolbarWidget)
@@ -232,21 +234,23 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         settings.endGroup()
 
     def load_spike_data(self):
+        print('Loading spike data...', end='', flush=True)
         try:
-            self.spike_data = pd.read_csv(self.spike_file)
+            self._spike_data = pd.read_csv(self.spike_file)
         except:
-            self.spike_data = pd.DataFrame({'electrode': [],
+            self._spike_data = pd.DataFrame({'electrode': [],
                                             'time': [],
                                             'amplitude': [],
                                             'threshold': []})
+        print('done.')
 
     def load_analog_data(self):
-        print('Loading data...', end='')
+        print('Loading analog data...', end='', flush=True)
         try:
             store = mea.MEARecording(self.analog_file)
-            self.analog_data = store.get('all')
+            self._analog_data = store.get('all')
         except:
-            self.analog_data = pd.DataFrame(index=[0, 1/20000.0])
+            self._analog_data = pd.DataFrame(index=[0, 1/20000.0])
         print('done.')
 
     def on_visualization_updated(self):

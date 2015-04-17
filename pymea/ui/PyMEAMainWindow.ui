@@ -13,9 +13,6 @@
   <property name="windowTitle">
    <string>MEA Data Viewer</string>
   </property>
-  <property name="unifiedTitleAndToolBarOnMac">
-   <bool>false</bool>
-  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,1">
     <property name="margin">
