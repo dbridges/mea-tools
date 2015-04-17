@@ -244,9 +244,9 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         print('Loading data...', end='')
         try:
             store = mea.MEARecording(self.analog_file)
-            self.analog_data = store.get('all')
+            self._analog_data = store.get('all')
         except:
-            self.analog_data = pd.DataFrame(index=[0, 1/20000.0])
+            self._analog_data = pd.DataFrame(index=[0, 1/20000.0])
         print('done.')
 
     def on_visualization_updated(self):
