@@ -216,7 +216,7 @@
           </layout>
          </widget>
          <widget class="QWidget" name="analogPage">
-          <layout class="QHBoxLayout" name="horizontalLayout_7" stretch="0,0,0,0,0,0">
+          <layout class="QHBoxLayout" name="horizontalLayout_7" stretch="0,0,0,0,0,0,0">
            <property name="margin">
             <number>0</number>
            </property>
@@ -252,6 +252,13 @@
              </property>
              <property name="value">
               <double>150.000000000000000</double>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="showSpikesCheckBox">
+             <property name="text">
+              <string>Spikes</string>
              </property>
             </widget>
            </item>

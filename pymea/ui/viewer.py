@@ -38,11 +38,8 @@ class VisualizationCanvas(app.Canvas):
 
     def show_raster(self):
         if self.raster_vis is None:
-            if self.controller.spike_data is None:
-                raise IOError('Spike data is unavailable.')
-            else:
-                self.raster_vis = RasterPlotVisualization(
-                    self, self.controller.spike_data)
+            self.raster_vis = RasterPlotVisualization(
+                self, self.controller.spike_data)
         if self.visualization is not None:
             self.raster_vis.t0 = self.visualization.t0
             self.raster_vis.dt = self.visualization.dt
@@ -52,11 +49,8 @@ class VisualizationCanvas(app.Canvas):
 
     def show_flashing_spike(self):
         if self.flashing_spike_vis is None:
-            if self.controller.spike_data is None:
-                raise IOError('Spike data is unavailable.')
-            else:
-                self.flashing_spike_vis = FlashingSpikeVisualization(
-                    self, self.controller.spike_data)
+            self.flashing_spike_vis = FlashingSpikeVisualization(
+                self, self.controller.spike_data)
         if self.visualization is not None:
             self.flashing_spike_vis.t0 = self.visualization.t0
             self.flashing_spike_vis.dt = self.visualization.dt
@@ -80,7 +74,7 @@ class VisualizationCanvas(app.Canvas):
     def show_analog(self):
         if self.analog_vis is None:
             self.analog_vis = MEAAnalogVisualization(
-                self, self.controller.analog_data)
+                self, self.controller.analog_data, self.controller.spike_data)
         if self.visualization is not None:
             self.analog_vis.t0 = self.visualization.t0
             self.analog_vis.dt = self.visualization.dt
@@ -334,6 +328,12 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         if self.canvas.analog_vis is None:
             return
         self.canvas.analog_vis.filtered = checked
+
+    @QtCore.pyqtSlot(bool)
+    def on_showSpikesCheckBox_toggled(self, checked):
+        if self.canvas.analog_vis is None:
+            return
+        self.canvas.analog_vis.show_spikes = checked
 
     @QtCore.pyqtSlot()
     def on_actionRaster_activated(self):
