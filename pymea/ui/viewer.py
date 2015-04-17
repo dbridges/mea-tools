@@ -177,8 +177,8 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
     def __init__(self, input_file, parent=None):
         super().__init__(parent)
 
-        self.spike_data = None
-        self.analog_data = None
+        self._spike_data = None
+        self._analog_data = None
 
         if input_file.endswith('.csv'):
             self.spike_file = input_file
@@ -186,10 +186,8 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
                 self.analog_file = input_file[:-4] + '.h5'
             else:
                 self.analog_file = None
-            self.load_spike_data()
         elif input_file.endswith('.h5'):
             self.analog_file = input_file
-            self.load_analog_data()
             if os.path.exists(input_file[:-3] + '.csv'):
                 self.spike_file = input_file[:-3] + '.csv'
             else:
@@ -240,12 +238,21 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         settings.endGroup()
 
     def load_spike_data(self):
-        self.spike_data = pd.read_csv(self.spike_file)
+        try:
+            self.spike_data = pd.read_csv(self.spike_file)
+        except:
+            self.spike_data = pd.DataFrame({'electrode': [],
+                                            'time': [],
+                                            'amplitude': [],
+                                            'threshold': []})
 
     def load_analog_data(self):
         print('Loading data...', end='')
-        store = mea.MEARecording(self.analog_file)
-        self.analog_data = store.get('all')
+        try:
+            store = mea.MEARecording(self.analog_file)
+            self.analog_data = store.get('all')
+        except:
+            self.analog_data = pd.DataFrame(index=[0, 1/20000.0])
         print('done.')
 
     def on_visualization_updated(self):
@@ -253,6 +260,26 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         self.statusBar.electrode = self.canvas.visualization.electrode
         self.statusBar.mouse_t = self.canvas.visualization.mouse_t
         self.statusBar.update()
+
+    @property
+    def spike_data(self):
+        if self._spike_data is None:
+            self.load_spike_data()
+        return self._spike_data
+
+    @spike_data.setter
+    def spike_data(self, data):
+        self._spike_data = data
+
+    @property
+    def analog_data(self):
+        if self._analog_data is None:
+            self.load_analog_data()
+        return self._analog_data
+
+    @analog_data.setter
+    def analog_data(self, data):
+        self._analog_data = data
 
     @QtCore.pyqtSlot(int)
     def on_rasterRowCountSlider_valueChanged(self, val):
@@ -274,8 +301,6 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
                 self.load_spike_data()
             self.canvas.show_flashing_spike()
         elif text == 'Analog Grid':
-            if self.analog_data is None:
-                self.load_analog_data()
             self.canvas.show_analog_grid()
 
     @QtCore.pyqtSlot(float)

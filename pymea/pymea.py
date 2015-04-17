@@ -131,7 +131,7 @@ class MEARecording:
     def __del__(self):
         try:
             self.close()
-        except ValueError:
+        except (ValueError, AttributeError):
             pass
 
     def __getitem__(self, key):
