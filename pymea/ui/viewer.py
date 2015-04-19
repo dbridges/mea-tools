@@ -75,6 +75,10 @@ class VisualizationCanvas(app.Canvas):
         if self.analog_vis is None:
             self.analog_vis = MEAAnalogVisualization(
                 self, self.controller.analog_data, self.controller.spike_data)
+            self.analog_vis.filtered = \
+                self.controller.filterCheckBox.isChecked()
+            self.analog_vis.show_spikes = \
+                self.controller.showSpikesCheckBox.isChecked()
         if self.visualization is not None:
             self.analog_vis.t0 = self.visualization.t0
             self.analog_vis.dt = self.visualization.dt
@@ -216,6 +220,12 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
             self.restoreGeometry(settings.value('geometry'))
             self.analogScaleSpinBox.setValue(
                 settings.value('analogScale', 100, type=float))
+            self.filterCheckBox.setChecked(
+                settings.value('filterCheckBox', False, type=bool)
+            )
+            self.showSpikesCheckBox.setChecked(
+                settings.value('showSpikesCheckBox', False, type=bool)
+            )
             settings.endGroup()
         except:
             pass
@@ -225,6 +235,9 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         settings.beginGroup('MainWindow')
         settings.setValue('geometry', self.saveGeometry())
         settings.setValue('analogScale', self.analogScaleSpinBox.value())
+        settings.setValue('filterCheckBox', self.filterCheckBox.isChecked())
+        settings.setValue('showSpikesCheckBox',
+                          self.showSpikesCheckBox.isChecked())
         settings.endGroup()
 
     def load_spike_data(self):
