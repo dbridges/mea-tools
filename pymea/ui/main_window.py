@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'pymea/ui/PyMEAMainWindow.ui'
 #
-# Created: Sun Mar 15 07:18:36 2015
-#      by: PyQt4 UI code generator 4.11.3
+# Created: Fri Apr 17 16:21:51 2015
+#      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -27,7 +27,6 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName(_fromUtf8("MainWindow"))
         MainWindow.resize(1146, 664)
-        MainWindow.setUnifiedTitleAndToolBarOnMac(False)
         self.centralwidget = QtGui.QWidget(MainWindow)
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
         self.verticalLayout_2 = QtGui.QVBoxLayout(self.centralwidget)
@@ -136,6 +135,9 @@ class Ui_MainWindow(object):
         self.analogScaleSpinBox.setProperty("value", 150.0)
         self.analogScaleSpinBox.setObjectName(_fromUtf8("analogScaleSpinBox"))
         self.horizontalLayout_7.addWidget(self.analogScaleSpinBox)
+        self.showSpikesCheckBox = QtGui.QCheckBox(self.analogPage)
+        self.showSpikesCheckBox.setObjectName(_fromUtf8("showSpikesCheckBox"))
+        self.horizontalLayout_7.addWidget(self.showSpikesCheckBox)
         self.filterCheckBox = QtGui.QCheckBox(self.analogPage)
         self.filterCheckBox.setObjectName(_fromUtf8("filterCheckBox"))
         self.horizontalLayout_7.addWidget(self.filterCheckBox)
@@ -220,6 +222,7 @@ class Ui_MainWindow(object):
         self.flashingSpikeTimescaleComboBox.setItemText(7, _translate("MainWindow", "1/1600x", None))
         self.scaleLabel.setText(_translate("MainWindow", "Scale", None))
         self.analogScaleSpinBox.setSuffix(_translate("MainWindow", " uV", None))
+        self.showSpikesCheckBox.setText(_translate("MainWindow", "Spikes", None))
         self.filterCheckBox.setText(_translate("MainWindow", "Bandpass Filter", None))
         self.filterLowSpinBox.setSuffix(_translate("MainWindow", " Hz", None))
         self.label.setText(_translate("MainWindow", "to", None))

@@ -15,7 +15,7 @@ import pymea.util as util
 
 
 class MEAAnalogVisualization(Visualization):
-    VERTEX_SHADER = """
+    STRIP_VERTEX_SHADER = """
     // x, y is position, z is index to avoid connecting traces from
     // two electrodes.
     attribute vec3 a_position;
@@ -37,7 +37,7 @@ class MEAAnalogVisualization(Visualization):
     }
     """
 
-    FRAGMENT_SHADER = """
+    STRIP_FRAGMENT_SHADER = """
     uniform vec4 u_color;
     varying float v_index;
 
@@ -52,21 +52,59 @@ class MEAAnalogVisualization(Visualization):
     }
     """
 
-    def __init__(self, canvas, data):
+    POINT_VERTEX_SHADER = """
+    // x, y is position, z is index to avoid connecting traces from
+    // two electrodes.
+    attribute vec3 a_position;
+
+    uniform vec2 u_scale;
+    uniform float u_pan;
+    uniform float u_height;
+    uniform float u_adj_y_scale;
+
+    void main(void)
+    {
+        float y_offset = u_height * (a_position.z + 0.5);
+        gl_Position = vec4(u_scale.x * (a_position.x - u_pan) - 1,
+                           u_adj_y_scale * a_position.y + 1 - y_offset,
+                           0.0, 1.0);
+        gl_PointSize = 6.0;
+    }
+    """
+
+    POINT_FRAGMENT_SHADER = """
+    uniform vec4 u_color;
+
+    void main()
+    {
+        gl_FragColor = u_color;
+    }
+    """
+
+    def __init__(self, canvas, analog_data, spike_data):
         self.canvas = canvas
-        self.data = data
+        self.analog_data = analog_data
+        self.spike_data = spike_data
+        self.show_spikes = False
         self._t0 = 0
         self._dt = 20
         self._y_scale = 150
+        self._pan = 0
+        self._scale = 1
         self.mouse_t = 0
         self.electrode = ''
         self.electrodes = ['h11']  # l5, m5
 
-        self.program = gloo.Program(self.VERTEX_SHADER,
-                                    self.FRAGMENT_SHADER)
-        self.program['u_pan'] = self._t0
-        self.program['u_scale'] = (2.0/self._dt, 1/self._y_scale)
-        self.program['u_color'] = Theme.blue
+        self.strip_program = gloo.Program(self.STRIP_VERTEX_SHADER,
+                                          self.STRIP_FRAGMENT_SHADER)
+        self.strip_program['u_color'] = Theme.blue
+
+        self.point_program = gloo.Program(self.POINT_VERTEX_SHADER,
+                                          self.POINT_FRAGMENT_SHADER)
+        self.point_program['u_color'] = Theme.yellow
+
+        self.pan = self._t0
+        self.scale = (2.0/self._dt, 1/self._y_scale)
 
         self.velocity = 0
 
@@ -88,7 +126,7 @@ class MEAAnalogVisualization(Visualization):
     @t0.setter
     def t0(self, val):
         self._t0 = util.clip(val, 0 - self.dt/2,
-                             self.data.index[-1] - self.dt/2)
+                             self.analog_data.index[-1] - self.dt/2)
         self.update()
 
     @property
@@ -97,8 +135,26 @@ class MEAAnalogVisualization(Visualization):
 
     @dt.setter
     def dt(self, val):
-        self._dt = util.clip(val, 0.0025, self.data.index[-1])
+        self._dt = util.clip(val, 0.0025, self.analog_data.index[-1])
         self.update()
+
+    @property
+    def pan(self):
+        return self._pan
+
+    @pan.setter
+    def pan(self, val):
+        self.strip_program['u_pan'] = val
+        self.point_program['u_pan'] = val
+
+    @property
+    def scale(self):
+        return self._scale
+
+    @scale.setter
+    def scale(self, val):
+        self.strip_program['u_scale'] = val
+        self.point_program['u_scale'] = val
 
     @property
     def y_scale(self):
@@ -107,9 +163,12 @@ class MEAAnalogVisualization(Visualization):
     @y_scale.setter
     def y_scale(self, val):
         self._y_scale = val
-        self.program['u_adj_y_scale'] = 1 / (
+        self.strip_program['u_adj_y_scale'] = 1 / (
             self._y_scale * len(self.electrodes))
-        self.program['u_height'] = 2.0 / len(self.electrodes)
+        self.strip_program['u_height'] = 2.0 / len(self.electrodes)
+        self.point_program['u_adj_y_scale'] = 1 / (
+            self._y_scale * len(self.electrodes))
+        self.point_program['u_height'] = 2.0 / len(self.electrodes)
         self.update()
 
     @property
@@ -134,36 +193,42 @@ class MEAAnalogVisualization(Visualization):
         gloo.clear(self.background_color)
         if self.measuring:
             self.measure_line.draw(self.canvas.tr_sys)
-        self.program.draw('line_strip')
+        if self.show_spikes:
+            self.point_program.draw('points')
+        self.strip_program.draw('line_strip')
 
     def resample(self):
         xs = []
         ys = []
         zs = []
+        spike_data = []
         for i, e in enumerate(self.electrodes):
-            x = self.data[e].index.values.astype(np.float32)
+            x = self.analog_data[e].index.values.astype(np.float32)
             if self.filtered:
-                y = mea.filter(self.data[e], *self._filter_cutoff).values
+                y = mea.filter(self.analog_data[e],
+                               *self._filter_cutoff).values
             else:
-                y = self.data[e].values
+                y = self.analog_data[e].values
             z = np.full_like(x, i)
             xs.append(x)
             ys.append(y)
             zs.append(z)
-        self.program['a_position'] = np.column_stack((np.concatenate(xs),
-                                                      np.concatenate(ys),
-                                                      np.concatenate(zs)))
-        self.program['u_adj_y_scale'] = 1 / (
-            self._y_scale * len(self.electrodes))
-        self.program['u_height'] = 2.0 / len(self.electrodes)
+            spike_data.extend(
+                [(r.time, r.amplitude, i) for j, r in
+                 self.spike_data[self.spike_data.electrode == e].iterrows()])
+
+        self.strip_program['a_position'] = np.column_stack(
+            (np.concatenate(xs), np.concatenate(ys), np.concatenate(zs)))
+
+        self.point_program['a_position'] = spike_data
         if self.filtered:
-            self.program['u_color'] = Theme.pink
+            self.strip_program['u_color'] = Theme.pink
         else:
-            self.program['u_color'] = Theme.blue
+            self.strip_program['u_color'] = Theme.blue
 
     def update(self):
-        self.program['u_pan'] = self.t0
-        self.program['u_scale'] = (2.0 / self.dt, 1 / self._y_scale)
+        self.pan = self.t0
+        self.scale = (2.0 / self.dt, 1 / self._y_scale)
 
     def on_mouse_move(self, event):
         x, y = event.pos
