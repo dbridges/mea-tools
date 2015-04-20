@@ -169,7 +169,6 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
     def __init__(self, input_file, parent=None):
         super().__init__(parent)
 
-
         if input_file.endswith('.csv'):
             self.spike_file = input_file
             if os.path.exists(input_file[:-4] + '.h5'):
@@ -246,9 +245,9 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
             self._spike_data = pd.read_csv(self.spike_file)
         except:
             self._spike_data = pd.DataFrame({'electrode': [],
-                                            'time': [],
-                                            'amplitude': [],
-                                            'threshold': []})
+                                             'time': [],
+                                             'amplitude': [],
+                                             'threshold': []})
         print('done.')
 
     def load_analog_data(self):
