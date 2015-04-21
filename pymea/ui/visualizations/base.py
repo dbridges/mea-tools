@@ -76,6 +76,46 @@ class LineCollection:
             self._program.draw('lines')
 
 
+class ElectrodeDict():
+    """
+    An immuatable data structure for holding spike data. A channel can be
+    accesed using ['h1'] syntax. Data can also be sorted.
+    """
+    def __init__(self, spike_table):
+        self.spike_table = spike_table
+        self.spike_dict = {}
+        self.spike_order = []
+        for (tag, data) in self.spike_table.groupby('electrode'):
+            self.spike_dict[tag] = data
+            self.spike_order.append(tag)
+
+    def __getitem__(self, key):
+        if type(key) is int:
+            return self.spike_dict[self.spike_order[key]]
+        else:
+            return self.spike_dict[key]
+
+    def __len__(self):
+        return len(self.spike_order)
+
+    def __iter__(self):
+        for tag in self.spike_order:
+            yield tag
+
+    def __reversed__(self):
+        for tag in reversed(self.spike_order):
+            yield tag
+
+    def items(self):
+        for tag in self.spike_order:
+            yield tag, self.spike_dict[tag]
+
+    def sort(self, key=None, reverse=True):
+        if key is None:
+            self.spike_order.sort(key=lambda e: len(self.spike_dict[e]),
+                                  reverse=reverse)
+
+
 class Visualization:
     scroll_factor = 0.025 if sys.platform == 'darwin' else 0.125
 

@@ -10,7 +10,7 @@ import numpy as np
 from vispy import gloo, visuals
 
 import pymea as mea
-from .base import Visualization, Theme
+from .base import Visualization, Theme, ElectrodeDict
 import pymea.util as util
 
 
@@ -84,7 +84,7 @@ class MEAAnalogVisualization(Visualization):
     def __init__(self, canvas, analog_data, spike_data):
         self.canvas = canvas
         self.analog_data = analog_data
-        self.spike_data = spike_data
+        self.spike_data = ElectrodeDict(spike_data)
         self.show_spikes = False
         self._t0 = 0
         self._dt = 20
@@ -215,7 +215,7 @@ class MEAAnalogVisualization(Visualization):
             zs.append(z)
             spike_data.extend(
                 [(r.time, r.amplitude, i) for j, r in
-                 self.spike_data[self.spike_data.electrode == e].iterrows()])
+                 self.spike_data[e].iterrows()])
 
         self.strip_program['a_position'] = np.column_stack(
             (np.concatenate(xs), np.concatenate(ys), np.concatenate(zs)))
