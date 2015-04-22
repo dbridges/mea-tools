@@ -28,7 +28,7 @@ def detect_spikes(args):
                  if f.endswith('.h5') and os.path.exists(f)]
     import pymea as mea
     for i, f in enumerate(files):
-        mea.export_peaks(f, args.amplitude)
+        mea.export_spikes(f, args.amplitude)
         print('%d of %d exported.' % (i + 1, len(files)))
 
 

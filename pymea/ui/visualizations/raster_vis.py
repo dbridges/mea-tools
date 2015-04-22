@@ -5,25 +5,13 @@
 
 
 import math
-from collections import Sequence
 
 import numpy as np
 from vispy import gloo, visuals
 
+import pymea as mea
 from .base import LineCollection, Visualization, Theme
 import pymea.util as util
-
-
-class ElectrodeData(Sequence):
-    def __init__(self, tag, data=np.array([])):
-        self.tag = tag
-        self.data = data
-
-    def __len__(self):
-        return len(self.data)
-
-    def __getitem__(self, index):
-        return self.data[index]
 
 
 class RasterPlotVisualization(Visualization):
@@ -58,29 +46,26 @@ class RasterPlotVisualization(Visualization):
 
     def __init__(self, canvas, spike_data):
         self.canvas = canvas
-        self.spikes = spike_data
+
+        # Load data
+        self.spike_data = mea.MEASpikeDict(spike_data)
+        self.spike_data.sort()
+
         self.program = gloo.Program(RasterPlotVisualization.VERTEX_SHADER,
                                     RasterPlotVisualization.FRAGMENT_SHADER)
         self._t0 = 0
-        self._dt = self.spikes['time'].max()
+        self._dt = self.spike_data.max_time()
         self.electrode = ''
         self.program['u_pan'] = self._t0
         self.program['u_y_scale'] = self._dt/2
         self.program['u_top_margin'] = 20.0 * 2.0 / canvas.size[1]
-        self.spikes[['electrode', 'time']].values
 
         self._row_count = 120
         self._display_selected = False
         self._unselected_row_count = 120
         self.selected_electrodes = []
 
-        # Load data
-        self.data = []
-        for e in self.spikes.groupby('electrode'):
-            self.data.append(ElectrodeData(e[0], e[1]['time'].values))
-        self.data.sort(key=lambda e: len(e), reverse=True)
-
-        self.row_count = len(self.data)
+        self.row_count = len(self.spike_data)
         self.resample()
         self.margin = {}
         self.margin['top'] = 20
@@ -100,7 +85,7 @@ class RasterPlotVisualization(Visualization):
     @t0.setter
     def t0(self, val):
         self._t0 = util.clip(val, 0 - self.dt/2,
-                             self.spikes.time.max() - self.dt/2)
+                             self.spike_data.max_time() - self.dt/2)
 
     @property
     def dt(self):
@@ -108,7 +93,7 @@ class RasterPlotVisualization(Visualization):
 
     @dt.setter
     def dt(self, val):
-        self._dt = util.clip(val, 0.0025, self.spikes.time.max())
+        self._dt = util.clip(val, 0.0025, self.spike_data.max_time())
 
     @property
     def row_count(self):
@@ -135,18 +120,20 @@ class RasterPlotVisualization(Visualization):
     def resample(self):
         verticies = []
         colors = []
-        if self.display_selected:
-            data = [d for d in self.data
-                    if d.tag in self.selected_electrodes]
+
+        if self._display_selected:
+            electrodes = self.selected_electrodes
         else:
-            data = self.data
-        for i, e in enumerate(data):
-            for t in e:
+            electrodes = self.spike_data.keys()
+
+        for i, electrode in enumerate(electrodes):
+            for t in self.spike_data[electrode]['time'].values:
                 verticies.append((t, i))
                 verticies.append((t, i + 1))
                 color = Theme.plot_colors[i % 3]
                 colors.append(color)
                 colors.append(color)
+
         self.program['a_position'] = verticies
         self.program['a_color'] = colors
 
@@ -211,7 +198,7 @@ class RasterPlotVisualization(Visualization):
             if self.display_selected:
                 self.electrode = self.selected_electrodes[row]
             else:
-                self.electrode = self.data[row].tag
+                self.electrode = self.spike_data.keys()[row]
         except IndexError:
             self.electrode = ''
         self.mouse_t = self.t0 + sec_per_pixel * x

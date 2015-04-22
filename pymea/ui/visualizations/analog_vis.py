@@ -10,7 +10,7 @@ import numpy as np
 from vispy import gloo, visuals
 
 import pymea as mea
-from .base import Visualization, Theme, ElectrodeDict
+from .base import Visualization, Theme
 import pymea.util as util
 
 
@@ -84,7 +84,7 @@ class MEAAnalogVisualization(Visualization):
     def __init__(self, canvas, analog_data, spike_data):
         self.canvas = canvas
         self.analog_data = analog_data
-        self.spike_data = ElectrodeDict(spike_data)
+        self.spike_data = mea.MEASpikeDict(spike_data)
         self.show_spikes = False
         self._t0 = 0
         self._dt = 20

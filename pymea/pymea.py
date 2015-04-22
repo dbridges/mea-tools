@@ -11,8 +11,8 @@ import h5py
 from . import util
 from . import mea_cython
 
-__all__ = ['MEARecording', 'coordinates_for_electrode', 'tag_for_electrode',
-           'condense_spikes', 'filter', 'export_peaks']
+__all__ = ['MEARecording', 'MEASpikeDict', 'coordinates_for_electrode',
+           'tag_for_electrode', 'condense_spikes', 'filter', 'export_spikes']
 
 input_dir = os.path.expanduser(
     '~/Dropbox/Hansma/ncp/IA6787/2014_08_20_Baseline')
@@ -118,7 +118,7 @@ class MEARecording:
                             index=np.arange(start_i, end_i)/self.sample_rate,
                             columns=output_channels, dtype=np.float32)
 
-    def find_peaks(self, amp=6.0):
+    def detect_spikes(self, amp=6.0):
         peaks = []
         df = self.get('all')
         for electrode in df.keys():
@@ -156,10 +156,93 @@ class MEARecording:
         self.store.close()
 
 
-def export_peaks(fname, amp=6.0):
+class MEASpikeDict():
+    """
+    An immuatable data structure for manipulating spike data.
+
+    Parameters
+    ----------
+        spike_table : DataFrame
+        DataFrame as given by MEARecording.detect_spikes() or by reading
+        a csv generated using pymea.export_spikes()
+
+
+    MEASpikeDict acts as a dict in some situations, or a list in others. It
+    maintains order and can be sorted by acting on its values.
+
+    Examples:
+
+    >>> spikes = MEASpikeDict(spike_table)
+
+    >>> spikes['e8']
+
+        electrode      time  amplitude  threshold
+    158        e8   8.23285 -23.280405 -18.782986
+    159        e8   8.53015 -20.926035 -18.782986
+    160        e8   9.22945 -20.225355 -18.782986
+    161        e8  10.17610 -19.328444 -18.782986
+    162        e8  10.37980 -23.685604 -18.782986
+    163        e8  10.91855 -19.250252 -18.782986
+    164        e8  10.99360 -19.138470 -18.782986
+    165        e8  11.18440 -20.593740 -18.782986
+    166        e8  11.47700 -20.357075 -18.782986
+
+    [9 rows x 4 columns]
+
+    Iterate through keys:
+    >>> for electrode in spikes:
+
+    Iterate through keys and values:
+    >>> for electrode, data in spikes.items()
+
+    Sort by firing rate:
+    >>> spikes.sort()
+    """
+    def __init__(self, spike_table):
+        self.spike_table = spike_table
+        self.spike_dict = {}
+        self.spike_order = []
+        for (tag, data) in self.spike_table.groupby('electrode'):
+            self.spike_dict[tag] = data
+            self.spike_order.append(tag)
+
+    def __getitem__(self, key):
+        if type(key) is int:
+            return self.spike_dict[self.spike_order[key]]
+        else:
+            return self.spike_dict[key]
+
+    def __len__(self):
+        return len(self.spike_order)
+
+    def __iter__(self):
+        for tag in self.spike_order:
+            yield tag
+
+    def __reversed__(self):
+        for tag in reversed(self.spike_order):
+            yield tag
+
+    def items(self):
+        for tag in self.spike_order:
+            yield tag, self.spike_dict[tag]
+
+    def keys(self):
+        return self.spike_order
+
+    def max_time(self):
+        return self.spike_table['time'].max()
+
+    def sort(self, key=None, reverse=True):
+        if key is None:
+            self.spike_order.sort(key=lambda e: len(self.spike_dict[e]),
+                                  reverse=reverse)
+
+
+def export_spikes(fname, amp=6.0):
     fname = os.path.expanduser(fname)
     rec = MEARecording(fname)
-    df = rec.find_peaks(amp)
+    df = rec.detect_spikes(amp)
     df.to_csv(fname[:-3] + '.csv', index=False)
 
 
