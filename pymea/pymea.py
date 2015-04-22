@@ -207,10 +207,13 @@ class MEASpikeDict():
             self.spike_order.append(tag)
 
     def __getitem__(self, key):
-        if type(key) is int:
-            return self.spike_dict[self.spike_order[key]]
-        else:
-            return self.spike_dict[key]
+        try:
+            if type(key) is int:
+                return self.spike_dict[self.spike_order[key]]
+            else:
+                return self.spike_dict[key]
+        except KeyError:
+            return pd.DataFrame(columns=self.spike_table.columns)
 
     def __len__(self):
         return len(self.spike_order)
