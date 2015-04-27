@@ -12,7 +12,8 @@ from . import util
 from . import mea_cython
 
 __all__ = ['MEARecording', 'MEASpikeDict', 'coordinates_for_electrode',
-           'tag_for_electrode', 'condense_spikes', 'filter', 'export_spikes']
+           'tag_for_electrode', 'condense_spikes', 'filter', 'export_spikes',
+           'tag_conductance_spikes']
 
 input_dir = os.path.expanduser(
     '~/Dropbox/Hansma/ncp/IA6787/2014_08_20_Baseline')
@@ -325,6 +326,11 @@ def tag_for_electrode(coords):
 
 
 def condense_spikes(srcdir, fname):
+    """
+    Condenses spikes generated with MC_Rack spike detection, 1
+    channel per file, to be in the same format as detect_spikes
+    gives.
+    """
     with open(fname, 'a') as dest:
         dest.write('electrode,time\n')
         for f in os.listdir(srcdir):
@@ -333,6 +339,23 @@ def condense_spikes(srcdir, fname):
                 for line in src:
                     if len(line) > 0 and line[0].isdigit():
                         dest.write('%s,%s' % (label, line))
+
+
+def tag_conductance_spikes(dataframe, conductance_seqs):
+    """
+    Tags spikes in dataframe
+
+    Parameters
+    ----------
+        dataframe : pandas DataFrame
+            A list of spikes as given by pymea.detect_spikes
+        conductance_seqs : list
+            A list of conductance sequences in the form:
+                [['a5', 'a9'], ['c6', 'b6', 'a6']]
+            where the above would identify two conduction sequences,
+            a5->a9 and c6->b6->a6
+    """
+    pass
 
 
 def read_binary(fname, no_channels, columns, part=(0, -1),
