@@ -48,6 +48,9 @@ class RasterPlotVisualization(Visualization):
         self.canvas = canvas
 
         # Load data
+        if 'conductance' not in spike_data.columns:
+            spike_data['conductance'] = False
+
         self.spike_data = mea.MEASpikeDict(spike_data)
         self.spike_data.sort()
 
@@ -66,6 +69,7 @@ class RasterPlotVisualization(Visualization):
         self.selected_electrodes = []
 
         self.row_count = len(self.spike_data)
+        self._dim_conductance = False
         self.resample()
         self.margin = {}
         self.margin['top'] = 20
@@ -117,7 +121,17 @@ class RasterPlotVisualization(Visualization):
         else:
             self.row_count = self._unselected_row_count
 
+    @property
+    def dim_conductance(self):
+        return self._dim_conductance
+
+    @dim_conductance.setter
+    def dim_conductance(self, val):
+        self._dim_conductance = val
+        self.resample()
+
     def resample(self):
+        # TODO Make this faster.
         verticies = []
         colors = []
 
@@ -127,10 +141,14 @@ class RasterPlotVisualization(Visualization):
             electrodes = self.spike_data.keys()
 
         for i, electrode in enumerate(electrodes):
-            for t in self.spike_data[electrode]['time'].values:
+            for j, (t, c) in self.spike_data[electrode][
+                    ['time', 'conductance']].iterrows():
                 verticies.append((t, i))
                 verticies.append((t, i + 1))
                 color = Theme.plot_colors[i % 3]
+                if self.dim_conductance and c:
+                    color = list(color)
+                    color[3] = 0.3  # If conductance, dim color
                 colors.append(color)
                 colors.append(color)
 

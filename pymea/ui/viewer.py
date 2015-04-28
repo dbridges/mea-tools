@@ -347,6 +347,12 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
             return
         self.canvas.analog_vis.show_spikes = checked
 
+    @QtCore.pyqtSlot(bool)
+    def on_dimConductanceCheckBox_toggled(self, checked):
+        if self.canvas.raster_vis is None:
+            return
+        self.canvas.raster_vis.dim_conductance = checked
+
     @QtCore.pyqtSlot()
     def on_actionRaster_activated(self):
         self.visualizationComboBox.setCurrentIndex(0)

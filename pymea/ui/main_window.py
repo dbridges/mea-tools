@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'pymea/ui/PyMEAMainWindow.ui'
 #
-# Created: Fri Apr 17 16:21:51 2015
+# Created: Tue Apr 28 15:06:30 2015
 #      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -64,6 +64,9 @@ class Ui_MainWindow(object):
         self.horizontalLayout_5 = QtGui.QHBoxLayout(self.rasterPage)
         self.horizontalLayout_5.setMargin(0)
         self.horizontalLayout_5.setObjectName(_fromUtf8("horizontalLayout_5"))
+        self.dimConductanceCheckBox = QtGui.QCheckBox(self.rasterPage)
+        self.dimConductanceCheckBox.setObjectName(_fromUtf8("dimConductanceCheckBox"))
+        self.horizontalLayout_5.addWidget(self.dimConductanceCheckBox)
         self.rowCountLabel = QtGui.QLabel(self.rasterPage)
         self.rowCountLabel.setObjectName(_fromUtf8("rowCountLabel"))
         self.horizontalLayout_5.addWidget(self.rowCountLabel)
@@ -84,7 +87,7 @@ class Ui_MainWindow(object):
         self.rasterRowCountSlider.setTickInterval(0)
         self.rasterRowCountSlider.setObjectName(_fromUtf8("rasterRowCountSlider"))
         self.horizontalLayout_5.addWidget(self.rasterRowCountSlider)
-        self.horizontalLayout_5.setStretch(1, 1)
+        self.horizontalLayout_5.setStretch(2, 1)
         self.stackedWidget.addWidget(self.rasterPage)
         self.flashingSpikePage = QtGui.QWidget()
         self.flashingSpikePage.setObjectName(_fromUtf8("flashingSpikePage"))
@@ -210,6 +213,7 @@ class Ui_MainWindow(object):
         self.visualizationComboBox.setItemText(0, _translate("MainWindow", "Raster", None))
         self.visualizationComboBox.setItemText(1, _translate("MainWindow", "Flashing Spike", None))
         self.visualizationComboBox.setItemText(2, _translate("MainWindow", "Analog Grid", None))
+        self.dimConductanceCheckBox.setText(_translate("MainWindow", "Dim Conductance", None))
         self.rowCountLabel.setText(_translate("MainWindow", "Row Count", None))
         self.speedLabel_2.setText(_translate("MainWindow", "Speed", None))
         self.flashingSpikeTimescaleComboBox.setItemText(0, _translate("MainWindow", "1x", None))
