@@ -2,6 +2,7 @@
 
 import os
 import time
+from collections import namedtuple
 
 import numpy as np
 import pandas as pd
@@ -13,7 +14,7 @@ from . import mea_cython
 
 __all__ = ['MEARecording', 'MEASpikeDict', 'coordinates_for_electrode',
            'tag_for_electrode', 'condense_spikes', 'filter', 'export_spikes',
-           'tag_conductance_spikes']
+           'tag_conductance_spikes', 'ConductanceSequence']
 
 input_dir = os.path.expanduser(
     '~/Dropbox/Hansma/ncp/IA6787/2014_08_20_Baseline')
@@ -341,21 +342,38 @@ def condense_spikes(srcdir, fname):
                         dest.write('%s,%s' % (label, line))
 
 
-def tag_conductance_spikes(dataframe, conductance_seqs):
+ConductanceSequence = namedtuple('ConductanceSequence', ['keep', 'seq'])
+
+
+def tag_conductance_spikes(df, conductance_seqs, min_sep=0.001):
     """
-    Tags spikes in dataframe
+    Tags conduction spikes in dataframe
 
     Parameters
     ----------
-        dataframe : pandas DataFrame
+        df : pandas DataFrame
             A list of spikes as given by pymea.detect_spikes
         conductance_seqs : list
-            A list of conductance sequences in the form:
-                [['a5', 'a9'], ['c6', 'b6', 'a6']]
-            where the above would identify two conduction sequences,
-            a5->a9 and c6->b6->a6
+            A list of ConductanceSequences.
     """
-    pass
+    conductance_locs = []
+    for keep, seq in conductance_seqs:
+        unkeep_seq = [tag for tag in seq if tag != keep]
+        keep_df = df[df.electrode == keep]
+
+        # Iterate through rows in dataframe for electrodes in the conductance
+        # sequence, but not for the keep electrode (which we always want to
+        # keep in all situations)
+        for i, row in df[df.electrode.isin(unkeep_seq)].iterrows():
+            # If there is a spike in keep that occurs within +- 0.5ms then we
+            # mark this spike as a conductance signal.
+            tdiffs = np.abs(keep_df.time - row.time)
+            if len(tdiffs[tdiffs < 0.0005]) > 0:
+                conductance_locs.append(i)
+    newdf = df.copy()
+    newdf['conductance'] = False
+    newdf.conductance.iloc[conductance_locs] = True
+    return newdf
 
 
 def read_binary(fname, no_channels, columns, part=(0, -1),
