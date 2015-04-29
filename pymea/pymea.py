@@ -2,7 +2,7 @@
 
 import os
 import time
-from collections import namedtuple
+from collections import namedtuple, Counter
 
 import numpy as np
 import pandas as pd
@@ -15,9 +15,6 @@ from . import mea_cython
 __all__ = ['MEARecording', 'MEASpikeDict', 'coordinates_for_electrode',
            'tag_for_electrode', 'condense_spikes', 'filter', 'export_spikes',
            'tag_conductance_spikes', 'ConductanceSequence']
-
-input_dir = os.path.expanduser(
-    '~/Dropbox/Hansma/ncp/IA6787/2014_08_20_Baseline')
 
 
 class MEARecording:
@@ -127,7 +124,9 @@ class MEARecording:
             p = mea_cython.find_series_peaks(df[electrode], amp)
             p.insert(0, 'electrode', electrode)
             peaks.append(p)
-        self.peaks = pd.concat(peaks)
+        peaks = pd.concat(peaks, ignore_index=True)
+        peaks = peaks.convert_objects(convert_numeric=True)
+        self.peaks = tag_conductance_spikes(peaks)
         return self.peaks
 
     def __del__(self):
@@ -342,22 +341,124 @@ def condense_spikes(srcdir, fname):
                         dest.write('%s,%s' % (label, line))
 
 
-ConductanceSequence = namedtuple('ConductanceSequence', ['keep', 'seq'])
+################################
+# Conductance signal detection
+################################
+
+ConductanceSequence = namedtuple('ConductanceSequence',
+                                 ['keep', 'seq', 'count'])
 
 
-def tag_conductance_spikes(df, conductance_seqs, min_sep=0.001):
+def cofiring_events(dataframe, channels, min_sep=0.0005):
     """
-    Tags conduction spikes in dataframe
+    Parameters
+    ----------
+        dataframe : pandas DataFrame
+            DataFrame of spike data.
+
+        channels : list
+            List of channel electrode names, i.e.
+            ['a5', 'b6']
+
+        min_sep : float
+            Minimum separation time between two events for
+            them to be considered cofiring.
+
+    Returns
+    -------
+        dataframe : pandas DataFrame
+            A filtered version of dataframe which includes only events
+            separated by less than min_sep.
+    """
+    sub_df = dataframe[dataframe.electrode.isin(channels)].sort('time')
+    splits = np.where(np.diff(sub_df.time.values) > min_sep)[0] + 1
+    channel_count = len(channels)
+    return pd.concat([s for s in np.split(sub_df, splits)
+                      if len(s) == channel_count])
+
+
+def choose_keep_electrode(dataframe, channels):
+    """
+    Chooses the electrode with the highest average amplitude among
+    cofiring events between electrodes given in channels.
+
+    Parameters
+    ----------
+        dataframe : pandas DataFrmae
+            DataFrame of spike data.
+
+        channels : list
+            List of channel electrode names, i.e.
+            ['a5', 'b6']
+
+    Returns
+    -------
+        keep_electrode : str
+            The name of the electrode that should be kept when removing
+            conductance signals.
+
+    """
+    sub_df = cofiring_events(dataframe, channels)
+    amplitudes = sub_df.groupby('electrode').amplitude.mean().abs()
+    big_amplitudes = amplitudes[amplitudes > 0.8 * amplitudes.max()]
+    return sorted(list(big_amplitudes.index))[0]
+
+
+def find_conductance_seqs(dataframe, min_sep=0.0005):
+    """
+    Finds sequences of electrodes which are likely conductance signals.
+
+    Parameters
+    ----------
+        dataframe : pandas DataFrmae
+            DataFrame of spike data.
+
+        min_sep : float
+            Minimum separation time between two events for
+            them to be considered cofiring.
+
+    Returns
+    -------
+        conductances : list of ConductanceSequence
+            The identified conduction signals.
+    """
+    sorted_df = dataframe.sort('time')
+    splits = np.where(np.diff(sorted_df.time.values) > min_sep)[0] + 1
+    split_events = [tuple(sorted(tuple(se))) for se in
+                    np.split(sorted_df.electrode.values, splits)]
+
+    counts = Counter()
+    for e in split_events:
+        counts[e] += 1
+
+    conductances = []
+    for key in counts:
+        if counts[key] > 20 and len(key) > 1:
+            conductances.append(ConductanceSequence(
+                choose_keep_electrode(sorted_df, key),
+                key,
+                counts[key]))
+
+    return conductances
+
+
+def tag_conductance_spikes(df, conductance_seqs=None, min_sep=0.0005):
+    """
+    Tags conduction spikes in dataframe.
 
     Parameters
     ----------
         df : pandas DataFrame
-            A list of spikes as given by pymea.detect_spikes
-        conductance_seqs : list
-            A list of ConductanceSequences.
+            DataFrame of spike data.
+        conductance_seqs : list of ConductanceSequence
+            The previously identified conduction ssequences.
     """
+    if conductance_seqs is None:
+        conductance_seqs = find_conductance_seqs(df)
+    for cond in conductance_seqs:
+        print(cond)
     conductance_locs = []
-    for keep, seq in conductance_seqs:
+    for keep, seq, count in conductance_seqs:
         unkeep_seq = [tag for tag in seq if tag != keep]
         keep_df = df[df.electrode == keep]
 
@@ -368,7 +469,7 @@ def tag_conductance_spikes(df, conductance_seqs, min_sep=0.001):
             # If there is a spike in keep that occurs within +- 0.5ms then we
             # mark this spike as a conductance signal.
             tdiffs = np.abs(keep_df.time - row.time)
-            if len(tdiffs[tdiffs < 0.0005]) > 0:
+            if len(tdiffs[tdiffs < min_sep]) > 0:
                 conductance_locs.append(i)
     newdf = df.copy()
     newdf['conductance'] = False
