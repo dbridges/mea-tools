@@ -193,7 +193,7 @@ class MEAAnalogVisualization(Visualization):
         gloo.clear(self.background_color)
         if self.measuring:
             self.measure_line.draw(self.canvas.tr_sys)
-        if self.show_spikes:
+        if self.show_spikes and len(self.spike_data) > 0:
             self.point_program.draw('points')
         self.strip_program.draw('line_strip')
 
