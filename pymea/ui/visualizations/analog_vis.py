@@ -220,10 +220,11 @@ class MEAAnalogVisualization(Visualization):
         self.strip_program['a_position'] = np.column_stack(
             (np.concatenate(xs), np.concatenate(ys), np.concatenate(zs)))
 
-        try:
+        if len(spike_data) > 0:
             self.point_program['a_position'] = spike_data
-        except ValueError:
-            pass
+        else:
+            self.point_program['a_position'] = np.empty((1, 3),
+                                                        dtype=np.float32)
 
         if self.filtered:
             self.strip_program['u_color'] = Theme.pink
