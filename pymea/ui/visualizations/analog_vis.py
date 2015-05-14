@@ -246,7 +246,7 @@ class MEAAnalogVisualization(Visualization):
             elif event.button == 2:
                 self.measuring = True
                 self.extra_text = 'dt: %1.4f' % (
-                    sec_per_pixel * (x - self.measure_start[0]))
+                    sec_per_pixel * np.abs(x - self.measure_start[0]))
                 self.measure_line.set_data(np.array((self.measure_start,
                                                      event.pos)))
         self.mouse_t = self.t0 + sec_per_pixel * x

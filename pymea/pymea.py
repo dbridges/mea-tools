@@ -238,8 +238,21 @@ class MEASpikeDict():
         return self.spike_table['time'].max()
 
     def sort(self, key=None, reverse=True):
+        """
+        Sorts the electrodes by order given with key.
+
+        key : callable
+            A callable which takes a single argument, the DataFrame of a
+            single electrode, and returns a value to be used for sorting.
+
+        reverse : boolean
+            If True the order is reversed.
+        """
         if key is None:
             self.spike_order.sort(key=lambda e: len(self.spike_dict[e]),
+                                  reverse=reverse)
+        else:
+            self.spike_order.sort(key=lambda e: key(self.spike_dict[e]),
                                   reverse=reverse)
 
 

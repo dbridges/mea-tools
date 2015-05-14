@@ -141,12 +141,12 @@ class RasterPlotVisualization(Visualization):
             electrodes = self.spike_data.keys()
 
         for i, electrode in enumerate(electrodes):
-            for j, (t, c) in self.spike_data[electrode][
+            for j, (t, is_conductance) in self.spike_data[electrode][
                     ['time', 'conductance']].iterrows():
                 verticies.append((t, i))
                 verticies.append((t, i + 1))
                 color = Theme.plot_colors[i % 3]
-                if self.dim_conductance and c:
+                if self.dim_conductance and is_conductance:
                     color = list(color)
                     color[3] = 0.3  # If conductance, dim color
                 colors.append(color)
