@@ -130,6 +130,27 @@ class RasterPlotVisualization(Visualization):
         self._dim_conductance = val
         self.resample()
 
+    def sort(self, by='rate'):
+        """
+        Sort the data by the given parameter.
+
+        by : str
+            The parameter to sort by, can be one of ['rate', 'latency']
+            'rate' sorts by spike rate, highest first.
+            'latency' sorts by spike latency from t0, the current time
+            corresponding to the left side of the raster view.
+        """
+        if by == 'rate':
+            self.spike_data.sort()
+        elif by == 'latency':
+            def byfirst(df):
+                try:
+                    return df[df.time > self.t0].iloc[0].time
+                except IndexError:
+                    return 10000
+            self.spike_data.sort(key=byfirst, reverse=False)
+        self.resample()
+
     def resample(self):
         # TODO Make this faster.
         verticies = []

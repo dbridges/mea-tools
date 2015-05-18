@@ -32,7 +32,7 @@
         <height>0</height>
        </size>
       </property>
-      <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="0,0,0,1">
+      <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="0,0,0,0,1">
        <property name="sizeConstraint">
         <enum>QLayout::SetMinimumSize</enum>
        </property>
@@ -78,6 +78,13 @@
         </spacer>
        </item>
        <item>
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Sort By</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QStackedWidget" name="stackedWidget">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
@@ -89,10 +96,24 @@
           <number>0</number>
          </property>
          <widget class="QWidget" name="rasterPage">
-          <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="0,0,1">
+          <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="0,0,0,1">
            <property name="margin">
             <number>0</number>
            </property>
+           <item>
+            <widget class="QComboBox" name="sortRasterComboBox">
+             <item>
+              <property name="text">
+               <string>Rate</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Latency</string>
+              </property>
+             </item>
+            </widget>
+           </item>
            <item>
             <widget class="QCheckBox" name="dimConductanceCheckBox">
              <property name="text">

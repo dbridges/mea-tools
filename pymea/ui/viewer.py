@@ -383,6 +383,12 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
             self.filterHighSpinBox.value()
         ]
 
+    @QtCore.pyqtSlot(str)
+    def on_sortRasterComboBox_activated(self, text):
+        if self.canvas.raster_vis is None:
+            return
+        self.canvas.raster_vis.sort(text.lower())
+
     def closeEvent(self, event):
         self.save_settings()
         self.canvas.close()
