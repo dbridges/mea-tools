@@ -304,7 +304,7 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
             if self.spike_data is None:
                 self.load_spike_data()
             self.canvas.show_flashing_spike()
-        elif text == 'Analog Grid':
+        elif text == 'Analog':
             self.canvas.show_analog_grid()
 
     @QtCore.pyqtSlot(float)

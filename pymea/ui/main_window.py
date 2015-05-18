@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'pymea/ui/PyMEAMainWindow.ui'
 #
-# Created: Sun May 17 14:35:29 2015
+# Created: Sun May 17 21:19:42 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -220,7 +220,7 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "MEA Data Viewer", None))
         self.visualizationComboBox.setItemText(0, _translate("MainWindow", "Raster", None))
         self.visualizationComboBox.setItemText(1, _translate("MainWindow", "Flashing Spike", None))
-        self.visualizationComboBox.setItemText(2, _translate("MainWindow", "Analog Grid", None))
+        self.visualizationComboBox.setItemText(2, _translate("MainWindow", "Analog", None))
         self.label_2.setText(_translate("MainWindow", "Sort By", None))
         self.sortRasterComboBox.setItemText(0, _translate("MainWindow", "Rate", None))
         self.sortRasterComboBox.setItemText(1, _translate("MainWindow", "Latency", None))
