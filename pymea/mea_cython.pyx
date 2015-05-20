@@ -10,33 +10,49 @@ __all__ = ['find_series_peaks', 'min_max_bin']
 def find_series_peaks(series, double amp=6.0):
     cdef np.ndarray[float] input_data
     cdef np.ndarray[double] bf, af, data
-    cdef double thresh, fs, dt, t0, a, b, c, x
-    cdef int n, maxn, min_sep
+    cdef double pos_thresh, neg_thresh, fs, dt, t0, a, b, c, x
+    cdef int n, maxn, min_sep, lookahead, last_neg_peak
     cdef list peaks = []
     input_data = series.values
 
     dt = series.index[1] - series.index[0]
     fs_nyquist = (1.0/dt) / 2.0
     t0 = series.index[0]
-    min_sep = int(0.0008/dt)
+    min_sep = int(0.001/dt)
+    lookahead = int(0.002/dt)
 
     # first perform band pass filter 200Hz - 4kHz
     bf, af = signal.butter(2, (200.0/fs_nyquist, 4000.0/fs_nyquist),
                            btype='bandpass')
     data = signal.filtfilt(bf, af, input_data)
-    thresh = -amp * np.median(np.absolute(data) / 0.6745)
+    pos_thresh = amp * np.median(np.absolute(data) / 0.6745)
+    neg_thresh = -pos_thresh
 
-    # Find points which are smaller than neighboring points
+    # Find points which are smaller or bigger than neighboring points
     n = 0
-    maxn = len(data) - 2
+    last_neg_peak = 0
+    maxn = len(data) - lookahead - 4
     while n < maxn:
-        if data[n] < thresh and data[n] < data[n-1] and data[n] < data[n+1]:
-            #a, b, c = np.polyfit(np.arange(n-1, n+2), data[n-1:n+2], 2)
-            #x = -b/(2*a)
-            #peaks.append((x * dt + t0, np.polyval([a, b, c], x), thresh))
-            peaks.append((series.index[n], data[n], thresh))
+        if data[n] < neg_thresh and data[n] < data[n-1] and data[n] < data[n+1]:
+            peaks.append((series.index[n], data[n], neg_thresh))
+            last_neg_peak = n
             n += min_sep
-        n += 1
+        elif (data[n] > pos_thresh and data[n] > data[n-1]
+              and data[n] > data[n+1]
+              and n > (last_neg_peak + lookahead)):
+            # lookahead for negative peak, use that if there is one
+            for j in range(n, n+lookahead):
+                if (data[j] < neg_thresh and
+                    data[j] < data[j-1] and data[j] < data[j+1]):
+                    peaks.append((series.index[j], data[j], neg_thresh))
+                    last_neg_peak = j
+                    n = j + min_sep
+                    break
+            else:
+                peaks.append((series.index[n], data[n], pos_thresh))
+                n += min_sep
+        else:
+            n += 1
 
     if len(peaks) < 1:
         return pd.DataFrame(columns=['time', 'amplitude', 'threshold'])

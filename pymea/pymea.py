@@ -126,6 +126,7 @@ class MEARecording:
             peaks.append(p)
         peaks = pd.concat(peaks, ignore_index=True)
         peaks = peaks.convert_objects(convert_numeric=True)
+        #self.peaks = peaks
         self.peaks = tag_conductance_spikes(peaks)
         return self.peaks
 
@@ -484,10 +485,9 @@ def tag_conductance_spikes(df, conductance_seqs=None, min_sep=0.0005):
             tdiffs = np.abs(keep_df.time - row.time)
             if len(tdiffs[tdiffs < min_sep]) > 0:
                 conductance_locs.append(i)
-    newdf = df.copy()
-    newdf['conductance'] = False
-    newdf.conductance.iloc[conductance_locs] = True
-    return newdf
+    df['conductance'] = False
+    df.ix[conductance_locs, 'conductance'] = True
+    return df
 
 
 def read_binary(fname, no_channels, columns, part=(0, -1),
