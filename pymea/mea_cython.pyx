@@ -11,7 +11,7 @@ def find_series_peaks(series, double amp=6.0):
     cdef np.ndarray[float] input_data
     cdef np.ndarray[double] bf, af, data
     cdef double pos_thresh, neg_thresh, fs, dt, t0, a, b, c, x
-    cdef int n, maxn, min_sep, lookahead, last_neg_peak
+    cdef int n, maxn, min_sep, lookaround, last_neg_peak
     cdef list peaks = []
     input_data = series.values
 
@@ -19,7 +19,7 @@ def find_series_peaks(series, double amp=6.0):
     fs_nyquist = (1.0/dt) / 2.0
     t0 = series.index[0]
     min_sep = int(0.001/dt)
-    lookahead = int(0.002/dt)
+    lookaround = int(0.002/dt)
 
     # first perform band pass filter 200Hz - 4kHz
     bf, af = signal.butter(2, (200.0/fs_nyquist, 4000.0/fs_nyquist),
@@ -31,7 +31,7 @@ def find_series_peaks(series, double amp=6.0):
     # Find points which are smaller or bigger than neighboring points
     n = 0
     last_neg_peak = 0
-    maxn = len(data) - lookahead - 4
+    maxn = len(data) - lookaround - 4
     while n < maxn:
         if data[n] < neg_thresh and data[n] < data[n-1] and data[n] < data[n+1]:
             peaks.append((series.index[n], data[n], neg_thresh))
@@ -39,9 +39,9 @@ def find_series_peaks(series, double amp=6.0):
             n += min_sep
         elif (data[n] > pos_thresh and data[n] > data[n-1]
               and data[n] > data[n+1]
-              and n > (last_neg_peak + lookahead)):
-            # lookahead for negative peak, use that if there is one
-            for j in range(n, n+lookahead):
+              and n > (last_neg_peak + lookaround)):
+            # lookaround for negative peak, use that if there is one
+            for j in range(n, n+lookaround):
                 if (data[j] < neg_thresh and
                     data[j] < data[j-1] and data[j] < data[j+1]):
                     peaks.append((series.index[j], data[j], neg_thresh))
