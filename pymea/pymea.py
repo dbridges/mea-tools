@@ -14,7 +14,7 @@ from . import mea_cython
 
 __all__ = ['MEARecording', 'MEASpikeDict', 'coordinates_for_electrode',
            'tag_for_electrode', 'condense_spikes', 'filter', 'export_spikes',
-           'tag_conductance_spikes', 'ConductanceSequence']
+           'tag_conductance_spikes', 'ConductanceSequence', 'cofiring_events']
 
 
 class MEARecording:
@@ -446,12 +446,12 @@ def find_conductance_seqs(dataframe, min_sep=0.0005):
         counts[e] += 1
 
     conductances = []
-    for key in counts:
-        if counts[key] > 20 and len(key) > 1:
+    for seq in counts:
+        if counts[seq] > 20 and len(seq) > 1:
             conductances.append(ConductanceSequence(
-                choose_keep_electrode(sorted_df, key),
-                key,
-                counts[key]))
+                choose_keep_electrode(sorted_df, seq),
+                seq,
+                counts[seq]))
 
     return conductances
 
@@ -468,7 +468,7 @@ def tag_conductance_spikes(df, conductance_seqs=None, min_sep=0.0005):
             The previously identified conduction sequences.
     """
     if conductance_seqs is None:
-        conductance_seqs = find_conductance_seqs(df)
+        conductance_seqs = find_conductance_seqs(df, min_sep)
     for cond in conductance_seqs:
         print(cond)
     conductance_locs = []
