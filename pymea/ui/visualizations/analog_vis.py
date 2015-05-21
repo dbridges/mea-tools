@@ -56,11 +56,14 @@ class MEAAnalogVisualization(Visualization):
     // x, y is position, z is index to avoid connecting traces from
     // two electrodes.
     attribute vec3 a_position;
+    attribute vec4 a_color;
 
     uniform vec2 u_scale;
     uniform float u_pan;
     uniform float u_height;
     uniform float u_adj_y_scale;
+
+    varying vec4 v_color;
 
     void main(void)
     {
@@ -69,15 +72,16 @@ class MEAAnalogVisualization(Visualization):
                            u_adj_y_scale * a_position.y + 1 - y_offset,
                            0.0, 1.0);
         gl_PointSize = 6.0;
+        v_color = a_color;
     }
     """
 
     POINT_FRAGMENT_SHADER = """
-    uniform vec4 u_color;
+    varying vec4 v_color;
 
     void main()
     {
-        gl_FragColor = u_color;
+        gl_FragColor = v_color;
     }
     """
 
@@ -101,7 +105,6 @@ class MEAAnalogVisualization(Visualization):
 
         self.point_program = gloo.Program(self.POINT_VERTEX_SHADER,
                                           self.POINT_FRAGMENT_SHADER)
-        self.point_program['u_color'] = Theme.yellow
 
         self.pan = self._t0
         self.scale = (2.0/self._dt, 1/self._y_scale)
@@ -202,6 +205,7 @@ class MEAAnalogVisualization(Visualization):
         ys = []
         zs = []
         spike_data = []
+        spike_colors = []
         for i, e in enumerate(self.electrodes):
             x = self.analog_data[e].index.values.astype(np.float32)
             if self.filtered:
@@ -213,18 +217,23 @@ class MEAAnalogVisualization(Visualization):
             xs.append(x)
             ys.append(y)
             zs.append(z)
-            spike_data.extend(
-                [(r.time, r.amplitude, i) for j, r in
-                 self.spike_data[e].iterrows()])
+            for j, row in self.spike_data[e].iterrows():
+                spike_data.append((row.time, row.amplitude, i))
+                if row.conductance:
+                    spike_colors.append(Theme.gray)
+                else:
+                    spike_colors.append(Theme.yellow)
 
         self.strip_program['a_position'] = np.column_stack(
             (np.concatenate(xs), np.concatenate(ys), np.concatenate(zs)))
 
         if len(spike_data) > 0:
             self.point_program['a_position'] = spike_data
+            self.point_program['a_color'] = spike_colors
         else:
             self.point_program['a_position'] = np.empty((1, 3),
                                                         dtype=np.float32)
+            self.point_program['a_color'] = np.empty((1, 4), dtype=np.float32)
 
         if self.filtered:
             self.strip_program['u_color'] = Theme.pink

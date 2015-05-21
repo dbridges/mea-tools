@@ -126,7 +126,6 @@ class MEARecording:
             peaks.append(p)
         peaks = pd.concat(peaks, ignore_index=True)
         peaks = peaks.convert_objects(convert_numeric=True)
-        #self.peaks = peaks
         self.peaks = tag_conductance_spikes(peaks)
         return self.peaks
 
@@ -394,7 +393,8 @@ def cofiring_events(dataframe, channels, min_sep=0.0005):
 def choose_keep_electrode(dataframe, channels):
     """
     Chooses the electrode with the highest average amplitude among
-    cofiring events between electrodes given in channels.
+    cofiring events between electrodes given in channels. If multiple
+    electrodes have amplitudes within 20% choose the first one alphabetically.
 
     Parameters
     ----------
@@ -465,7 +465,7 @@ def tag_conductance_spikes(df, conductance_seqs=None, min_sep=0.0005):
         df : pandas DataFrame
             DataFrame of spike data.
         conductance_seqs : list of ConductanceSequence
-            The previously identified conduction ssequences.
+            The previously identified conduction sequences.
     """
     if conductance_seqs is None:
         conductance_seqs = find_conductance_seqs(df)
