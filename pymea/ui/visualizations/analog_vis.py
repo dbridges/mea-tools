@@ -209,8 +209,8 @@ class MEAAnalogVisualization(Visualization):
         for i, e in enumerate(self.electrodes):
             x = self.analog_data[e].index.values.astype(np.float32)
             if self.filtered:
-                y = mea.filter(self.analog_data[e],
-                               *self._filter_cutoff).values
+                y = mea.bandpass_filter(self.analog_data[e],
+                                        *self._filter_cutoff).values
             else:
                 y = self.analog_data[e].values
             z = np.full_like(x, i)

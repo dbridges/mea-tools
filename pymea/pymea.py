@@ -16,8 +16,9 @@ from . import util
 from . import mea_cython
 
 __all__ = ['MEARecording', 'MEASpikeDict', 'coordinates_for_electrode',
-           'tag_for_electrode', 'condense_spikes', 'filter', 'export_spikes',
-           'tag_conductance_spikes', 'ConductanceSequence', 'cofiring_events']
+           'tag_for_electrode', 'condense_spikes', 'bandpass_filter',
+           'export_spikes', 'tag_conductance_spikes', 'ConductanceSequence',
+           'cofiring_events']
 
 
 class MEARecording:
@@ -262,7 +263,7 @@ def detect_spikes(analog_data, amp=6.0):
 def sort_spikes(self, spikes, analog_data):
     for (tag, sdf) in spikes.groupby('electrode'):
         w = extract_waveforms(
-            filter(analog_data[tag]),
+            bandpass_filter(analog_data[tag]),
             self.spikes[self.spikes.electrode == tag].time.values)
         pcs = PCA(n_components=2).fit_transform(w)
         db = DBSCAN(eps=30, min_samples=3).fit(pcs)
@@ -500,7 +501,7 @@ def read_binary(fname, no_channels, columns, part=(0, -1),
     return d
 
 
-def filter(series, low=200.0, high=4000.0):
+def bandpass_filter(series, low=200.0, high=4000.0):
     """
     Filters given series with a 2nd order bandpass filter with default
     cutoff frequencies of 200 Hz and 4 kHz.
