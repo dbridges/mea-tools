@@ -4,6 +4,7 @@ import os
 import time
 from collections import namedtuple
 import itertools
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -255,29 +256,40 @@ def detect_spikes(analog_data, amp=6.0):
         p.insert(0, 'electrode', electrode)
         peaks.append(p)
     peaks = pd.concat(peaks, ignore_index=True)
-    peaks = peaks.convert_objects(convert_numeric=True)
-    #spikes = tag_conductance_spikes(peaks)
-    return peaks
+    return peaks.convert_objects(convert_numeric=True)
 
 
-def sort_spikes(self, spikes, analog_data):
+def sort_spikes(spikes, analog_data):
     for (tag, sdf) in spikes.groupby('electrode'):
-        w = extract_waveforms(
-            bandpass_filter(analog_data[tag]),
-            self.spikes[self.spikes.electrode == tag].time.values)
-        pcs = PCA(n_components=2).fit_transform(w)
-        db = DBSCAN(eps=30, min_samples=3).fit(pcs)
+        waveforms = extract_waveforms(
+            bandpass_filter(analog_data[tag]), sdf.time.values)
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore', category=RuntimeWarning)
+            pcs = PCA(n_components=2).fit_transform(waveforms)
+        clusters = DBSCAN(eps=30, min_samples=3).fit(pcs)
 
-        self.spikes.loc[sdf.electrode.index, 'electrode'] = \
-            sdf.electrode.str.cat(db.labels_.astype(str), sep='.')
+        spikes.loc[sdf.index, 'electrode'] = \
+            sdf.electrode.str.cat(clusters.labels_.astype(str), sep='.')
 
 
 def export_spikes(fname, amp=6.0):
     fname = os.path.expanduser(fname)
+    print('Loading analog data...', end='', flush=True)
     rec = MEARecording(fname)
     analog_data = rec.get('all')
-    df = detect_spikes(analog_data, amp)
-    df.to_csv(fname[:-3] + '.csv', index=False)
+    print('done.', flush=True)
+
+    print('Detecting spikes...', end='', flush=True)
+    spikes = detect_spikes(analog_data, amp)
+    print('done.', flush=True)
+
+    print('Sorting spikes...', end='', flush=True)
+    sort_spikes(spikes, analog_data)
+    print('done.', flush=True)
+
+    # spikes = tag_conductance_spikes(peaks)
+
+    spikes.to_csv(fname[:-3] + '.csv', index=False)
 
 
 def extract_waveforms(series, times, window_len=0.003):
