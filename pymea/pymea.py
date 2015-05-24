@@ -2,7 +2,8 @@
 
 import os
 import time
-from collections import namedtuple, Counter
+from collections import namedtuple
+import itertools
 
 import numpy as np
 import pandas as pd
@@ -362,16 +363,12 @@ ConductanceSequence = namedtuple('ConductanceSequence',
                                  ['keep', 'seq', 'count'])
 
 
-def cofiring_events(dataframe, channels, min_sep=0.0005):
+def cofiring_events(dataframe, min_sep=0.0005):
     """
     Parameters
     ----------
         dataframe : pandas DataFrame
             DataFrame of spike data.
-
-        channels : list
-            List of channel electrode names, i.e.
-            ['a5', 'b6']
 
         min_sep : float
             Minimum separation time between two events for
@@ -383,28 +380,29 @@ def cofiring_events(dataframe, channels, min_sep=0.0005):
             A filtered version of dataframe which includes only events
             separated by less than min_sep.
     """
-    sub_df = dataframe[dataframe.electrode.isin(channels)].sort('time')
-    splits = np.where(np.diff(sub_df.time.values) > min_sep)[0] + 1
-    channel_count = len(channels)
-    return pd.concat([s for s in np.split(sub_df, splits)
-                      if len(s) == channel_count])
+    sub_df = dataframe.sort('time')
+    splits = np.concatenate([
+        [0],
+        np.where(np.diff(sub_df.time.values) > min_sep)[0] + 1,
+        [len(sub_df)]])
+
+    events = []
+    for i in range(len(splits) - 1):
+        if splits[i+1] - splits[i] == 2:
+            events.append(sub_df[splits[i]:splits[i]+2])
+    return events
 
 
-def choose_keep_electrode(dataframe, channels):
+def choose_keep_electrode(dataframe):
     """
     Chooses the electrode with the highest average amplitude among
-    cofiring events between electrodes given in channels. If multiple
+    cofiring events between electrodes. If multiple
     electrodes have amplitudes within 20% choose the first one alphabetically.
 
     Parameters
     ----------
         dataframe : pandas DataFrmae
-            DataFrame of spike data.
-
-        channels : list
-            List of channel electrode names, i.e.
-            ['a5', 'b6']
-
+            DataFrame of spike data, should only contain cofiring events.
     Returns
     -------
         keep_electrode : str
@@ -412,51 +410,12 @@ def choose_keep_electrode(dataframe, channels):
             conductance signals.
 
     """
-    sub_df = cofiring_events(dataframe, channels)
-    amplitudes = sub_df.groupby('electrode').amplitude.mean().abs()
+    amplitudes = dataframe.groupby('electrode').amplitude.mean().abs()
     big_amplitudes = amplitudes[amplitudes > 0.8 * amplitudes.max()]
     return sorted(list(big_amplitudes.index))[0]
 
 
-def find_conductance_seqs(dataframe, min_sep=0.0005):
-    """
-    Finds sequences of electrodes which are likely conductance signals.
-
-    Parameters
-    ----------
-        dataframe : pandas DataFrmae
-            DataFrame of spike data.
-
-        min_sep : float
-            Minimum separation time between two events for
-            them to be considered cofiring.
-
-    Returns
-    -------
-        conductances : list of ConductanceSequence
-            The identified conduction signals.
-    """
-    sorted_df = dataframe.sort('time')
-    splits = np.where(np.diff(sorted_df.time.values) > min_sep)[0] + 1
-    split_events = [tuple(sorted(tuple(se))) for se in
-                    np.split(sorted_df.electrode.values, splits)]
-
-    counts = Counter()
-    for e in split_events:
-        counts[e] += 1
-
-    conductances = []
-    for seq in counts:
-        if counts[seq] > 20 and len(seq) > 1:
-            conductances.append(ConductanceSequence(
-                choose_keep_electrode(sorted_df, seq),
-                seq,
-                counts[seq]))
-
-    return conductances
-
-
-def tag_conductance_spikes(df, conductance_seqs=None, min_sep=0.0005):
+def tag_conductance_spikes(df, conductance_seqs=None):
     """
     Tags conduction spikes in dataframe.
 
@@ -467,24 +426,28 @@ def tag_conductance_spikes(df, conductance_seqs=None, min_sep=0.0005):
         conductance_seqs : list of ConductanceSequence
             The previously identified conduction sequences.
     """
-    if conductance_seqs is None:
-        conductance_seqs = find_conductance_seqs(df, min_sep)
-    for cond in conductance_seqs:
-        print(cond)
-    conductance_locs = []
-    for keep, seq, count in conductance_seqs:
-        unkeep_seq = [tag for tag in seq if tag != keep]
-        keep_df = df[df.electrode == keep]
+    spikes = MEASpikeDict(df)
+    tags = [tag for tag in spikes if not tag.startswith('analog')]
 
-        # Iterate through rows in dataframe for electrodes in the conductance
-        # sequence, but not for the keep electrode (which we always want to
-        # keep in all situations)
-        for i, row in df[df.electrode.isin(unkeep_seq)].iterrows():
-            # If there is a spike in keep that occurs within +- 0.5ms then we
-            # mark this spike as a conductance signal.
-            tdiffs = np.abs(keep_df.time - row.time)
-            if len(tdiffs[tdiffs < min_sep]) > 0:
-                conductance_locs.append(i)
+    conductance_locs = []
+
+    for e1, e2 in itertools.combinations(tags, 2):
+        # Find events that cofire within 1.2ms
+        sub_df = pd.concat([spikes[e1], spikes[e2]])
+        try:
+            cofiring = pd.concat(
+                [event.sort('electrode') for event
+                 in cofiring_events(sub_df, 0.0012)])
+            diffs = cofiring.time.diff()
+        except:
+            continue
+        if len(cofiring) > 30 and 1000*diffs[diffs < 0.0012].std() < 0.3:
+            # likely conductance sequence
+            e_keep = choose_keep_electrode(cofiring)
+            for i, row in cofiring.iterrows():
+                if row.electrode != e_keep:
+                    conductance_locs.append(i)
+
     df['conductance'] = False
     df.ix[conductance_locs, 'conductance'] = True
     return df
