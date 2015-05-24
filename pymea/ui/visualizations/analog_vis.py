@@ -219,9 +219,12 @@ class MEAAnalogVisualization(Visualization):
             zs.append(z)
             for j, row in self.spike_data[e].iterrows():
                 spike_data.append((row.time, row.amplitude, i))
-                if row.conductance:
-                    spike_colors.append(Theme.gray)
-                else:
+                try:
+                    if row.conductance:
+                        spike_colors.append(Theme.gray)
+                    else:
+                        spike_colors.append(Theme.yellow)
+                except AttributeError:
                     spike_colors.append(Theme.yellow)
 
         self.strip_program['a_position'] = np.column_stack(

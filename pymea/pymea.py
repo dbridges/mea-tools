@@ -9,6 +9,8 @@ import numpy as np
 import pandas as pd
 from scipy import signal
 import h5py
+from sklearn.decomposition import PCA
+from sklearn.cluster import DBSCAN
 
 from . import util
 from . import mea_cython
@@ -49,7 +51,7 @@ class MEARecording:
             'Data/Recording_0/AnalogStream/Stream_0/ChannelData']
         self.data_len = self.electrode_data.shape[1]
         self.duration = self.data_len / self.sample_rate
-        self.peaks = []
+        self.spikes = []
         # Get 1st channel analog data if it exists:
         if 'Data/Recording_0/AnalogStream/Stream_1' in self.store:
             info = self.store[
@@ -117,18 +119,6 @@ class MEARecording:
         return pd.DataFrame(data,
                             index=np.arange(start_i, end_i)/self.sample_rate,
                             columns=output_channels, dtype=np.float32)
-
-    def detect_spikes(self, amp=6.0):
-        peaks = []
-        df = self.get('all')
-        for electrode in df.keys():
-            p = mea_cython.find_series_peaks(df[electrode], amp)
-            p.insert(0, 'electrode', electrode)
-            peaks.append(p)
-        peaks = pd.concat(peaks, ignore_index=True)
-        peaks = peaks.convert_objects(convert_numeric=True)
-        self.peaks = tag_conductance_spikes(peaks)
-        return self.peaks
 
     def __del__(self):
         try:
@@ -257,11 +247,46 @@ class MEASpikeDict():
                                   reverse=reverse)
 
 
+def detect_spikes(analog_data, amp=6.0):
+    peaks = []
+    for electrode in analog_data.keys():
+        p = mea_cython.find_series_peaks(analog_data[electrode], amp)
+        p.insert(0, 'electrode', electrode)
+        peaks.append(p)
+    peaks = pd.concat(peaks, ignore_index=True)
+    peaks = peaks.convert_objects(convert_numeric=True)
+    #spikes = tag_conductance_spikes(peaks)
+    return peaks
+
+
+def sort_spikes(self, spikes, analog_data):
+    for (tag, sdf) in spikes.groupby('electrode'):
+        w = extract_waveforms(
+            filter(analog_data[tag]),
+            self.spikes[self.spikes.electrode == tag].time.values)
+        pcs = PCA(n_components=2).fit_transform(w)
+        db = DBSCAN(eps=30, min_samples=3).fit(pcs)
+
+        self.spikes.loc[sdf.electrode.index, 'electrode'] = \
+            sdf.electrode.str.cat(db.labels_.astype(str), sep='.')
+
+
 def export_spikes(fname, amp=6.0):
     fname = os.path.expanduser(fname)
     rec = MEARecording(fname)
-    df = rec.detect_spikes(amp)
+    analog_data = rec.get('all')
+    df = detect_spikes(analog_data, amp)
     df.to_csv(fname[:-3] + '.csv', index=False)
+
+
+def extract_waveforms(series, times, window_len=0.003):
+    dt = series.index[1] - series.index[0]
+    span = int(window_len / 2 / dt)
+    extracted = []
+    for t in times:
+        x = int(t / dt)
+        extracted.append(series.iloc[x - span:x + span].values)
+    return np.array(extracted)
 
 
 def coordinates_for_electrode(tag):
