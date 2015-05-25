@@ -21,6 +21,20 @@ class Theme:
     plot_colors = (yellow, purple, blue)
     background = (0.5, 0.5, 0.5, 1.0)
 
+    indexed_colors = [[1., 0.721569, 0.219608, 1.0],
+                      [0.94902, 0.862745, 0.435294, 1.0],
+                      [0.670588, 0.878431, 0.937255, 1.0],
+                      [0.317647, 0.654902, 0.752941, 1.0],
+                      [0.0901961, 0.337255, 0.494118, 1.0],
+                      [0.705882, 0.494118, 0.545098, 1.0],
+                      [0.894118, 0.709804, 0.74902, 1.0],
+                      [0.921569, 0.494118, 0.431373, 1.0],
+                      [1., 0.721569, 0.219608, 1.0]]
+
+    @classmethod
+    def indexed(cls, val):
+        return cls.indexed_colors[val % len(cls.indexed_colors)]
+
 
 class LineCollection:
     VERTEX_SHADER = """

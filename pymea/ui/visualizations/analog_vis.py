@@ -217,15 +217,22 @@ class MEAAnalogVisualization(Visualization):
             xs.append(x)
             ys.append(y)
             zs.append(z)
-            for j, row in self.spike_data[e].iterrows():
-                spike_data.append((row.time, row.amplitude, i))
-                try:
-                    if row.conductance:
-                        spike_colors.append(Theme.gray)
-                    else:
-                        spike_colors.append(Theme.yellow)
-                except AttributeError:
-                    spike_colors.append(Theme.yellow)
+
+            # TODO vectorize this
+            # find spikes for this electrode
+            electrode_spikes = [k for k in self.spike_data.keys()
+                                if k.split('.')[0] == e and '-1' not in k]
+            electrode_spikes.sort()
+            for k, esub in enumerate(electrode_spikes):
+                for j, row in self.spike_data[esub].iterrows():
+                    spike_data.append((row.time, row.amplitude, i))
+                    try:
+                        if row.conductance:
+                            spike_colors.append(Theme.gray)
+                        else:
+                            spike_colors.append(Theme.indexed(k))
+                    except AttributeError:
+                        spike_colors.append(Theme.indexed(k))
 
         self.strip_program['a_position'] = np.column_stack(
             (np.concatenate(xs), np.concatenate(ys), np.concatenate(zs)))
