@@ -42,10 +42,12 @@ def find_series_peaks(series, double amp=6.0):
         elif (data[n] > pos_thresh and data[n] > data[n-1]
               and data[n] > data[n+1]
               and n > (last_neg_peak + lookaround)):
-            # lookaround for negative peak, use that if there is one
+            # lookaround for negative peak, use that if it is 1.3x bigger than
+            # the positive peak.
             for j in range(n, n+lookaround):
                 if (data[j] < neg_thresh and
-                    data[j] < data[j-1] and data[j] < data[j+1]):
+                    data[j] < data[j-1] and data[j] < data[j+1]
+                    and np.abs(data[j]) > 1.3*data[n]):
                     peaks.append((fitted_peak_loc(np.arange(j-1, j+2) * dt + t0,
                                             data[j-1:j+2]),
                                 data[j], neg_thresh))

@@ -11,9 +11,23 @@ import pandas as pd
 from scipy import signal
 import h5py
 from sklearn.decomposition import PCA
-from sklearn.cluster import DBSCAN
+from sklearn.cluster import DBSCAN, MeanShift
+
+from scipy import interpolate
+from scipy import signal
+
+from sklearn.decomposition import PCA
+import sklearn.cluster as cluster
+from sklearn.preprocessing import StandardScaler
+import sklearn.mixture as mixture
+from skimage.feature import peak_local_max
+
+import scipy.spatial.distance as distance
+import scipy.stats as stats
+import scipy.signal as signal
 
 from . import util
+from . import optics
 from . import mea_cython
 
 __all__ = ['MEARecording', 'MEASpikeDict', 'coordinates_for_electrode',
@@ -259,17 +273,77 @@ def detect_spikes(analog_data, amp=6.0):
     return peaks.convert_objects(convert_numeric=True)
 
 
-def sort_spikes(spikes, analog_data):
+def extract_waveforms(series, times, window_len=0.003, smoothing=120):
+    dt = series.index[1] - series.index[0]
+    span = int(window_len / 2 / dt)
+    extracted = []
+    for t in times:
+        i = int(t / dt)
+        y = series.iloc[i - span:i + span].values
+        x = np.arange(len(y))
+        xnew = np.linspace(0, len(y), len(y) * 5)
+        tck = interpolate.splrep(x, y, s=smoothing)
+        interped = interpolate.splev(xnew, tck, der=0)
+        extracted.append(interped)
+    return np.array(extracted)
+
+def run_optics(recording, spikes, channel, standardize=False, eps='auto'):
+    w = extract_waveforms(bandpass_filter(recording[channel]),
+                          spikes[spikes.electrode.str.contains(channel)].time.values,
+                          0.003,
+                          smoothing=0)
+
+    pcs = PCA(2).fit_transform(w)
+    opt = optics.OPTICS(300, 5)
+    opt.fit(pcs)
+
+    reach = opt._reachability[opt._ordered_list]
+    if eps == 'auto':
+        rprime = [x for x in reach if not np.isinf(x)]
+        thresh = 8*stats.tstd(rprime,
+                              (np.percentile(rprime, 10),
+                               np.percentile(rprime, 90))) + np.median(rprime)
+        peaks = peak_local_max(reach, min_distance=4,
+                               threshold_abs=thresh, threshold_rel=0).flatten()
+        try:
+            eps = 0.9*np.min([reach[peaks]])
+        except:
+            eps = 0.5*reach[-1]
+
+    opt.extract(eps)
+
+
+def sort_spikes(spikes, analog_data, standardize=False, eps='auto'):
     for (tag, sdf) in spikes.groupby('electrode'):
         waveforms = extract_waveforms(
             bandpass_filter(analog_data[tag]), sdf.time.values)
         with warnings.catch_warnings():
             warnings.simplefilter('ignore', category=RuntimeWarning)
             pcs = PCA(n_components=2).fit_transform(waveforms)
-        clusters = DBSCAN(eps=30, min_samples=3).fit(pcs)
+            if standardize:
+                pcs = StandardScaler().fit_transform(pcs)
+
+        opt = optics.OPTICS(300, 5)
+        opt.fit(pcs)
+
+        reach = opt._reachability[opt._ordered_list]
+        if eps == 'auto':
+            rprime = [x for x in reach if not np.isinf(x)]
+            thresh = 8*stats.tstd(rprime,
+                                  (np.percentile(rprime, 10),
+                                   np.percentile(rprime, 90))) + np.median(rprime)  # noqa
+            peaks = peak_local_max(reach, min_distance=4,
+                                   threshold_abs=thresh,
+                                   threshold_rel=0).flatten()
+            try:
+                eps = 0.9*np.min([reach[peaks]])
+            except:
+                eps = 0.5*reach[-1]
+
+        opt.extract(eps)
 
         spikes.loc[sdf.index, 'electrode'] = \
-            sdf.electrode.str.cat(clusters.labels_.astype(str), sep='.')
+            sdf.electrode.str.cat(opt.labels_.astype(str), sep='.')
 
 
 def export_spikes(fname, amp=6.0):
@@ -284,22 +358,12 @@ def export_spikes(fname, amp=6.0):
     print('done.', flush=True)
 
     print('Sorting spikes...', end='', flush=True)
-    sort_spikes(spikes, analog_data)
+    #sort_spikes(spikes, analog_data)
     print('done.', flush=True)
 
     # spikes = tag_conductance_spikes(peaks)
 
     spikes.to_csv(fname[:-3] + '.csv', index=False)
-
-
-def extract_waveforms(series, times, window_len=0.003):
-    dt = series.index[1] - series.index[0]
-    span = int(window_len / 2 / dt)
-    extracted = []
-    for t in times:
-        x = int(t / dt)
-        extracted.append(series.iloc[x - span:x + span].values)
-    return np.array(extracted)
 
 
 def coordinates_for_electrode(tag):
