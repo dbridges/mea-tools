@@ -19,7 +19,7 @@ def find_series_peaks(series, double amp=6.0):
     fs_nyquist = (1.0/dt) / 2.0
     t0 = series.index[0]
     min_sep = int(0.001/dt)
-    lookaround = int(0.002/dt)
+    lookaround = int(0.0015/dt)
 
     # first perform band pass filter 200Hz - 4kHz
     bf, af = signal.butter(2, (200.0/fs_nyquist, 4000.0/fs_nyquist),
@@ -42,12 +42,12 @@ def find_series_peaks(series, double amp=6.0):
         elif (data[n] > pos_thresh and data[n] > data[n-1]
               and data[n] > data[n+1]
               and n > (last_neg_peak + lookaround)):
-            # lookaround for negative peak, use that if it is 1.3x bigger than
+            # lookaround for negative peak, use that if it is 1.5x bigger than
             # the positive peak.
             for j in range(n, n+lookaround):
-                if (data[j] < neg_thresh and
-                    data[j] < data[j-1] and data[j] < data[j+1]
-                    and np.abs(data[j]) > 1.3*data[n]):
+                if (data[j] < 0.7*neg_thresh and
+                    data[j] < data[j-1] and data[j] < data[j+1] and
+                    np.abs(data[j]) > 0.7*data[n]):
                     peaks.append((fitted_peak_loc(np.arange(j-1, j+2) * dt + t0,
                                             data[j-1:j+2]),
                                 data[j], neg_thresh))

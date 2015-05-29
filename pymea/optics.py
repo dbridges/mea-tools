@@ -83,9 +83,6 @@ def _prep_optics(SetofObjects, epsilon, MinPts):
     for j in SetofObjects._index:
         if SetofObjects._nneighbors[j] >= MinPts:
             SetofObjects._set_core_dist(j, MinPts)
-    print(
-        'Core distances and neighborhoods prepped for ' + str(
-        SetofObjects._n) + ' points.')
 
 # Paralizeable! #
 

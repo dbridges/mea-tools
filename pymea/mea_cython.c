@@ -1595,7 +1595,7 @@ static PyObject *__pyx_pf_5pymea_10mea_cython_find_series_peaks(CYTHON_UNUSED Py
  *     dt = series.index[1] - series.index[0]
  *     fs_nyquist = (1.0/dt) / 2.0             # <<<<<<<<<<<<<<
  *     t0 = series.index[0]
- *     min_sep = int(0.001/dt)
+ *     min_sep = int(0.0008/dt)
  */
   if (unlikely(__pyx_v_dt == 0)) {
     #ifdef WITH_THREAD
@@ -1613,8 +1613,8 @@ static PyObject *__pyx_pf_5pymea_10mea_cython_find_series_peaks(CYTHON_UNUSED Py
  *     dt = series.index[1] - series.index[0]
  *     fs_nyquist = (1.0/dt) / 2.0
  *     t0 = series.index[0]             # <<<<<<<<<<<<<<
- *     min_sep = int(0.001/dt)
- *     lookaround = int(0.002/dt)
+ *     min_sep = int(0.0008/dt)
+ *     lookaround = int(0.0015/dt)
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_series, __pyx_n_s_index); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 20; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
@@ -1628,8 +1628,8 @@ static PyObject *__pyx_pf_5pymea_10mea_cython_find_series_peaks(CYTHON_UNUSED Py
   /* "pymea/mea_cython.pyx":21
  *     fs_nyquist = (1.0/dt) / 2.0
  *     t0 = series.index[0]
- *     min_sep = int(0.001/dt)             # <<<<<<<<<<<<<<
- *     lookaround = int(0.002/dt)
+ *     min_sep = int(0.0008/dt)             # <<<<<<<<<<<<<<
+ *     lookaround = int(0.0015/dt)
  * 
  */
   if (unlikely(__pyx_v_dt == 0)) {
@@ -1642,12 +1642,12 @@ static PyObject *__pyx_pf_5pymea_10mea_cython_find_series_peaks(CYTHON_UNUSED Py
     #endif
     {__pyx_filename = __pyx_f[0]; __pyx_lineno = 21; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_v_min_sep = ((int)(0.001 / __pyx_v_dt));
+  __pyx_v_min_sep = ((int)(0.0008 / __pyx_v_dt));
 
   /* "pymea/mea_cython.pyx":22
  *     t0 = series.index[0]
- *     min_sep = int(0.001/dt)
- *     lookaround = int(0.002/dt)             # <<<<<<<<<<<<<<
+ *     min_sep = int(0.0008/dt)
+ *     lookaround = int(0.0015/dt)             # <<<<<<<<<<<<<<
  * 
  *     # first perform band pass filter 200Hz - 4kHz
  */
@@ -1661,7 +1661,7 @@ static PyObject *__pyx_pf_5pymea_10mea_cython_find_series_peaks(CYTHON_UNUSED Py
     #endif
     {__pyx_filename = __pyx_f[0]; __pyx_lineno = 22; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_v_lookaround = ((int)(0.002 / __pyx_v_dt));
+  __pyx_v_lookaround = ((int)(0.0015 / __pyx_v_dt));
 
   /* "pymea/mea_cython.pyx":25
  * 
@@ -2270,7 +2270,7 @@ static PyObject *__pyx_pf_5pymea_10mea_cython_find_series_peaks(CYTHON_UNUSED Py
  *         elif (data[n] > pos_thresh and data[n] > data[n-1]
  *               and data[n] > data[n+1]             # <<<<<<<<<<<<<<
  *               and n > (last_neg_peak + lookaround)):
- *             # lookaround for negative peak, use that if it is 1.3x bigger than
+ *             # lookaround for negative peak, use that if it is 1.5x bigger than
  */
     __pyx_t_27 = __pyx_v_n;
     __pyx_t_28 = -1;
@@ -2312,7 +2312,7 @@ static PyObject *__pyx_pf_5pymea_10mea_cython_find_series_peaks(CYTHON_UNUSED Py
  *         elif (data[n] > pos_thresh and data[n] > data[n-1]
  *               and data[n] > data[n+1]             # <<<<<<<<<<<<<<
  *               and n > (last_neg_peak + lookaround)):
- *             # lookaround for negative peak, use that if it is 1.3x bigger than
+ *             # lookaround for negative peak, use that if it is 1.5x bigger than
  */
     __pyx_t_28 = __pyx_v_n;
     __pyx_t_30 = -1;
@@ -2345,7 +2345,7 @@ static PyObject *__pyx_pf_5pymea_10mea_cython_find_series_peaks(CYTHON_UNUSED Py
  *         elif (data[n] > pos_thresh and data[n] > data[n-1]
  *               and data[n] > data[n+1]
  *               and n > (last_neg_peak + lookaround)):             # <<<<<<<<<<<<<<
- *             # lookaround for negative peak, use that if it is 1.3x bigger than
+ *             # lookaround for negative peak, use that if it is 1.5x bigger than
  *             # the positive peak.
  */
     __pyx_t_19 = ((__pyx_v_n > (__pyx_v_last_neg_peak + __pyx_v_lookaround)) != 0);
@@ -2354,11 +2354,11 @@ static PyObject *__pyx_pf_5pymea_10mea_cython_find_series_peaks(CYTHON_UNUSED Py
     if (__pyx_t_17) {
 
       /* "pymea/mea_cython.pyx":47
- *             # lookaround for negative peak, use that if it is 1.3x bigger than
+ *             # lookaround for negative peak, use that if it is 1.5x bigger than
  *             # the positive peak.
  *             for j in range(n, n+lookaround):             # <<<<<<<<<<<<<<
- *                 if (data[j] < neg_thresh and
- *                     data[j] < data[j-1] and data[j] < data[j+1]
+ *                 if (data[j] < 0.7*neg_thresh and
+ *                     data[j] < data[j-1] and data[j] < data[j+1] and
  */
       __pyx_t_15 = __Pyx_PyInt_From_int(__pyx_v_n); if (unlikely(!__pyx_t_15)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 47; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_15);
@@ -2419,13 +2419,13 @@ static PyObject *__pyx_pf_5pymea_10mea_cython_find_series_peaks(CYTHON_UNUSED Py
         /* "pymea/mea_cython.pyx":48
  *             # the positive peak.
  *             for j in range(n, n+lookaround):
- *                 if (data[j] < neg_thresh and             # <<<<<<<<<<<<<<
- *                     data[j] < data[j-1] and data[j] < data[j+1]
- *                     and np.abs(data[j]) > 1.3*data[n]):
+ *                 if (data[j] < 0.7*neg_thresh and             # <<<<<<<<<<<<<<
+ *                     data[j] < data[j-1] and data[j] < data[j+1] and
+ *                     np.abs(data[j]) > 0.7*data[n]):
  */
         __pyx_t_1 = PyObject_GetItem(((PyObject *)__pyx_v_data), __pyx_v_j); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 48; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
         __Pyx_GOTREF(__pyx_t_1);
-        __pyx_t_15 = PyFloat_FromDouble(__pyx_v_neg_thresh); if (unlikely(!__pyx_t_15)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 48; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_15 = PyFloat_FromDouble((0.7 * __pyx_v_neg_thresh)); if (unlikely(!__pyx_t_15)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 48; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_15);
         __pyx_t_7 = PyObject_RichCompare(__pyx_t_1, __pyx_t_15, Py_LT); __Pyx_XGOTREF(__pyx_t_7); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 48; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -2440,9 +2440,9 @@ static PyObject *__pyx_pf_5pymea_10mea_cython_find_series_peaks(CYTHON_UNUSED Py
 
         /* "pymea/mea_cython.pyx":49
  *             for j in range(n, n+lookaround):
- *                 if (data[j] < neg_thresh and
- *                     data[j] < data[j-1] and data[j] < data[j+1]             # <<<<<<<<<<<<<<
- *                     and np.abs(data[j]) > 1.3*data[n]):
+ *                 if (data[j] < 0.7*neg_thresh and
+ *                     data[j] < data[j-1] and data[j] < data[j+1] and             # <<<<<<<<<<<<<<
+ *                     np.abs(data[j]) > 0.7*data[n]):
  *                     peaks.append((fitted_peak_loc(np.arange(j-1, j+2) * dt + t0,
  */
         __pyx_t_7 = PyObject_GetItem(((PyObject *)__pyx_v_data), __pyx_v_j); if (unlikely(__pyx_t_7 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 49; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
@@ -2462,24 +2462,8 @@ static PyObject *__pyx_pf_5pymea_10mea_cython_find_series_peaks(CYTHON_UNUSED Py
           __pyx_t_17 = __pyx_t_19;
           goto __pyx_L18_bool_binop_done;
         }
-
-        /* "pymea/mea_cython.pyx":50
- *                 if (data[j] < neg_thresh and
- *                     data[j] < data[j-1] and data[j] < data[j+1]
- *                     and np.abs(data[j]) > 1.3*data[n]):             # <<<<<<<<<<<<<<
- *                     peaks.append((fitted_peak_loc(np.arange(j-1, j+2) * dt + t0,
- *                                             data[j-1:j+2]),
- */
         __pyx_t_15 = PyObject_GetItem(((PyObject *)__pyx_v_data), __pyx_v_j); if (unlikely(__pyx_t_15 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 49; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
         __Pyx_GOTREF(__pyx_t_15);
-
-        /* "pymea/mea_cython.pyx":49
- *             for j in range(n, n+lookaround):
- *                 if (data[j] < neg_thresh and
- *                     data[j] < data[j-1] and data[j] < data[j+1]             # <<<<<<<<<<<<<<
- *                     and np.abs(data[j]) > 1.3*data[n]):
- *                     peaks.append((fitted_peak_loc(np.arange(j-1, j+2) * dt + t0,
- */
         __pyx_t_1 = PyNumber_Add(__pyx_v_j, __pyx_int_1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 49; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_1);
         __pyx_t_7 = PyObject_GetItem(((PyObject *)__pyx_v_data), __pyx_t_1); if (unlikely(__pyx_t_7 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 49; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
@@ -2497,9 +2481,9 @@ static PyObject *__pyx_pf_5pymea_10mea_cython_find_series_peaks(CYTHON_UNUSED Py
         }
 
         /* "pymea/mea_cython.pyx":50
- *                 if (data[j] < neg_thresh and
- *                     data[j] < data[j-1] and data[j] < data[j+1]
- *                     and np.abs(data[j]) > 1.3*data[n]):             # <<<<<<<<<<<<<<
+ *                 if (data[j] < 0.7*neg_thresh and
+ *                     data[j] < data[j-1] and data[j] < data[j+1] and
+ *                     np.abs(data[j]) > 0.7*data[n]):             # <<<<<<<<<<<<<<
  *                     peaks.append((fitted_peak_loc(np.arange(j-1, j+2) * dt + t0,
  *                                             data[j-1:j+2]),
  */
@@ -2546,7 +2530,7 @@ static PyObject *__pyx_pf_5pymea_10mea_cython_find_series_peaks(CYTHON_UNUSED Py
           __Pyx_RaiseBufferIndexError(__pyx_t_33);
           {__pyx_filename = __pyx_f[0]; __pyx_lineno = 50; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         }
-        __pyx_t_15 = PyFloat_FromDouble((1.3 * (*__Pyx_BufPtrStrided1d(double *, __pyx_pybuffernd_data.rcbuffer->pybuffer.buf, __pyx_t_30, __pyx_pybuffernd_data.diminfo[0].strides)))); if (unlikely(!__pyx_t_15)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 50; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_15 = PyFloat_FromDouble((0.7 * (*__Pyx_BufPtrStrided1d(double *, __pyx_pybuffernd_data.rcbuffer->pybuffer.buf, __pyx_t_30, __pyx_pybuffernd_data.diminfo[0].strides)))); if (unlikely(!__pyx_t_15)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 50; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_15);
         __pyx_t_24 = PyObject_RichCompare(__pyx_t_1, __pyx_t_15, Py_GT); __Pyx_XGOTREF(__pyx_t_24); if (unlikely(!__pyx_t_24)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 50; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -2558,8 +2542,8 @@ static PyObject *__pyx_pf_5pymea_10mea_cython_find_series_peaks(CYTHON_UNUSED Py
         if (__pyx_t_17) {
 
           /* "pymea/mea_cython.pyx":51
- *                     data[j] < data[j-1] and data[j] < data[j+1]
- *                     and np.abs(data[j]) > 1.3*data[n]):
+ *                     data[j] < data[j-1] and data[j] < data[j+1] and
+ *                     np.abs(data[j]) > 0.7*data[n]):
  *                     peaks.append((fitted_peak_loc(np.arange(j-1, j+2) * dt + t0,             # <<<<<<<<<<<<<<
  *                                             data[j-1:j+2]),
  *                                 data[j], neg_thresh))
@@ -2616,7 +2600,7 @@ static PyObject *__pyx_pf_5pymea_10mea_cython_find_series_peaks(CYTHON_UNUSED Py
           __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
 
           /* "pymea/mea_cython.pyx":52
- *                     and np.abs(data[j]) > 1.3*data[n]):
+ *                     np.abs(data[j]) > 0.7*data[n]):
  *                     peaks.append((fitted_peak_loc(np.arange(j-1, j+2) * dt + t0,
  *                                             data[j-1:j+2]),             # <<<<<<<<<<<<<<
  *                                 data[j], neg_thresh))
@@ -2671,8 +2655,8 @@ static PyObject *__pyx_pf_5pymea_10mea_cython_find_series_peaks(CYTHON_UNUSED Py
           __Pyx_GOTREF(__pyx_t_8);
 
           /* "pymea/mea_cython.pyx":51
- *                     data[j] < data[j-1] and data[j] < data[j+1]
- *                     and np.abs(data[j]) > 1.3*data[n]):
+ *                     data[j] < data[j-1] and data[j] < data[j+1] and
+ *                     np.abs(data[j]) > 0.7*data[n]):
  *                     peaks.append((fitted_peak_loc(np.arange(j-1, j+2) * dt + t0,             # <<<<<<<<<<<<<<
  *                                             data[j-1:j+2]),
  *                                 data[j], neg_thresh))
@@ -2728,11 +2712,11 @@ static PyObject *__pyx_pf_5pymea_10mea_cython_find_series_peaks(CYTHON_UNUSED Py
         }
 
         /* "pymea/mea_cython.pyx":47
- *             # lookaround for negative peak, use that if it is 1.3x bigger than
+ *             # lookaround for negative peak, use that if it is 1.5x bigger than
  *             # the positive peak.
  *             for j in range(n, n+lookaround):             # <<<<<<<<<<<<<<
- *                 if (data[j] < neg_thresh and
- *                     data[j] < data[j-1] and data[j] < data[j+1]
+ *                 if (data[j] < 0.7*neg_thresh and
+ *                     data[j] < data[j-1] and data[j] < data[j+1] and
  */
       }
       /*else*/ {
@@ -2886,11 +2870,11 @@ static PyObject *__pyx_pf_5pymea_10mea_cython_find_series_peaks(CYTHON_UNUSED Py
       }
 
       /* "pymea/mea_cython.pyx":47
- *             # lookaround for negative peak, use that if it is 1.3x bigger than
+ *             # lookaround for negative peak, use that if it is 1.5x bigger than
  *             # the positive peak.
  *             for j in range(n, n+lookaround):             # <<<<<<<<<<<<<<
- *                 if (data[j] < neg_thresh and
- *                     data[j] < data[j-1] and data[j] < data[j+1]
+ *                 if (data[j] < 0.7*neg_thresh and
+ *                     data[j] < data[j-1] and data[j] < data[j+1] and
  */
       __pyx_L16_break:;
       __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
