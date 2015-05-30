@@ -2,19 +2,30 @@
 
 import os
 import time
-from collections import namedtuple, Counter
+from collections import namedtuple
+import itertools
+import warnings
 
 import numpy as np
 import pandas as pd
-from scipy import signal
 import h5py
 
+from scipy import signal
+from scipy import stats
+from scipy import interpolate
+
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+from skimage.feature import peak_local_max
+
 from . import util
+from . import optics
 from . import mea_cython
 
 __all__ = ['MEARecording', 'MEASpikeDict', 'coordinates_for_electrode',
-           'tag_for_electrode', 'condense_spikes', 'filter', 'export_spikes',
-           'tag_conductance_spikes', 'ConductanceSequence', 'cofiring_events']
+           'tag_for_electrode', 'condense_spikes', 'bandpass_filter',
+           'export_spikes', 'tag_conductance_spikes', 'ConductanceSequence',
+           'cofiring_events', 'choose_keep_electrode']
 
 
 class MEARecording:
@@ -23,8 +34,8 @@ class MEARecording:
 
     Parameters
     ----------
-        store_path : str
-            The path to the MEA recording, should be an HDF5 file.
+    store_path : str
+        The path to the MEA recording, should be an HDF5 file.
     """
     def __init__(self, store_path):
         store_path = os.path.expanduser(store_path)
@@ -48,7 +59,7 @@ class MEARecording:
             'Data/Recording_0/AnalogStream/Stream_0/ChannelData']
         self.data_len = self.electrode_data.shape[1]
         self.duration = self.data_len / self.sample_rate
-        self.peaks = []
+        self.spikes = []
         # Get 1st channel analog data if it exists:
         if 'Data/Recording_0/AnalogStream/Stream_1' in self.store:
             info = self.store[
@@ -68,16 +79,16 @@ class MEARecording:
 
         Parameters
         ----------
-            channels : list of str or 'all'
-                The requested channels, ['a4', 'b5'], or 'all' for all
-                channels. Use 'analog1' to 'analog8' to access analog
-                input channels.
-            start_time : float
-                The start time of the data requested in seconds. Defaults
-                to 0.
-            end_time : float
-                The end time of the data requested in seconds. Defaults
-                to the time of the last data point.
+        channels : list of str or 'all'
+            The requested channels, ['a4', 'b5'], or 'all' for all
+            channels. Use 'analog1' to 'analog8' to access analog
+            input channels.
+        start_time : float
+            The start time of the data requested in seconds. Defaults
+            to 0.
+        end_time : float
+            The end time of the data requested in seconds. Defaults
+            to the time of the last data point.
         """
         if channels == 'all':
             output_channels = list(self.lookup.keys())
@@ -117,18 +128,6 @@ class MEARecording:
                             index=np.arange(start_i, end_i)/self.sample_rate,
                             columns=output_channels, dtype=np.float32)
 
-    def detect_spikes(self, amp=6.0):
-        peaks = []
-        df = self.get('all')
-        for electrode in df.keys():
-            p = mea_cython.find_series_peaks(df[electrode], amp)
-            p.insert(0, 'electrode', electrode)
-            peaks.append(p)
-        peaks = pd.concat(peaks, ignore_index=True)
-        peaks = peaks.convert_objects(convert_numeric=True)
-        self.peaks = tag_conductance_spikes(peaks)
-        return self.peaks
-
     def __del__(self):
         try:
             self.close()
@@ -163,7 +162,7 @@ class MEASpikeDict():
 
     Parameters
     ----------
-        spike_table : DataFrame
+    spike_table : DataFrame
         DataFrame as given by MEARecording.detect_spikes() or by reading
         a csv generated using pymea.export_spikes()
 
@@ -241,6 +240,8 @@ class MEASpikeDict():
         """
         Sorts the electrodes by order given with key.
 
+        Parameters
+        ----------
         key : callable
             A callable which takes a single argument, the DataFrame of a
             single electrode, and returns a value to be used for sorting.
@@ -256,27 +257,20 @@ class MEASpikeDict():
                                   reverse=reverse)
 
 
-def export_spikes(fname, amp=6.0):
-    fname = os.path.expanduser(fname)
-    rec = MEARecording(fname)
-    df = rec.detect_spikes(amp)
-    df.to_csv(fname[:-3] + '.csv', index=False)
-
-
 def coordinates_for_electrode(tag):
     """
     Returns MEA coordinates for electrode label.
 
     Parameters
     ----------
-        tag : str
-            The electrode label, i.e. A8 or C6
+    tag : str
+        The electrode label, i.e. A8 or C6
 
     Returns
     -------
-        coordinates : tuple
-            A tuple of length 2 giving the x and y coordinate of
-            that electrode.
+    coordinates : tuple
+        A tuple of length 2 giving the x and y coordinate of
+        that electrode.
     """
     tag = tag.lower()
     if tag.startswith('analog'):
@@ -307,13 +301,13 @@ def tag_for_electrode(coords):
 
     Parameters
     ----------
-        coords : tuple
-            The electrode coordinates.
+    coords : tuple
+        The electrode coordinates.
 
     Returns
     -------
-        tag : str
-            The electrode name.
+    tag : str
+        The electrode name.
     """
     lookup = {0: 'a', 1: 'b', 2: 'c', 3: 'd', 4: 'e', 5: 'f', 6: 'g', 7: 'h',
               8: 'j', 9: 'k', 10: 'l', 11: 'm'}
@@ -336,6 +330,169 @@ def tag_for_electrode(coords):
         return 'analog8'
     else:
         return tag
+
+
+################################
+# Spike detection, sorting and exporting
+################################
+
+
+def export_spikes(fname, amp=6.0, sort=True, conductance=True):
+    """
+    Detect, sort, and export spikes to a csv file.
+
+    Parameters
+    ----------
+    fname : str
+        The source HDF5 file.
+    amp : float
+        This sets the amplitude threshold used to detect spikes, as a
+        factor of the median rms noise level.
+    sort : bool
+        True to sort data after spike detection.
+    conductance : bool
+        True to find conductance signals. Sorting should be done first to
+        reliably detect conduction signals.
+    """
+    fname = os.path.expanduser(fname)
+    print('Loading analog data...', end='', flush=True)
+    rec = MEARecording(fname)
+    analog_data = rec.get('all')
+    print('done.', flush=True)
+
+    print('Detecting spikes...', end='', flush=True)
+    spikes = detect_spikes(analog_data, amp)
+    print('done.', flush=True)
+
+    if sort:
+        print('Sorting spikes...', end='', flush=True)
+        sort_spikes(spikes, analog_data)
+        print('done.', flush=True)
+
+    if conductance:
+        print('Detecting conduction signals...', end='', flush=True)
+        tag_conductance_spikes(spikes)
+        print('done.', flush=True)
+
+    spikes.to_csv(fname[:-3] + '.csv', index=False)
+
+
+def detect_spikes(analog_data, amp=6.0):
+    """
+    Runs basic spike detection using threshold. Detects both positive and
+    negative peaks. See mea_cython.find_series_peaks for more information
+    on the detection algorithm.
+
+    Parameters
+    ----------
+    analog_data : MEARecording
+        The analog recording to detect spikes in.
+    amp : float
+        This sets the amplitude threshold used to detect spikes, as a
+        factor of the median rms noise level.
+    """
+    peaks = []
+    for electrode in analog_data.keys():
+        p = mea_cython.find_series_peaks(analog_data[electrode], amp)
+        p.insert(0, 'electrode', electrode)
+        peaks.append(p)
+    peaks = pd.concat(peaks, ignore_index=True)
+    return peaks.convert_objects(convert_numeric=True)
+
+
+def extract_waveforms(series, times, window_len=0.003,
+                      upsample=5, smoothing=120):
+    """
+    Extract waveform data from a series for the given times.
+
+    Parameters
+    ----------
+    series : pandas.series
+        The series containing the analog data.
+    times : list
+        A list of times to extract waveforms from.
+    window_len : float
+        The width of the window to extract in seconds, centered on each time
+        given in times.
+    upsample : int
+        The factor to upsample the data if desired.
+    smoothing : float
+        A smoothing factor to be used during upsampling performed by
+        scipy.interolate.splrep
+
+    Returns
+    -------
+    waveforms : np.array
+        An array where element i is the waveform data for spike i.
+    """
+    dt = series.index[1] - series.index[0]
+    span = int(window_len / 2 / dt)
+    extracted = []
+    for t in times:
+        i = int(t / dt)
+        y = series.iloc[i - span:i + span].values
+        x = np.arange(len(y))
+        xnew = np.linspace(0, len(y), len(y) * upsample)
+        tck = interpolate.splrep(x, y, s=smoothing)
+        interped = interpolate.splev(xnew, tck, der=0)
+        extracted.append(interped)
+    return np.array(extracted)
+
+
+def sort_spikes(dataframe, analog_data, standardize=False):
+    """
+    Sorts spikes in dataframe for the given analog_data in place. Spikes are
+    sorted by the first two principal components after the waveforms have been
+    smoothed and up-sampled. Cluster analysis is done using the OPTICS density
+    based clustering algorithm. An appropriate epsilon is found by looking for
+    significant peaks in the reachability plot.
+
+    Parameters
+    ----------
+    dataframe : pandas.DataFrame
+        DataFrame of spike data.
+    analog_data : MEARecording
+        The MEARecording for the spikes given in dataframe.
+    standardize : bool
+        If True, standardize data before cluster finding.
+
+    """
+    for (tag, sdf) in dataframe.groupby('electrode'):
+        waveforms = extract_waveforms(
+            bandpass_filter(analog_data[tag]), sdf.time.values)
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore', category=RuntimeWarning)
+            pcs = PCA(n_components=2).fit_transform(waveforms)
+            if standardize:
+                pcs = StandardScaler().fit_transform(pcs)
+
+        opt = optics.OPTICS(300, 5)
+        opt.fit(pcs)
+
+        reach = opt._reachability[opt._ordered_list]
+        rprime = reach[np.isfinite(reach)]
+        if len(rprime) < 2:
+            continue
+        thresh = 8.5*stats.tstd(rprime,
+                                (np.percentile(rprime, 15),
+                                 np.percentile(rprime, 85))) + np.median(rprime)  # noqa
+        peaks = peak_local_max(reach, min_distance=4,
+                               threshold_abs=thresh,
+                               threshold_rel=0).flatten()
+        # Find largest peak for close neighbors
+        min_dist = 0.05 * len(reach)
+        splits = np.where(np.diff(peaks) > min_dist)[0] + 1
+        peak_vals = [np.max(x) for x in np.split(reach[peaks], splits)
+                     if len(x) > 0]
+        try:
+            eps = 0.95*np.min(peak_vals)
+        except:
+            eps = 0.5*reach[-1]
+
+        opt.extract(eps)
+
+        dataframe.loc[sdf.index, 'electrode'] = \
+            sdf.electrode.str.cat(opt.labels_.astype(str), sep='.')
 
 
 def condense_spikes(srcdir, fname):
@@ -362,132 +519,99 @@ ConductanceSequence = namedtuple('ConductanceSequence',
                                  ['keep', 'seq', 'count'])
 
 
-def cofiring_events(dataframe, channels, min_sep=0.0005):
+def cofiring_events(dataframe, min_sep=0.0005):
     """
     Parameters
     ----------
-        dataframe : pandas DataFrame
-            DataFrame of spike data.
+    dataframe : pandas DataFrame
+        DataFrame of spike data.
 
-        channels : list
-            List of channel electrode names, i.e.
-            ['a5', 'b6']
-
-        min_sep : float
-            Minimum separation time between two events for
-            them to be considered cofiring.
+    min_sep : float
+        Minimum separation time between two events for
+        them to be considered cofiring.
 
     Returns
     -------
-        dataframe : pandas DataFrame
-            A filtered version of dataframe which includes only events
-            separated by less than min_sep.
+    dataframe : pandas DataFrame
+        A filtered version of dataframe which includes only events
+        separated by less than min_sep.
     """
-    sub_df = dataframe[dataframe.electrode.isin(channels)].sort('time')
-    splits = np.where(np.diff(sub_df.time.values) > min_sep)[0] + 1
-    channel_count = len(channels)
-    return pd.concat([s for s in np.split(sub_df, splits)
-                      if len(s) == channel_count])
+    sub_df = dataframe.sort('time')
+    splits = np.concatenate([
+        [0],
+        np.where(np.diff(sub_df.time.values) > min_sep)[0] + 1,
+        [len(sub_df)]])
+
+    events = []
+    for i in range(len(splits) - 1):
+        if splits[i+1] - splits[i] == 2:
+            events.append(sub_df[splits[i]:splits[i]+2])
+    return events
 
 
-def choose_keep_electrode(dataframe, channels):
+def choose_keep_electrode(dataframe):
     """
     Chooses the electrode with the highest average amplitude among
-    cofiring events between electrodes given in channels. If multiple
+    cofiring events between electrodes. If multiple
     electrodes have amplitudes within 20% choose the first one alphabetically.
 
     Parameters
     ----------
-        dataframe : pandas DataFrmae
-            DataFrame of spike data.
-
-        channels : list
-            List of channel electrode names, i.e.
-            ['a5', 'b6']
+    dataframe : pandas DataFrmae
+        DataFrame of spike data, should only contain cofiring events.
 
     Returns
     -------
-        keep_electrode : str
-            The name of the electrode that should be kept when removing
-            conductance signals.
+    keep_electrode : str
+        The name of the electrode that should be kept when removing
+        conductance signals.
 
     """
-    sub_df = cofiring_events(dataframe, channels)
-    amplitudes = sub_df.groupby('electrode').amplitude.mean().abs()
+    amplitudes = dataframe.groupby('electrode').amplitude.mean().abs()
     big_amplitudes = amplitudes[amplitudes > 0.8 * amplitudes.max()]
     return sorted(list(big_amplitudes.index))[0]
 
 
-def find_conductance_seqs(dataframe, min_sep=0.0005):
-    """
-    Finds sequences of electrodes which are likely conductance signals.
-
-    Parameters
-    ----------
-        dataframe : pandas DataFrmae
-            DataFrame of spike data.
-
-        min_sep : float
-            Minimum separation time between two events for
-            them to be considered cofiring.
-
-    Returns
-    -------
-        conductances : list of ConductanceSequence
-            The identified conduction signals.
-    """
-    sorted_df = dataframe.sort('time')
-    splits = np.where(np.diff(sorted_df.time.values) > min_sep)[0] + 1
-    split_events = [tuple(sorted(tuple(se))) for se in
-                    np.split(sorted_df.electrode.values, splits)]
-
-    counts = Counter()
-    for e in split_events:
-        counts[e] += 1
-
-    conductances = []
-    for seq in counts:
-        if counts[seq] > 20 and len(seq) > 1:
-            conductances.append(ConductanceSequence(
-                choose_keep_electrode(sorted_df, seq),
-                seq,
-                counts[seq]))
-
-    return conductances
-
-
-def tag_conductance_spikes(df, conductance_seqs=None, min_sep=0.0005):
+def tag_conductance_spikes(df, conductance_seqs=None):
     """
     Tags conduction spikes in dataframe.
 
     Parameters
     ----------
-        df : pandas DataFrame
-            DataFrame of spike data.
-        conductance_seqs : list of ConductanceSequence
-            The previously identified conduction sequences.
+    df : pandas DataFrame
+        DataFrame of spike data.
+    conductance_seqs : list of ConductanceSequence
+        The previously identified conduction sequences.
     """
-    if conductance_seqs is None:
-        conductance_seqs = find_conductance_seqs(df, min_sep)
-    for cond in conductance_seqs:
-        print(cond)
-    conductance_locs = []
-    for keep, seq, count in conductance_seqs:
-        unkeep_seq = [tag for tag in seq if tag != keep]
-        keep_df = df[df.electrode == keep]
+    spikes = MEASpikeDict(df)
+    tags = [tag for tag in spikes if not tag.startswith('analog')]
 
-        # Iterate through rows in dataframe for electrodes in the conductance
-        # sequence, but not for the keep electrode (which we always want to
-        # keep in all situations)
-        for i, row in df[df.electrode.isin(unkeep_seq)].iterrows():
-            # If there is a spike in keep that occurs within +- 0.5ms then we
-            # mark this spike as a conductance signal.
-            tdiffs = np.abs(keep_df.time - row.time)
-            if len(tdiffs[tdiffs < min_sep]) > 0:
-                conductance_locs.append(i)
+    conductance_locs = []
+
+    for e1, e2 in itertools.combinations(tags, 2):
+        if len(spikes[e1]) < 15 or len(spikes[e2]) < 15:
+            continue
+        # Find events that cofire within 1.2ms
+        sub_df = pd.concat([spikes[e1], spikes[e2]])
+        try:
+            cofiring = pd.concat(
+                [event.sort('electrode') for event
+                 in cofiring_events(sub_df, 0.0012)])
+            diffs = cofiring.time.diff()
+        except:
+            continue
+        if len(cofiring) < 24:
+            continue
+        cofiring_rate = len(cofiring)/2/min(len(spikes[e1]), len(spikes[e2]))
+        cofiring_std = 1000*diffs[diffs < 0.0012].std()
+        if cofiring_std < 0.25 or (cofiring_std < 0.5 and cofiring_rate > 0.6):
+            # likely conductance sequence
+            e_keep = choose_keep_electrode(cofiring)
+            conductance_locs.extend(
+                list(cofiring[cofiring.electrode != e_keep].index.values))
+
     df['conductance'] = False
     df.ix[conductance_locs, 'conductance'] = True
-    return df
 
 
 def read_binary(fname, no_channels, columns, part=(0, -1),
@@ -512,7 +636,7 @@ def read_binary(fname, no_channels, columns, part=(0, -1),
     return d
 
 
-def filter(series, low=200.0, high=4000.0):
+def bandpass_filter(series, low=200.0, high=4000.0):
     """
     Filters given series with a 2nd order bandpass filter with default
     cutoff frequencies of 200 Hz and 4 kHz.

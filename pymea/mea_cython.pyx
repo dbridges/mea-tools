@@ -19,7 +19,7 @@ def find_series_peaks(series, double amp=6.0):
     fs_nyquist = (1.0/dt) / 2.0
     t0 = series.index[0]
     min_sep = int(0.001/dt)
-    lookaround = int(0.002/dt)
+    lookaround = int(0.0015/dt)
 
     # first perform band pass filter 200Hz - 4kHz
     bf, af = signal.butter(2, (200.0/fs_nyquist, 4000.0/fs_nyquist),
@@ -34,22 +34,30 @@ def find_series_peaks(series, double amp=6.0):
     maxn = len(data) - lookaround - 4
     while n < maxn:
         if data[n] < neg_thresh and data[n] < data[n-1] and data[n] < data[n+1]:
-            peaks.append((series.index[n], data[n], neg_thresh))
+            peaks.append((fitted_peak_loc(np.arange(n-1, n+2) * dt + t0,
+                                     data[n-1:n+2]),
+                          data[n], neg_thresh))
             last_neg_peak = n
             n += min_sep
         elif (data[n] > pos_thresh and data[n] > data[n-1]
               and data[n] > data[n+1]
               and n > (last_neg_peak + lookaround)):
-            # lookaround for negative peak, use that if there is one
+            # lookaround for negative peak, use that if it is 1.5x bigger than
+            # the positive peak.
             for j in range(n, n+lookaround):
-                if (data[j] < neg_thresh and
-                    data[j] < data[j-1] and data[j] < data[j+1]):
-                    peaks.append((series.index[j], data[j], neg_thresh))
+                if (data[j] < 0.7*neg_thresh and
+                    data[j] < data[j-1] and data[j] < data[j+1] and
+                    np.abs(data[j]) > 0.7*data[n]):
+                    peaks.append((fitted_peak_loc(np.arange(j-1, j+2) * dt + t0,
+                                            data[j-1:j+2]),
+                                data[j], neg_thresh))
                     last_neg_peak = j
                     n = j + min_sep
                     break
             else:
-                peaks.append((series.index[n], data[n], pos_thresh))
+                peaks.append((fitted_peak_loc(np.arange(n-1, n+2) * dt + t0,
+                                        data[n-1:n+2]),
+                            data[n], pos_thresh))
                 n += min_sep
         else:
             n += 1
@@ -60,6 +68,11 @@ def find_series_peaks(series, double amp=6.0):
     return pd.DataFrame(np.array(peaks, dtype=np.float32),
                         columns=['time', 'amplitude', 'threshold'])
 
+
+def fitted_peak_loc(x, y):
+    a, b, c = np.polyfit(x, y, 2)
+    x = -b/(2*a)
+    return x
 
 def min_max(np.ndarray[float] d):
     if len(d) == 0:
@@ -95,4 +108,3 @@ def delay_from(np.ndarray[float] data, float t):
         if val > t:
             return val - t
     return sys.float_info.max
-

@@ -152,7 +152,7 @@ class MEA120GridVisualization(Visualization):
         self.resample()
 
     def draw(self):
-        gloo.clear((0.5, 0.5, 0.5, 1))
+        gloo.clear(Theme.background)
         self.program.draw('line_strip')
         self.grid.draw(self.canvas.tr_sys)
 
