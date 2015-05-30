@@ -26,7 +26,7 @@ from . import mea_cython
 __all__ = ['MEARecording', 'MEASpikeDict', 'coordinates_for_electrode',
            'tag_for_electrode', 'condense_spikes', 'bandpass_filter',
            'export_spikes', 'tag_conductance_spikes', 'ConductanceSequence',
-           'cofiring_events']
+           'cofiring_events', 'choose_keep_electrode']
 
 
 class MEARecording:
@@ -241,6 +241,8 @@ class MEASpikeDict():
         """
         Sorts the electrodes by order given with key.
 
+        Parameters
+        ----------
         key : callable
             A callable which takes a single argument, the DataFrame of a
             single electrode, and returns a value to be used for sorting.
@@ -336,7 +338,23 @@ def tag_for_electrode(coords):
 ################################
 
 
-def export_spikes(fname, amp=6.0, sort=True, conductance=False):
+def export_spikes(fname, amp=6.0, sort=True, conductance=True):
+    """
+    Detect, sort, and export spikes to a csv file.
+
+    Parameters
+    ----------
+    fname : str
+        The source HDF5 file.
+    amp : float
+        This sets the amplitude threshold used to detect spikes, as a
+        factor of the median rms noise level.
+    sort : bool
+        True to sort data after spike detection.
+    conductance : bool
+        True to find conductance signals. Sorting should be done first to
+        reliably detect conduction signals.
+    """
     fname = os.path.expanduser(fname)
     print('Loading analog data...', end='', flush=True)
     rec = MEARecording(fname)
@@ -353,12 +371,27 @@ def export_spikes(fname, amp=6.0, sort=True, conductance=False):
         print('done.', flush=True)
 
     if conductance:
-        spikes = tag_conductance_spikes(spikes)
+        print('Detecting conduction signals...', end='', flush=True)
+        tag_conductance_spikes(spikes)
+        print('done.', flush=True)
 
     spikes.to_csv(fname[:-3] + '.csv', index=False)
 
 
 def detect_spikes(analog_data, amp=6.0):
+    """
+    Runs basic spike detection using threshold. Detects both positive and
+    negative peaks. See mea_cython.find_series_peaks for more information
+    on the detection algorithm.
+
+    Parameters
+    ----------
+    analog_data : MEARecording
+        The analog recording to detect spikes in.
+    amp : float
+        This sets the amplitude threshold used to detect spikes, as a
+        factor of the median rms noise level.
+    """
     peaks = []
     for electrode in analog_data.keys():
         p = mea_cython.find_series_peaks(analog_data[electrode], amp)
@@ -419,10 +452,8 @@ def sort_spikes(dataframe, analog_data, standardize=False):
     ----------
     dataframe : pandas.DataFrame
         DataFrame of spike data.
-
     analog_data : MEARecording
         The MEARecording for the spikes given in dataframe.
-
     standardize : bool
         If True, standardize data before cluster finding.
 
@@ -559,6 +590,8 @@ def tag_conductance_spikes(df, conductance_seqs=None):
     conductance_locs = []
 
     for e1, e2 in itertools.combinations(tags, 2):
+        if len(spikes[e1]) < 15 or len(spikes[e2]) < 15:
+            continue
         # Find events that cofire within 1.2ms
         sub_df = pd.concat([spikes[e1], spikes[e2]])
         try:
@@ -568,12 +601,15 @@ def tag_conductance_spikes(df, conductance_seqs=None):
             diffs = cofiring.time.diff()
         except:
             continue
-        if len(cofiring) > 30 and 1000*diffs[diffs < 0.0012].std() < 0.2:
+        if len(cofiring) < 24:
+            continue
+        cofiring_rate = len(cofiring)/2/min(len(spikes[e1]), len(spikes[e2]))
+        cofiring_std = 1000*diffs[diffs < 0.0012].std()
+        if cofiring_std < 0.25 or (cofiring_std < 0.5 and cofiring_rate > 0.6):
             # likely conductance sequence
             e_keep = choose_keep_electrode(cofiring)
-            for i, row in cofiring.iterrows():
-                if row.electrode != e_keep:
-                    conductance_locs.append(i)
+            conductance_locs.extend(
+                list(cofiring[cofiring.electrode != e_keep].index.values))
 
     df['conductance'] = False
     df.ix[conductance_locs, 'conductance'] = True
