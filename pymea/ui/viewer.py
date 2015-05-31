@@ -400,5 +400,5 @@ def run(fname):
     win = MainWindow(fname)
     win.show()
     if platform.system() == 'Darwin':
-        os.system('''osascript -e 'tell app "Finder" to set frontmost of process "Python" to true' ''')  # noqa
+        os.system('''osascript -e 'tell app "Finder" to set frontmost of process "python3" to true' ''')  # noqa
     appQt.exec_()

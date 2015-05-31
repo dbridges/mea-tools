@@ -8,7 +8,10 @@ import glob
 
 def view(args):
     import pymea.ui.viewer
-    pymea.ui.viewer.run(args.FILE)
+    if os.path.exists(args.FILE):
+        pymea.ui.viewer.run(args.FILE)
+    else:
+        print('No such file or directory.')
 
 
 def info(args):
