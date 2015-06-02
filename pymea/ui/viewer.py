@@ -166,23 +166,11 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
     """
     Subclass of QMainWindow
     """
-    def __init__(self, input_file, parent=None):
+    def __init__(self, analog_file, spike_file, start_vis, parent=None):
         super().__init__(parent)
 
-        if input_file.endswith('.csv'):
-            self.spike_file = input_file
-            if os.path.exists(input_file[:-4] + '.h5'):
-                self.analog_file = input_file[:-4] + '.h5'
-            else:
-                self.analog_file = None
-        elif input_file.endswith('.h5'):
-            self.analog_file = input_file
-            if os.path.exists(input_file[:-3] + '.csv'):
-                self.spike_file = input_file[:-3] + '.csv'
-            else:
-                self.spike_file = None
-        else:
-            raise IOError('Invalid input file, must be of type csv or h5.')
+        self.analog_file = analog_file
+        self.spike_file = spike_file
 
         # UI initialization
         self.setupUi(self)
@@ -201,15 +189,17 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
 
         self.flashingSpikeTimescaleComboBox.setCurrentIndex(4)
 
-        if input_file.endswith('.csv'):
+        if start_vis == 'raster':
             self.visualizationComboBox.setCurrentIndex(0)
             self.canvas.show_raster()
+            filepath = spike_file
         else:
             self.visualizationComboBox.setCurrentIndex(2)
+            filepath = analog_file
 
         self.load_settings()
 
-        self.setWindowTitle('MEA Viewer - ' + os.path.basename(input_file))
+        self.setWindowTitle('MEA Viewer - ' + os.path.basename(filepath))
 
     def load_settings(self):
         # Load gui settings and restore window geometery
@@ -395,9 +385,9 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         sys.exit()
 
 
-def run(fname):
+def run(analog_file, spike_file, start_vis):
     appQt = QtGui.QApplication(sys.argv)
-    win = MainWindow(fname)
+    win = MainWindow(analog_file, spike_file, start_vis)
     win.show()
     if platform.system() == 'Darwin':
         os.system('''osascript -e 'tell app "Finder" to set frontmost of process "python3" to true' ''')  # noqa

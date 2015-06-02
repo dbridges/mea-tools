@@ -8,8 +8,34 @@ import glob
 
 def view(args):
     import pymea.ui.viewer
+
+    if args.spikes is not None:
+        if not os.path.exists(args.spikes):
+            print('No such file or directory: %s.' % args.spikes)
+            return
+
     if os.path.exists(args.FILE):
-        pymea.ui.viewer.run(args.FILE)
+        spike_file = None
+        analog_file = None
+        if args.FILE.endswith('.csv'):
+            spike_file = args.FILE
+            if os.path.exists(args.FILE[:-4] + '.h5'):
+                analog_file = args.FILE[:-4] + '.h5'
+        elif args.FILE.endswith('.h5'):
+            analog_file = args.FILE
+            if args.spikes is not None:
+                spike_file = args.spikes
+            elif os.path.exists(args.FILE[:-3] + '.csv'):
+                spike_file = args.FILE[:-3] + '.csv'
+        else:
+            raise IOError('Invalid input file, must be of type csv or h5.')
+
+        if args.FILE.endswith('csv'):
+            show = 'raster'
+        else:
+            show = 'analog'
+
+        pymea.ui.viewer.run(analog_file, spike_file, show)
     else:
         print('No such file or directory.')
 
@@ -44,6 +70,10 @@ def main():
     parser_view.add_argument('FILE',
                              action='store',
                              help='File name or path.')
+    parser_view.add_argument('--spikes',
+                             type=str,
+                             default=None,
+                             help='File name or path for spike data.')
     parser_view.set_defaults(func=view)
 
     parser_info = subparsers.add_parser('info',
