@@ -10,7 +10,7 @@ __all__ = ['find_series_peaks', 'min_max_bin']
 def find_series_peaks(series, double amp=6.0):
     cdef np.ndarray[float] input_data
     cdef np.ndarray[double] bf, af, data
-    cdef double pos_thresh, neg_thresh, fs, dt, t0, a, b, c, x
+    cdef double pos_thresh, neg_thresh, fs, dt, t0, a, b, c, x, last_choice
     cdef int n, maxn, min_sep, lookaround, last_neg_peak
     cdef list peaks = []
     input_data = series.values
@@ -20,6 +20,7 @@ def find_series_peaks(series, double amp=6.0):
     t0 = series.index[0]
     min_sep = int(0.001/dt)
     lookaround = int(0.0015/dt)
+    last_choice = 0
 
     # first perform band pass filter 200Hz - 4kHz
     bf, af = signal.butter(2, (200.0/fs_nyquist, 4000.0/fs_nyquist),
@@ -42,19 +43,57 @@ def find_series_peaks(series, double amp=6.0):
         elif (data[n] > pos_thresh and data[n] > data[n-1]
               and data[n] > data[n+1]
               and n > (last_neg_peak + lookaround)):
-            # lookaround for negative peak, use that if it is 1.5x bigger than
-            # the positive peak.
+            # lookaround for negative peak
             for j in range(n, n+lookaround):
-                if (data[j] < 0.7*neg_thresh and
-                    data[j] < data[j-1] and data[j] < data[j+1] and
-                    np.abs(data[j]) > 0.7*data[n]):
-                    peaks.append((fitted_peak_loc(np.arange(j-1, j+2) * dt + t0,
-                                            data[j-1:j+2]),
-                                data[j], neg_thresh))
-                    last_neg_peak = j
-                    n = j + min_sep
+                if data[j] < 0.7*neg_thresh and data[j] < data[j-1] and data[j] < data[j+1]:
+                    # negative peak found
+                    if data[n] > 2.1*np.abs(data[j]):
+                        # use positive peak if it is significanly larger
+                        peaks.append((fitted_peak_loc(np.arange(n-1, n+2) * dt + t0,
+                                                data[n-1:n+2]),
+                                    data[n], pos_thresh))
+                        last_choice = data[n]
+                        n += min_sep
+                    elif np.abs(data[j]) > data[n]:
+                        # use negative peak if it is significanly larger
+                        peaks.append((fitted_peak_loc(np.arange(j-1, j+2) * dt + t0,
+                                                data[j-1:j+2]),
+                                    data[j], neg_thresh))
+                        last_choice = data[j]
+                        last_neg_peak = j
+                        n = j + min_sep
+                    elif last_choice == 0:
+                        # use the bigger peak
+                        if data[n] > np.abs(data[j]):
+                            # use positive peak if it is significanly larger
+                            peaks.append((fitted_peak_loc(np.arange(n-1, n+2) * dt + t0,
+                                                    data[n-1:n+2]),
+                                        data[n], pos_thresh))
+                            last_choice = data[n]
+                            n += min_sep
+                        else:
+                            peaks.append((fitted_peak_loc(np.arange(j-1, j+2) * dt + t0,
+                                                    data[j-1:j+2]),
+                                        data[j], neg_thresh))
+                            last_choice = data[j]
+                            last_neg_peak = j
+                            n = j + min_sep
+                    elif last_choice < 0:
+                        peaks.append((fitted_peak_loc(np.arange(j-1, j+2) * dt + t0,
+                                                data[j-1:j+2]),
+                                    data[j], neg_thresh))
+                        last_choice = data[j]
+                        last_neg_peak = j
+                        n = j + min_sep
+                    else:
+                        peaks.append((fitted_peak_loc(np.arange(n-1, n+2) * dt + t0,
+                                                data[n-1:n+2]),
+                                    data[n], pos_thresh))
+                        last_choice = data[n]
+                        n += min_sep
                     break
             else:
+                # no negative peak found
                 peaks.append((fitted_peak_loc(np.arange(n-1, n+2) * dt + t0,
                                         data[n-1:n+2]),
                             data[n], pos_thresh))

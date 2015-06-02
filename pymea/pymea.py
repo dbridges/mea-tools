@@ -2,7 +2,6 @@
 
 import os
 import time
-from collections import namedtuple
 import itertools
 import warnings
 
@@ -24,8 +23,8 @@ from . import mea_cython
 
 __all__ = ['MEARecording', 'MEASpikeDict', 'coordinates_for_electrode',
            'tag_for_electrode', 'condense_spikes', 'bandpass_filter',
-           'export_spikes', 'tag_conductance_spikes', 'ConductanceSequence',
-           'cofiring_events', 'choose_keep_electrode']
+           'export_spikes', 'tag_conductance_spikes', 'cofiring_events',
+           'choose_keep_electrode']
 
 
 class MEARecording:
@@ -401,7 +400,7 @@ def detect_spikes(analog_data, amp=6.0):
 
 
 def extract_waveforms(series, times, window_len=0.003,
-                      upsample=5, smoothing=120):
+                      upsample=5, smoothing=0):
     """
     Extract waveform data from a series for the given times.
 
@@ -485,7 +484,7 @@ def sort_spikes(dataframe, analog_data, standardize=False):
         peak_vals = [np.max(x) for x in np.split(reach[peaks], splits)
                      if len(x) > 0]
         try:
-            eps = 0.95*np.min(peak_vals)
+            eps = 0.90*np.min(peak_vals)
         except:
             eps = 0.5*reach[-1]
 
@@ -514,9 +513,6 @@ def condense_spikes(srcdir, fname):
 ################################
 # Conductance signal detection
 ################################
-
-ConductanceSequence = namedtuple('ConductanceSequence',
-                                 ['keep', 'seq', 'count'])
 
 
 def cofiring_events(dataframe, min_sep=0.0005):
@@ -568,11 +564,11 @@ def choose_keep_electrode(dataframe):
 
     """
     amplitudes = dataframe.groupby('electrode').amplitude.mean().abs()
-    big_amplitudes = amplitudes[amplitudes > 0.8 * amplitudes.max()]
+    big_amplitudes = amplitudes[amplitudes > 0.7 * amplitudes.max()]
     return sorted(list(big_amplitudes.index))[0]
 
 
-def tag_conductance_spikes(df, conductance_seqs=None):
+def tag_conductance_spikes(df):
     """
     Tags conduction spikes in dataframe.
 
@@ -580,8 +576,6 @@ def tag_conductance_spikes(df, conductance_seqs=None):
     ----------
     df : pandas DataFrame
         DataFrame of spike data.
-    conductance_seqs : list of ConductanceSequence
-        The previously identified conduction sequences.
     """
     spikes = MEASpikeDict(df)
     tags = [tag for tag in spikes if not tag.startswith('analog')]
