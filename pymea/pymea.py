@@ -416,7 +416,7 @@ def extract_waveforms(series, times, window_len=0.003,
     upsample : int
         The factor to upsample the data if desired.
     smoothing : float
-        A smoothing factor to be used during upsampling performed by
+        A smoothing factor to be used during upsampling and performed by
         scipy.interolate.splrep
 
     Returns
@@ -426,10 +426,13 @@ def extract_waveforms(series, times, window_len=0.003,
     """
     dt = series.index[1] - series.index[0]
     span = int(window_len / 2 / dt)
+    expected_length = 2*span
     extracted = []
     for t in times:
         i = int(t / dt)
         y = series.iloc[i - span:i + span].values
+        if len(y) < expected_length:
+            y = np.zeros(expected_length)
         x = np.arange(len(y))
         xnew = np.linspace(0, len(y), len(y) * upsample)
         tck = interpolate.splrep(x, y, s=smoothing)

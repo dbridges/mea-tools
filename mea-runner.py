@@ -57,7 +57,9 @@ def detect_spikes(args):
                  if f.endswith('.h5') and os.path.exists(f)]
     import pymea as mea
     for i, f in enumerate(files):
-        mea.export_spikes(f, args.amplitude)
+        mea.export_spikes(f, args.amplitude,
+                          sort=args.sort,
+                          conductance=args.sort)
         print('%d of %d exported.' % (i + 1, len(files)))
 
 
@@ -89,10 +91,18 @@ def main():
                                       type=float,
                                       default=6.0,
                                       help='Amplitude threshold in std devs.')
+    parser_detect_spikes.add_argument('--sort',
+                                      dest='sort',
+                                      action='store_true',
+                                      help='Sort spikes after detection.')
+    parser_detect_spikes.add_argument('--no-sort',
+                                      dest='sort',
+                                      action='store_false',
+                                      help='Do not sort spikes after detection.')  # noqa
     parser_detect_spikes.add_argument('FILES',
                                       help='Files to convert.',
                                       nargs='+')
-    parser_detect_spikes.set_defaults(func=detect_spikes)
+    parser_detect_spikes.set_defaults(sort=True, func=detect_spikes)
 
     args = parser.parse_args()
 
