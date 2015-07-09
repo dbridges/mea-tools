@@ -65,10 +65,10 @@ class RasterPlotVisualization(Visualization):
 
         self._row_count = 120
         self._display_selected = False
-        self._unselected_row_count = 120
         self.selected_electrodes = []
 
         self.row_count = len(self.spike_data)
+        self._unselected_row_count = self.row_count
         self._dim_conductance = False
         self.resample()
         self.margin = {}
@@ -230,7 +230,7 @@ class RasterPlotVisualization(Visualization):
             dx = x1 - x
             self.t0 += dx * sec_per_pixel
         row_height = ((self.canvas.height - self.margin['top']) /
-                      self._row_count)
+                      self.row_count)
         row = util.clip(int((event.pos[1] - self.margin['top']) / row_height),
                         0, 119)
         try:

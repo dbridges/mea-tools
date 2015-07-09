@@ -16,6 +16,7 @@ import pymea.util as util
 class FlashingSpikeElectrode:
     def __init__(self, tag, events):
         self.events = events
+        self.events.sort()
         self.value = 0
         self.tag = tag
 
@@ -78,8 +79,10 @@ class FlashingSpikeVisualization(Visualization):
         self._vert = np.zeros((120*6, 2), dtype=np.float32)
         self._color = np.zeros(120*6, dtype=np.float32)
         self.electrodes = []
-        self.spikes = spike_data
-        for tag, df in spike_data.groupby('electrode'):
+        self.spikes = spike_data.copy()
+        self.spikes.electrode = self.spikes.electrode.str.extract('(\w+)\.*')
+        # We need to condense sorted data.
+        for tag, df in self.spikes.groupby('electrode'):
             self.electrodes.append(FlashingSpikeElectrode(tag,
                                                           df['time'].values))
         self._create_vertex_data()

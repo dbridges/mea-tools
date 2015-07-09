@@ -192,6 +192,10 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         if start_vis == 'raster':
             self.visualizationComboBox.setCurrentIndex(0)
             self.canvas.show_raster()
+            self.rasterRowCountSlider.setMaximum(
+                self.canvas.raster_vis.row_count)
+            self.rasterRowCountSlider.setValue(
+                self.canvas.raster_vis.row_count)
             filepath = spike_file
         else:
             self.visualizationComboBox.setCurrentIndex(2)
@@ -288,6 +292,8 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
             if self.spike_data is None:
                 self.load_spike_data()
             self.canvas.show_raster()
+            self.rasterRowCountSlider.setMaximum(
+                self.canvas.raster_vis._unselected_row_count)
             self.rasterRowCountSlider.setValue(
                 self.canvas.raster_vis.row_count)
         elif text == 'Flashing Spike':

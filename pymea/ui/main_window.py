@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'pymea/ui/PyMEAMainWindow.ui'
 #
-# Created: Sun May 17 21:19:42 2015
+# Created: Thu Jul  9 15:28:13 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -52,9 +52,6 @@ class Ui_MainWindow(object):
         self.horizontalLayout_8.addWidget(self.visualizationComboBox)
         spacerItem = QtGui.QSpacerItem(20, 20, QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_8.addItem(spacerItem)
-        self.label_2 = QtGui.QLabel(self.toolbarWidget)
-        self.label_2.setObjectName(_fromUtf8("label_2"))
-        self.horizontalLayout_8.addWidget(self.label_2)
         self.stackedWidget = QtGui.QStackedWidget(self.toolbarWidget)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Minimum)
         sizePolicy.setHorizontalStretch(0)
@@ -67,6 +64,9 @@ class Ui_MainWindow(object):
         self.horizontalLayout_5 = QtGui.QHBoxLayout(self.rasterPage)
         self.horizontalLayout_5.setMargin(0)
         self.horizontalLayout_5.setObjectName(_fromUtf8("horizontalLayout_5"))
+        self.label_2 = QtGui.QLabel(self.rasterPage)
+        self.label_2.setObjectName(_fromUtf8("label_2"))
+        self.horizontalLayout_5.addWidget(self.label_2)
         self.sortRasterComboBox = QtGui.QComboBox(self.rasterPage)
         self.sortRasterComboBox.setObjectName(_fromUtf8("sortRasterComboBox"))
         self.sortRasterComboBox.addItem(_fromUtf8(""))
@@ -95,7 +95,7 @@ class Ui_MainWindow(object):
         self.rasterRowCountSlider.setTickInterval(0)
         self.rasterRowCountSlider.setObjectName(_fromUtf8("rasterRowCountSlider"))
         self.horizontalLayout_5.addWidget(self.rasterRowCountSlider)
-        self.horizontalLayout_5.setStretch(3, 1)
+        self.horizontalLayout_5.setStretch(4, 1)
         self.stackedWidget.addWidget(self.rasterPage)
         self.flashingSpikePage = QtGui.QWidget()
         self.flashingSpikePage.setObjectName(_fromUtf8("flashingSpikePage"))
@@ -171,7 +171,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_8.addWidget(self.stackedWidget)
         spacerItem2 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_8.addItem(spacerItem2)
-        self.horizontalLayout_8.setStretch(4, 1)
+        self.horizontalLayout_8.setStretch(3, 1)
         self.verticalLayout_2.addWidget(self.toolbarWidget)
         self.mainLayout = QtGui.QVBoxLayout()
         self.mainLayout.setObjectName(_fromUtf8("mainLayout"))
