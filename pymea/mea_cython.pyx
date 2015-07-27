@@ -7,7 +7,7 @@ from scipy import signal
 
 __all__ = ['find_series_peaks', 'min_max_bin']
 
-def find_series_peaks(series, double amp=6.0):
+def find_series_peaks(series, double amp=6.0, neg_only=False):
     cdef np.ndarray[float] input_data
     cdef np.ndarray[double] bf, af, data
     cdef double pos_thresh, neg_thresh, fs, dt, t0, a, b, c, x, last_choice
@@ -40,7 +40,7 @@ def find_series_peaks(series, double amp=6.0):
                           data[n], neg_thresh))
             last_neg_peak = n
             n += min_sep
-        elif (data[n] > pos_thresh and data[n] > data[n-1]
+        elif not neg_only and (data[n] > pos_thresh and data[n] > data[n-1]
               and data[n] > data[n+1]
               and n > (last_neg_peak + lookaround)):
             # lookaround for negative peak

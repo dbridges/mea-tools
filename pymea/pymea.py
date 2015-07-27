@@ -336,7 +336,7 @@ def tag_for_electrode(coords):
 ################################
 
 
-def export_spikes(fname, amp=6.0, sort=True, conductance=True):
+def export_spikes(fname, amp=6.0, sort=True, conductance=True, neg_only=False):
     """
     Detect, sort, and export spikes to a csv file.
 
@@ -352,6 +352,8 @@ def export_spikes(fname, amp=6.0, sort=True, conductance=True):
     conductance : bool
         True to find conductance signals. Sorting should be done first to
         reliably detect conduction signals.
+    neg_only : bool
+        True to only detect negative amplitude peaks.
     """
     fname = os.path.expanduser(fname)
     print('Loading analog data...', end='', flush=True)
@@ -360,7 +362,7 @@ def export_spikes(fname, amp=6.0, sort=True, conductance=True):
     print('done.', flush=True)
 
     print('Detecting spikes...', end='', flush=True)
-    spikes = detect_spikes(analog_data, amp)
+    spikes = detect_spikes(analog_data, amp, neg_only)
     print('done.', flush=True)
 
     if sort:
@@ -376,7 +378,7 @@ def export_spikes(fname, amp=6.0, sort=True, conductance=True):
     spikes.to_csv(fname[:-3] + '.csv', index=False)
 
 
-def detect_spikes(analog_data, amp=6.0):
+def detect_spikes(analog_data, amp=6.0, neg_only=False):
     """
     Runs basic spike detection using threshold. Detects both positive and
     negative peaks. See mea_cython.find_series_peaks for more information
@@ -389,10 +391,12 @@ def detect_spikes(analog_data, amp=6.0):
     amp : float
         This sets the amplitude threshold used to detect spikes, as a
         factor of the median rms noise level.
+    neg_only : bool
+        True to only detect negative amplitude peaks.
     """
     peaks = []
     for electrode in analog_data.keys():
-        p = mea_cython.find_series_peaks(analog_data[electrode], amp)
+        p = mea_cython.find_series_peaks(analog_data[electrode], amp, neg_only)
         p.insert(0, 'electrode', electrode)
         peaks.append(p)
     peaks = pd.concat(peaks, ignore_index=True)

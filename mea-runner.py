@@ -59,7 +59,8 @@ def detect_spikes(args):
     for i, f in enumerate(files):
         mea.export_spikes(f, args.amplitude,
                           sort=args.sort,
-                          conductance=args.sort)
+                          conductance=args.sort,
+                          neg_only=args.neg_only)
         print('%d of %d exported.' % (i + 1, len(files)))
 
 
@@ -91,6 +92,10 @@ def main():
                                       type=float,
                                       default=6.0,
                                       help='Amplitude threshold in std devs.')
+    parser_detect_spikes.add_argument('--neg-only',
+                                      dest='neg_only',
+                                      action='store_true',
+                                      help='Only detect negative amplitudes')  # noqa
     parser_detect_spikes.add_argument('--sort',
                                       dest='sort',
                                       action='store_true',
