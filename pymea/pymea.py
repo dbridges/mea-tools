@@ -370,6 +370,8 @@ def export_spikes(fname, amp=6.0, sort=True, conductance=True, neg_only=False):
         sort_spikes(spikes, analog_data)
         print('done.', flush=True)
 
+    spikes['conductance'] = False
+
     if conductance:
         print('Detecting conduction signals...', end='', flush=True)
         tag_conductance_spikes(spikes)
@@ -539,6 +541,7 @@ def cofiring_events(dataframe, min_sep=0.0005):
         A filtered version of dataframe which includes only events
         separated by less than min_sep.
     """
+    electrode_count = len(dataframe.electrode.unique())
     sub_df = dataframe.sort('time')
     splits = np.concatenate([
         [0],
@@ -547,8 +550,8 @@ def cofiring_events(dataframe, min_sep=0.0005):
 
     events = []
     for i in range(len(splits) - 1):
-        if splits[i+1] - splits[i] == 2:
-            events.append(sub_df[splits[i]:splits[i]+2])
+        if splits[i+1] - splits[i] == electrode_count:
+            events.append(sub_df[splits[i]:splits[i]+electrode_count])
     return events
 
 

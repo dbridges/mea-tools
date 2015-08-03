@@ -5,6 +5,8 @@ import sys
 import argparse
 import glob
 
+import pandas as pd
+
 
 def view(args):
     import pymea.ui.viewer
@@ -64,6 +66,42 @@ def detect_spikes(args):
         print('%d of %d exported.' % (i + 1, len(files)))
 
 
+def tag_cond(args):
+    if len(args.FILES) < 2:
+        print('Must specify src and dest files.')
+        return
+
+    src = args.FILES[-1]
+
+    if len(args.FILES) == 2:
+        files = [f for f in glob.glob(args.FILES[0])
+                 if f.endswith('.csv') and os.path.exists(f)]
+    else:
+        files = [f for f in args.FILES[:-1] if f.endswith('.csv')]
+
+    seqs = []
+    with open(src, 'r') as f:
+        for line in f:
+            seqs.append([s.lower().strip() for s in line.split(',')])
+
+    import pymea as mea
+
+    for i, f in enumerate(files):
+        conductance_locs = []
+        df = pd.read_csv(f)
+        spikes = mea.MEASpikeDict(df)
+        for seq in seqs:
+            e_keep = seq[0]
+            sub_df = pd.concat([spikes[tag] for tag in seq])
+            cofiring = pd.concat(mea.cofiring_events(sub_df, 0.0007))
+            conductance_locs.extend(
+                list(cofiring[cofiring.electrode != e_keep].index.values))
+        df['conductance'] = False
+        df.ix[conductance_locs, 'conductance'] = True
+        df.to_csv(f, index=False)
+        print('%d of %d exported.' % (i + 1, len(files)))
+
+
 def main():
     parser = argparse.ArgumentParser(prog='mea')
     subparsers = parser.add_subparsers()
@@ -108,6 +146,14 @@ def main():
                                       help='Files to convert.',
                                       nargs='+')
     parser_detect_spikes.set_defaults(sort=True, func=detect_spikes)
+
+    parser_tag = subparsers.add_parser(
+        'tag', help='Tag conductance traces using specified file.'
+    )
+    parser_tag.add_argument('FILES',
+                            help='[src] [dest ...].',
+                            nargs='+')
+    parser_tag.set_defaults(sort=True, func=tag_cond)
 
     args = parser.parse_args()
 
