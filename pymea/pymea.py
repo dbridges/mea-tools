@@ -24,7 +24,8 @@ from . import mea_cython
 __all__ = ['MEARecording', 'MEASpikeDict', 'coordinates_for_electrode',
            'tag_for_electrode', 'condense_spikes', 'bandpass_filter',
            'export_spikes', 'tag_conductance_spikes', 'cofiring_events',
-           'choose_keep_electrode']
+           'choose_keep_electrode', 'extract_waveforms',
+           'export_conduction_waveforms']
 
 
 class MEARecording:
@@ -667,3 +668,35 @@ def bandpass_filter(series, low=200.0, high=4000.0):
                                btype='bandpass')
     return pd.Series(signal.filtfilt(bf, af, series).astype(np.float32),
                      index=series.index)
+
+
+def extract_conduction_windows(keys, spikes, rec, window=0.005):
+    lead = keys[0]
+    test = keys[1]
+    times = []
+    waveforms = {}
+    for t in spikes[lead].time:
+        if len(spikes[test][(spikes[test]['time'] > t - 0.0007) &
+                            (spikes[test]['time'] < t + 0.0007)]) > 0:
+            times.append(t)
+    for key in keys:
+        waveforms[key] = extract_waveforms(rec[key],
+                                           times,
+                                           window_len=window,
+                                           upsample=1)
+    return waveforms
+
+
+def export_waveforms(fname, waveforms):
+    fname = fname.split('.')[0]
+    for key, value in waveforms.items():
+        np.savetxt(fname + '_' + key + '.csv', value, delimiter=',')
+
+
+def export_conduction_waveforms(keys, spike_file, rec_file, window=0.005):
+    rec = MEARecording(rec_file)
+    prespikes = pd.read_csv(spike_file)
+    prespikes.electrode = prespikes.electrode.str.split('.').str.get(0)
+    spikes = MEASpikeDict(prespikes)
+    waveforms = extract_conduction_windows(keys, spikes, rec)
+    export_waveforms(rec_file[:-3] + '_cond', waveforms)

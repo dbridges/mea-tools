@@ -91,6 +91,16 @@ Export a file using a threshold cutoff of 5 times the standard deviation of the 
 mea detect --amplitude=5 2015-03-20_I9119.h5
 ```
 
+#### export_cond
+
+Export conduction traces.
+
+```shell
+$ mea export_cond 2014-10-30_I9119_Stimulate_D3.h5 'h8,g8,g7'
+```
+
+Uses h8 as the source electrode and finds all signals in g8 that occur within +- 0.7ms. Once signals are found, it exports the raw analog data for a 5 ms window for each electrode given in the list. The datafiles are automatically labeled in accordance to the source file and the electrode.
+
 ## Mathematica Tools
 
 A Mathematica library is also included to analyze analog and spike data, as well as to create useful static visualizations. See `mathematica/MEA_Examples.nb` for more information.

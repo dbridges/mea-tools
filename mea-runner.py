@@ -102,6 +102,22 @@ def tag_cond(args):
         print('%d of %d exported.' % (i + 1, len(files)))
 
 
+def export_cond(args):
+    keys = [s.strip().lower() for s in args.ELECTRODES.split(',')]
+    spike_file = args.FILE[:-3]+'.csv'
+
+    if not os.path.exists(args.FILE):
+        print('File not found.')
+        return
+
+    if not os.path.exists(spike_file):
+        print('Spike file not found, you must detect spikes first.')
+        return
+
+    import pymea as mea
+    mea.export_conduction_waveforms(keys, spike_file, args.FILE)
+
+
 def main():
     parser = argparse.ArgumentParser(prog='mea')
     subparsers = parser.add_subparsers()
@@ -154,6 +170,13 @@ def main():
                             help='[src] [dest ...].',
                             nargs='+')
     parser_tag.set_defaults(sort=True, func=tag_cond)
+
+    parser_export_cond = subparsers.add_parser(
+        'export_cond', help='Export conduction waveforms.'
+    )
+    parser_export_cond.add_argument('FILE')
+    parser_export_cond.add_argument('ELECTRODES')
+    parser_export_cond.set_defaults(sort=True, func=export_cond)
 
     args = parser.parse_args()
 
