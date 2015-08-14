@@ -674,13 +674,14 @@ def extract_conduction_windows(keys, spikes, rec, window=0.005):
     lead = keys[0]
     test = keys[1]
     times = []
+    analog_data = rec.get(keys)
     waveforms = {}
     for t in spikes[lead].time:
         if len(spikes[test][(spikes[test]['time'] > t - 0.0007) &
                             (spikes[test]['time'] < t + 0.0007)]) > 0:
             times.append(t)
     for key in keys:
-        waveforms[key] = extract_waveforms(rec[key],
+        waveforms[key] = extract_waveforms(analog_data[key],
                                            times,
                                            window_len=window,
                                            upsample=1)
@@ -695,8 +696,16 @@ def export_waveforms(fname, waveforms):
 
 def export_conduction_waveforms(keys, spike_file, rec_file, window=0.005):
     rec = MEARecording(rec_file)
+    basename = os.path.basename(rec_file)[:-3]
+    output_dir = os.path.join(os.path.dirname(rec_file),
+                              '%s_%s_%s_conduction' % (basename,
+                                                       keys[0],
+                                                       keys[1]))
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
     prespikes = pd.read_csv(spike_file)
     prespikes.electrode = prespikes.electrode.str.split('.').str.get(0)
     spikes = MEASpikeDict(prespikes)
     waveforms = extract_conduction_windows(keys, spikes, rec)
-    export_waveforms(rec_file[:-3] + '_cond', waveforms)
+    export_waveforms(os.path.join(output_dir, basename + '_cond'),
+                     waveforms)
