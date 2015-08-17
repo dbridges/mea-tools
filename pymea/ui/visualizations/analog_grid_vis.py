@@ -194,6 +194,8 @@ class MEA120GridVisualization(Visualization):
         elif event.key == 'Escape':
             self.selected_electrodes = []
             self.update_extra_text()
+        elif event.key == 'c':
+            self.canvas.show_conduction()
 
     def on_mouse_wheel(self, event):
         sec_per_pixel = self.dt / (self.canvas.size[0] / 12)

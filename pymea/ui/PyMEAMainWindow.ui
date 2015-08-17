@@ -349,35 +349,6 @@
             <number>0</number>
            </property>
            <item>
-            <widget class="QLabel" name="label_6">
-             <property name="text">
-              <string>Scale</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QDoubleSpinBox" name="conductionScaleSpinBox">
-             <property name="suffix">
-              <string> uV</string>
-             </property>
-             <property name="decimals">
-              <number>0</number>
-             </property>
-             <property name="minimum">
-              <double>10.000000000000000</double>
-             </property>
-             <property name="maximum">
-              <double>20000.000000000000000</double>
-             </property>
-             <property name="singleStep">
-              <double>20.000000000000000</double>
-             </property>
-             <property name="value">
-              <double>150.000000000000000</double>
-             </property>
-            </widget>
-           </item>
-           <item>
             <widget class="QLabel" name="label_3">
              <property name="text">
               <string>Time Window</string>

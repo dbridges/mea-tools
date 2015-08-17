@@ -78,14 +78,13 @@ class MEA120ConductionVisualization(Visualization):
         self.program['u_color'] = Theme.transparent_black
         self.program['u_y_scale'] = self._y_scale
         self.program['a_position'] = [[0,0,0,0]]
-        self.program['u_width'] = 50
+        self.program['u_width'] = 100
         self.grid = LineCollection()
         self.create_grid()
         self.electrode_cols = [c for c in 'ABCDEFGHJKLM']
         self.sample_rate = 1.0 / (
             self.analog_data.index[1] - self.analog_data.index[0])
 
-        self.resample()
 
     @property
     def t0(self):
@@ -103,7 +102,6 @@ class MEA120ConductionVisualization(Visualization):
     def dt(self, val):
         self._dt = util.clip(val, 0.0025, 10)
         self.mouse_t = self._t0
-        self.update()
 
     @property
     def time_window(self):
@@ -112,7 +110,6 @@ class MEA120ConductionVisualization(Visualization):
     @time_window.setter
     def time_window(self, val):
         self._time_window = val
-        self.update()
 
     @property
     def y_scale(self):
@@ -120,7 +117,6 @@ class MEA120ConductionVisualization(Visualization):
 
     @y_scale.setter
     def y_scale(self, val):
-        print('update y scale')
         self.program['u_y_scale'] = val
         self._y_scale = val
 
@@ -158,10 +154,17 @@ class MEA120ConductionVisualization(Visualization):
         rest.remove(keys[1])
         keys.extend(rest)
 
+        count = 100
+
         waveforms = mea.extract_conduction_windows(
             keys, self.spike_data, self.analog_data)
 
-        data = []
+        import time
+        t = time.time()
+        # data = []
+        n = 0
+        data = np.empty((len(waveforms) * count * len(waveforms['a8']), 4),
+                        dtype=np.float32)
         flip = False
         for electrode, waves in waveforms.items():
             col, row = mea.coordinates_for_electrode(electrode)
@@ -170,14 +173,18 @@ class MEA120ConductionVisualization(Visualization):
                 flip = i % 2 == 1
                 if flip:
                     wave = wave[::-1]
-                for j, pt in enumerate(wave):
-                    if flip:
-                        data.append([col, row, 99-j, pt])
-                    else:
-                        data.append([col, row, j, pt])
+                data[n:n+count] = np.transpose([
+                    [col]*count,
+                    [row]*count,
+                    np.arange(count, 0, -1) if flip else np.arange(count),
+                    wave
+                ])
+                n += count
 
+        print(time.time() - t)
+        self.program['u_width'] = count
         self.program['a_position'] = data
-        self.program['u_width'] = 100
+        print(time.time() - t)
 
     def update(self, resample=True):
         if resample:
@@ -200,7 +207,7 @@ class MEA120ConductionVisualization(Visualization):
             self.electrode = mea.tag_for_electrode((col, row))
 
     def on_mouse_double_click(self, event):
-        pass
+        self.canvas.show_analog_grid()
 
     def on_mouse_release(self, event):
         if 'shift' in event.modifiers:
@@ -218,7 +225,8 @@ class MEA120ConductionVisualization(Visualization):
             self.update_extra_text()
 
     def on_mouse_wheel(self, event):
-        pass
+        scale = math.exp(2.5 * -np.sign(event.delta[1]) * self.scroll_factor)
+        self.y_scale *= scale
 
     def update_extra_text(self):
         if len(self.selected_electrodes) > 0:

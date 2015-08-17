@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'pymea/ui/PyMEAMainWindow.ui'
 #
-# Created: Mon Aug 17 09:56:49 2015
+# Created: Mon Aug 17 12:43:06 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -174,17 +174,6 @@ class Ui_MainWindow(object):
         self.horizontalLayout_2 = QtGui.QHBoxLayout(self.conductionPage)
         self.horizontalLayout_2.setMargin(0)
         self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
-        self.label_6 = QtGui.QLabel(self.conductionPage)
-        self.label_6.setObjectName(_fromUtf8("label_6"))
-        self.horizontalLayout_2.addWidget(self.label_6)
-        self.conductionScaleSpinBox = QtGui.QDoubleSpinBox(self.conductionPage)
-        self.conductionScaleSpinBox.setDecimals(0)
-        self.conductionScaleSpinBox.setMinimum(10.0)
-        self.conductionScaleSpinBox.setMaximum(20000.0)
-        self.conductionScaleSpinBox.setSingleStep(20.0)
-        self.conductionScaleSpinBox.setProperty("value", 150.0)
-        self.conductionScaleSpinBox.setObjectName(_fromUtf8("conductionScaleSpinBox"))
-        self.horizontalLayout_2.addWidget(self.conductionScaleSpinBox)
         self.label_3 = QtGui.QLabel(self.conductionPage)
         self.label_3.setObjectName(_fromUtf8("label_3"))
         self.horizontalLayout_2.addWidget(self.label_3)
@@ -272,8 +261,6 @@ class Ui_MainWindow(object):
         self.filterLowSpinBox.setSuffix(_translate("MainWindow", " Hz", None))
         self.label.setText(_translate("MainWindow", "to", None))
         self.filterHighSpinBox.setSuffix(_translate("MainWindow", " Hz", None))
-        self.label_6.setText(_translate("MainWindow", "Scale", None))
-        self.conductionScaleSpinBox.setSuffix(_translate("MainWindow", " uV", None))
         self.label_3.setText(_translate("MainWindow", "Time Window", None))
         self.toolBar.setWindowTitle(_translate("MainWindow", "toolBar", None))
         self.actionSave_to_Spreadsheet.setText(_translate("MainWindow", "Save to Spreadsheet...", None))

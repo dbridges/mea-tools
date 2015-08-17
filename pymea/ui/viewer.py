@@ -48,6 +48,7 @@ class VisualizationCanvas(app.Canvas):
             self.visualization.on_hide()
         self.visualization = self.raster_vis
         self.visualization.on_show()
+        self.controller.on_show_raster()
 
     def show_flashing_spike(self):
         if self.flashing_spike_vis is None:
@@ -59,6 +60,7 @@ class VisualizationCanvas(app.Canvas):
             self.visualization.on_hide()
         self.visualization = self.flashing_spike_vis
         self.visualization.on_show()
+        self.controller.on_show_flashing_spike()
 
     def show_analog_grid(self):
         if self.analog_grid_vis is None:
@@ -72,8 +74,15 @@ class VisualizationCanvas(app.Canvas):
             self.controller.analogScaleSpinBox.value()
         self.visualization = self.analog_grid_vis
         self.visualization.on_show()
+        self.controller.on_show_analog_grid()
 
     def show_conduction(self):
+        if (self.visualization is self.analog_grid_vis and
+                    self.visualization is not None):
+            selected_electrodes = \
+                self.analog_grid_vis.selected_electrodes
+        else:
+            selected_electrodes = []
         if self.conduction_vis is None:
             self.conduction_vis = MEA120ConductionVisualization(
                 self, self.controller.analog_data,
@@ -84,6 +93,8 @@ class VisualizationCanvas(app.Canvas):
             self.visualization.on_hide()
         self.visualization = self.conduction_vis
         self.visualization.on_show()
+        self.visualization.selected_electrodes = selected_electrodes
+        self.controller.on_show_conduction()
 
     def show_analog(self):
         if self.analog_vis is None:
@@ -102,6 +113,7 @@ class VisualizationCanvas(app.Canvas):
                                       self.analog_grid_vis.selected_electrodes]
         self.analog_vis.y_scale = self.analog_grid_vis.y_scale
         self.visualization.on_show()
+        self.controller.on_show_analog()
 
     def _normalize(self, x_y):
         x, y = x_y
@@ -318,14 +330,7 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         elif text == 'Analog':
             self.canvas.show_analog_grid()
         elif text == 'Conduction':
-            if (self.canvas.visualization is self.canvas.analog_grid_vis and
-                        self.canvas.visualization is not None):
-                selected_electrodes = \
-                    self.canvas.analog_grid_vis.selected_electrodes
-            else:
-                selected_electrodes = []
             self.canvas.show_conduction()
-            self.canvas.visualization.selected_electrodes = selected_electrodes
 
     @QtCore.pyqtSlot(float)
     def on_analogScaleSpinBox_valueChanged(self, val):
@@ -333,11 +338,6 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
             self.canvas.analog_grid_vis.y_scale = val
         if self.canvas.analog_vis is not None:
             self.canvas.analog_vis.y_scale = val
-
-    @QtCore.pyqtSlot(float)
-    def on_conductionScaleSpinBox_valueChanged(self, val):
-        if self.canvas.conduction_vis is not None:
-            self.canvas.conduction_vis.y_scale = val
 
     @QtCore.pyqtSlot(str)
     def on_flashingSpikeTimescaleComboBox_currentIndexChanged(self, text):
@@ -413,6 +413,36 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         if self.canvas.raster_vis is None:
             return
         self.canvas.raster_vis.sort(text.lower())
+
+    def on_show_analog(self):
+        self.visualizationComboBox.blockSignals(True)
+        self.visualizationComboBox.setCurrentIndex(2)
+        self.stackedWidget.setCurrentIndex(2)
+        self.visualizationComboBox.blockSignals(False)
+
+    def on_show_raster(self):
+        self.visualizationComboBox.blockSignals(True)
+        self.visualizationComboBox.setCurrentIndex(0)
+        self.stackedWidget.setCurrentIndex(0)
+        self.visualizationComboBox.blockSignals(False)
+
+    def on_show_conduction(self):
+        self.visualizationComboBox.blockSignals(True)
+        self.visualizationComboBox.setCurrentIndex(3)
+        self.stackedWidget.setCurrentIndex(3)
+        self.visualizationComboBox.blockSignals(False)
+
+    def on_show_analog_grid(self):
+        self.visualizationComboBox.blockSignals(True)
+        self.visualizationComboBox.setCurrentIndex(2)
+        self.stackedWidget.setCurrentIndex(2)
+        self.visualizationComboBox.blockSignals(False)
+
+    def on_show_flashing_spike(self):
+        self.visualizationComboBox.blockSignals(True)
+        self.visualizationComboBox.setCurrentIndex(1)
+        self.stackedWidget.setCurrentIndex(1)
+        self.visualizationComboBox.blockSignals(False)
 
     def closeEvent(self, event):
         self.save_settings()

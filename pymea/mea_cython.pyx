@@ -5,6 +5,8 @@ import pandas as pd
 cimport numpy as np
 from scipy import signal
 
+import pymea as mea
+
 __all__ = ['find_series_peaks', 'min_max_bin']
 
 def find_series_peaks(series, double amp=6.0, neg_only=False):
