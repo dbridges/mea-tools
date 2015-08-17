@@ -7,7 +7,8 @@ import pymea.pymea as mea
 from pymea.ui.visualizations import (MEA120GridVisualization,
                                      MEAAnalogVisualization,
                                      RasterPlotVisualization,
-                                     FlashingSpikeVisualization)
+                                     FlashingSpikeVisualization,
+                                     MEA120ConductionVisualization)
 
 import pandas as pd
 from vispy import app, gloo, visuals
@@ -25,6 +26,7 @@ class VisualizationCanvas(app.Canvas):
         self.analog_vis = None
         self.raster_vis = None
         self.flashing_spike_vis = None
+        self.conduction_vis = None
 
         self.visualization = None
 
@@ -69,6 +71,18 @@ class VisualizationCanvas(app.Canvas):
         self.analog_grid_vis.y_scale = \
             self.controller.analogScaleSpinBox.value()
         self.visualization = self.analog_grid_vis
+        self.visualization.on_show()
+
+    def show_conduction(self):
+        if self.conduction_vis is None:
+            self.conduction_vis = MEA120ConductionVisualization(
+                self, self.controller.analog_data,
+                self.controller.spike_data)
+        if self.visualization is not None:
+            self.conduction_vis.t0 = self.visualization.t0
+            self.conduction_vis.dt = self.visualization.dt
+            self.visualization.on_hide()
+        self.visualization = self.conduction_vis
         self.visualization.on_show()
 
     def show_analog(self):
@@ -302,6 +316,8 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
             self.canvas.show_flashing_spike()
         elif text == 'Analog':
             self.canvas.show_analog_grid()
+        elif text == 'Conduction':
+            self.canvas.show_conduction()
 
     @QtCore.pyqtSlot(float)
     def on_analogScaleSpinBox_valueChanged(self, val):
@@ -396,5 +412,5 @@ def run(analog_file, spike_file, start_vis):
     win = MainWindow(analog_file, spike_file, start_vis)
     win.show()
     if platform.system() == 'Darwin':
-        os.system('''osascript -e 'tell app "Finder" to set frontmost of process "python3" to true' ''')  # noqa
+        os.system('''osascript -e 'tell app "Finder" to set frontmost of process "python" to true' ''')  # noqa
     appQt.exec_()

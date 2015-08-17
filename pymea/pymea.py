@@ -673,6 +673,17 @@ def bandpass_filter(series, low=200.0, high=4000.0):
 def extract_conduction_windows(keys, spikes, rec, window=0.005):
     lead = keys[0]
     test = keys[1]
+
+    try:
+        if keys[2] == 'all':
+            keys = [keys[0], keys[1]]
+            rest = list(rec.lookup.keys())
+            rest.remove(keys[0])
+            rest.remove(keys[1])
+            keys.extend(rest)
+    except:
+        pass
+
     times = []
     analog_data = rec.get(keys)
     waveforms = {}

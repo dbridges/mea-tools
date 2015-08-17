@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'pymea/ui/PyMEAMainWindow.ui'
 #
-# Created: Thu Jul  9 15:28:13 2015
+# Created: Sun Aug 16 20:58:15 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -46,6 +46,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_8.setObjectName(_fromUtf8("horizontalLayout_8"))
         self.visualizationComboBox = QtGui.QComboBox(self.toolbarWidget)
         self.visualizationComboBox.setObjectName(_fromUtf8("visualizationComboBox"))
+        self.visualizationComboBox.addItem(_fromUtf8(""))
         self.visualizationComboBox.addItem(_fromUtf8(""))
         self.visualizationComboBox.addItem(_fromUtf8(""))
         self.visualizationComboBox.addItem(_fromUtf8(""))
@@ -168,9 +169,37 @@ class Ui_MainWindow(object):
         self.filterHighSpinBox.setObjectName(_fromUtf8("filterHighSpinBox"))
         self.horizontalLayout_7.addWidget(self.filterHighSpinBox)
         self.stackedWidget.addWidget(self.analogPage)
-        self.horizontalLayout_8.addWidget(self.stackedWidget)
+        self.conductionPage = QtGui.QWidget()
+        self.conductionPage.setObjectName(_fromUtf8("conductionPage"))
+        self.horizontalLayout_2 = QtGui.QHBoxLayout(self.conductionPage)
+        self.horizontalLayout_2.setMargin(0)
+        self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
+        self.label_3 = QtGui.QLabel(self.conductionPage)
+        self.label_3.setObjectName(_fromUtf8("label_3"))
+        self.horizontalLayout_2.addWidget(self.label_3)
+        self.conductionTimeWindowDoubleSpinBox = QtGui.QDoubleSpinBox(self.conductionPage)
+        self.conductionTimeWindowDoubleSpinBox.setDecimals(1)
+        self.conductionTimeWindowDoubleSpinBox.setMinimum(2.0)
+        self.conductionTimeWindowDoubleSpinBox.setProperty("value", 10.0)
+        self.conductionTimeWindowDoubleSpinBox.setObjectName(_fromUtf8("conductionTimeWindowDoubleSpinBox"))
+        self.horizontalLayout_2.addWidget(self.conductionTimeWindowDoubleSpinBox)
+        self.label_6 = QtGui.QLabel(self.conductionPage)
+        self.label_6.setObjectName(_fromUtf8("label_6"))
+        self.horizontalLayout_2.addWidget(self.label_6)
+        self.doubleSpinBox = QtGui.QDoubleSpinBox(self.conductionPage)
+        self.doubleSpinBox.setDecimals(0)
+        self.doubleSpinBox.setMinimum(10.0)
+        self.doubleSpinBox.setMaximum(20000.0)
+        self.doubleSpinBox.setSingleStep(20.0)
+        self.doubleSpinBox.setProperty("value", 150.0)
+        self.doubleSpinBox.setObjectName(_fromUtf8("doubleSpinBox"))
+        self.horizontalLayout_2.addWidget(self.doubleSpinBox)
         spacerItem2 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.horizontalLayout_8.addItem(spacerItem2)
+        self.horizontalLayout_2.addItem(spacerItem2)
+        self.stackedWidget.addWidget(self.conductionPage)
+        self.horizontalLayout_8.addWidget(self.stackedWidget)
+        spacerItem3 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_8.addItem(spacerItem3)
         self.horizontalLayout_8.setStretch(3, 1)
         self.verticalLayout_2.addWidget(self.toolbarWidget)
         self.mainLayout = QtGui.QVBoxLayout()
@@ -212,7 +241,7 @@ class Ui_MainWindow(object):
         self.actionAnalogGrid.setObjectName(_fromUtf8("actionAnalogGrid"))
 
         self.retranslateUi(MainWindow)
-        self.stackedWidget.setCurrentIndex(0)
+        self.stackedWidget.setCurrentIndex(3)
         QtCore.QObject.connect(self.visualizationComboBox, QtCore.SIGNAL(_fromUtf8("currentIndexChanged(int)")), self.stackedWidget.setCurrentIndex)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
@@ -221,6 +250,7 @@ class Ui_MainWindow(object):
         self.visualizationComboBox.setItemText(0, _translate("MainWindow", "Raster", None))
         self.visualizationComboBox.setItemText(1, _translate("MainWindow", "Flashing Spike", None))
         self.visualizationComboBox.setItemText(2, _translate("MainWindow", "Analog", None))
+        self.visualizationComboBox.setItemText(3, _translate("MainWindow", "Conduction", None))
         self.label_2.setText(_translate("MainWindow", "Sort By", None))
         self.sortRasterComboBox.setItemText(0, _translate("MainWindow", "Rate", None))
         self.sortRasterComboBox.setItemText(1, _translate("MainWindow", "Latency", None))
@@ -242,6 +272,9 @@ class Ui_MainWindow(object):
         self.filterLowSpinBox.setSuffix(_translate("MainWindow", " Hz", None))
         self.label.setText(_translate("MainWindow", "to", None))
         self.filterHighSpinBox.setSuffix(_translate("MainWindow", " Hz", None))
+        self.label_3.setText(_translate("MainWindow", "Time Window", None))
+        self.label_6.setText(_translate("MainWindow", "Scale", None))
+        self.doubleSpinBox.setSuffix(_translate("MainWindow", " uV", None))
         self.toolBar.setWindowTitle(_translate("MainWindow", "toolBar", None))
         self.actionSave_to_Spreadsheet.setText(_translate("MainWindow", "Save to Spreadsheet...", None))
         self.actionSave_to_Spreadsheet.setShortcut(_translate("MainWindow", "Ctrl+S", None))
