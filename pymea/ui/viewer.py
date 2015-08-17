@@ -123,7 +123,7 @@ class VisualizationCanvas(app.Canvas):
     def enable_antialiasing(self):
         try:
             gl.glEnable(gl.GL_LINE_SMOOTH)
-            gl.glHint(gl.GL_LINE_SMOOTH_HINT, gl.GL_FASTEST)
+            gl.glHint(gl.GL_LINE_SMOOTH_HINT, gl.GL_NICEST)
             gl.glEnable(gl.GL_BLEND)
             gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
         except:
@@ -407,6 +407,13 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
             self.filterLowSpinBox.value(),
             self.filterHighSpinBox.value()
         ]
+
+    @QtCore.pyqtSlot(float)
+    def on_conductionTimeWindowSpinBox_valueChanged(self, val):
+        if self.canvas.conduction_vis is None:
+            return
+        self.canvas.conduction_vis.time_window = \
+            self.conductionTimeWindowSpinBox.value()
 
     @QtCore.pyqtSlot(str)
     def on_sortRasterComboBox_activated(self, text):

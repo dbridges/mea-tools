@@ -69,7 +69,7 @@ class MEA120ConductionVisualization(Visualization):
 
         self.extra_text = ''
 
-        self._time_window = 10 # in milliseconds
+        self._time_window = 5  # in milliseconds
         self._selected_electrodes = []
 
         # Create shaders
@@ -110,6 +110,7 @@ class MEA120ConductionVisualization(Visualization):
     @time_window.setter
     def time_window(self, val):
         self._time_window = val
+        self.update()
 
     @property
     def y_scale(self):
@@ -154,14 +155,12 @@ class MEA120ConductionVisualization(Visualization):
         rest.remove(keys[1])
         keys.extend(rest)
 
-        count = 100
-
         waveforms = mea.extract_conduction_windows(
-            keys, self.spike_data, self.analog_data)
+            keys, self.spike_data, self.analog_data, self.time_window / 1000)
 
-        import time
-        t = time.time()
-        # data = []
+        dt = self.analog_data['a8'].index[1] - self.analog_data['a8'].index[0]
+        count = int(self.time_window / dt / 1000)
+
         n = 0
         data = np.empty((len(waveforms) * count * len(waveforms['a8']), 4),
                         dtype=np.float32)
@@ -181,10 +180,8 @@ class MEA120ConductionVisualization(Visualization):
                 ])
                 n += count
 
-        print(time.time() - t)
         self.program['u_width'] = count
         self.program['a_position'] = data
-        print(time.time() - t)
 
     def update(self, resample=True):
         if resample:

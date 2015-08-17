@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'pymea/ui/PyMEAMainWindow.ui'
 #
-# Created: Mon Aug 17 12:43:06 2015
+# Created: Mon Aug 17 14:56:29 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -177,12 +177,13 @@ class Ui_MainWindow(object):
         self.label_3 = QtGui.QLabel(self.conductionPage)
         self.label_3.setObjectName(_fromUtf8("label_3"))
         self.horizontalLayout_2.addWidget(self.label_3)
-        self.conductionTimeWindowDoubleSpinBox = QtGui.QDoubleSpinBox(self.conductionPage)
-        self.conductionTimeWindowDoubleSpinBox.setDecimals(1)
-        self.conductionTimeWindowDoubleSpinBox.setMinimum(2.0)
-        self.conductionTimeWindowDoubleSpinBox.setProperty("value", 10.0)
-        self.conductionTimeWindowDoubleSpinBox.setObjectName(_fromUtf8("conductionTimeWindowDoubleSpinBox"))
-        self.horizontalLayout_2.addWidget(self.conductionTimeWindowDoubleSpinBox)
+        self.conductionTimeWindowSpinBox = QtGui.QDoubleSpinBox(self.conductionPage)
+        self.conductionTimeWindowSpinBox.setKeyboardTracking(False)
+        self.conductionTimeWindowSpinBox.setDecimals(1)
+        self.conductionTimeWindowSpinBox.setMinimum(2.0)
+        self.conductionTimeWindowSpinBox.setProperty("value", 5.0)
+        self.conductionTimeWindowSpinBox.setObjectName(_fromUtf8("conductionTimeWindowSpinBox"))
+        self.horizontalLayout_2.addWidget(self.conductionTimeWindowSpinBox)
         spacerItem2 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_2.addItem(spacerItem2)
         self.stackedWidget.addWidget(self.conductionPage)
@@ -262,6 +263,7 @@ class Ui_MainWindow(object):
         self.label.setText(_translate("MainWindow", "to", None))
         self.filterHighSpinBox.setSuffix(_translate("MainWindow", " Hz", None))
         self.label_3.setText(_translate("MainWindow", "Time Window", None))
+        self.conductionTimeWindowSpinBox.setSuffix(_translate("MainWindow", " ms", None))
         self.toolBar.setWindowTitle(_translate("MainWindow", "toolBar", None))
         self.actionSave_to_Spreadsheet.setText(_translate("MainWindow", "Save to Spreadsheet...", None))
         self.actionSave_to_Spreadsheet.setShortcut(_translate("MainWindow", "Ctrl+S", None))
