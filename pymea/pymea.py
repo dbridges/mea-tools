@@ -670,7 +670,7 @@ def bandpass_filter(series, low=200.0, high=4000.0):
                      index=series.index)
 
 
-def extract_conduction_windows(keys, spikes, rec, window=0.005):
+def extract_conduction_windows(keys, spikes, rec, window=0.005, limit=200):
     lead = keys[0]
     test = keys[1]
 
@@ -694,6 +694,8 @@ def extract_conduction_windows(keys, spikes, rec, window=0.005):
         if len(spikes[test][(spikes[test]['time'] > t - 0.0007) &
                             (spikes[test]['time'] < t + 0.0007)]) > 0:
             times.append(t)
+            if len(times) > limit:
+                break
     for key in keys:
         waveforms[key] = extract_waveforms(analog_data[key],
                                            times,
