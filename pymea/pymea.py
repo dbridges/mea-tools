@@ -25,7 +25,7 @@ __all__ = ['MEARecording', 'MEASpikeDict', 'coordinates_for_electrode',
            'tag_for_electrode', 'condense_spikes', 'bandpass_filter',
            'export_spikes', 'tag_conductance_spikes', 'cofiring_events',
            'choose_keep_electrode', 'extract_waveforms',
-           'export_conduction_waveforms']
+           'export_conduction_waveforms', 'extract_conduction_windows']
 
 
 class MEARecording:
@@ -685,7 +685,10 @@ def extract_conduction_windows(keys, spikes, rec, window=0.005):
         pass
 
     times = []
-    analog_data = rec.get(keys)
+    if type(rec) == MEARecording:
+        analog_data = rec.get(keys)
+    else:
+        analog_data = rec
     waveforms = {}
     for t in spikes[lead].time:
         if len(spikes[test][(spikes[test]['time'] > t - 0.0007) &
@@ -717,6 +720,6 @@ def export_conduction_waveforms(keys, spike_file, rec_file, window=0.005):
     prespikes = pd.read_csv(spike_file)
     prespikes.electrode = prespikes.electrode.str.split('.').str.get(0)
     spikes = MEASpikeDict(prespikes)
-    waveforms = extract_conduction_windows(keys, spikes, rec)
+    waveforms = extract_conduction_windows(keys, spikes, rec, window)
     export_waveforms(os.path.join(output_dir, basename + '_cond'),
                      waveforms)

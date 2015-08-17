@@ -58,20 +58,27 @@ class MEA120ConductionVisualization(Visualization):
     def __init__(self, canvas, analog_data, spike_data):
         self.canvas = canvas
         self.analog_data = analog_data
-        self.spike_data = spike_data
+        prespikes = spike_data
+        prespikes.electrode = prespikes.electrode.str.split('.').str.get(0)
+        self.spike_data = mea.MEASpikeDict(prespikes)
         self._t0 = 0
         self._dt = 20
         self.mouse_t = 0
         self.electrode = ''
         self._y_scale = 150
 
+        self.extra_text = ''
+
         self._time_window = 10 # in milliseconds
+        self._selected_electrodes = []
 
         # Create shaders
         self.program = gloo.Program(self.VERTEX_SHADER,
                                     self.FRAGMENT_SHADER)
-        self.program['u_color'] = Theme.blue
+        self.program['u_color'] = Theme.transparent_black
         self.program['u_y_scale'] = self._y_scale
+        self.program['a_position'] = [[0,0,0,0]]
+        self.program['u_width'] = 50
         self.grid = LineCollection()
         self.create_grid()
         self.electrode_cols = [c for c in 'ABCDEFGHJKLM']
@@ -79,9 +86,6 @@ class MEA120ConductionVisualization(Visualization):
             self.analog_data.index[1] - self.analog_data.index[0])
 
         self.resample()
-
-        self.extra_text = ''
-        self.selected_electrodes = []
 
     @property
     def t0(self):
@@ -116,8 +120,17 @@ class MEA120ConductionVisualization(Visualization):
 
     @y_scale.setter
     def y_scale(self, val):
+        print('update y scale')
         self.program['u_y_scale'] = val
         self._y_scale = val
+
+    @property
+    def selected_electrodes(self):
+        return self._selected_electrodes
+
+    @selected_electrodes.setter
+    def selected_electrodes(self, val):
+        self._selected_electrodes = val
         self.update()
 
     def create_grid(self):
@@ -135,14 +148,44 @@ class MEA120ConductionVisualization(Visualization):
             self.grid.append((0, y), (width, y), Theme.grid_line)
 
     def resample(self):
-        pass
+        if len(self.selected_electrodes) != 2:
+            return
 
-    def update(self):
-        self.resample()
+        keys = self.selected_electrodes
+        keys = [keys[0], keys[1]]
+        rest = list(self.analog_data.columns.values)
+        rest.remove(keys[0])
+        rest.remove(keys[1])
+        keys.extend(rest)
+
+        waveforms = mea.extract_conduction_windows(
+            keys, self.spike_data, self.analog_data)
+
+        data = []
+        flip = False
+        for electrode, waves in waveforms.items():
+            col, row = mea.coordinates_for_electrode(electrode)
+            row = 12 - row - 1
+            for i, wave in enumerate(waves):
+                flip = i % 2 == 1
+                if flip:
+                    wave = wave[::-1]
+                for j, pt in enumerate(wave):
+                    if flip:
+                        data.append([col, row, 99-j, pt])
+                    else:
+                        data.append([col, row, j, pt])
+
+        self.program['a_position'] = data
+        self.program['u_width'] = 100
+
+    def update(self, resample=True):
+        if resample:
+            self.resample()
 
     def draw(self):
         gloo.clear(Theme.white)
-        # self.program.draw('line_strip')
+        self.program.draw('line_strip')
         self.grid.draw(self.canvas.tr_sys)
 
     def on_mouse_move(self, event):
@@ -169,7 +212,10 @@ class MEA120ConductionVisualization(Visualization):
 
     def on_key_release(self, event):
         if event.key == 'Enter' and len(self.selected_electrodes) > 0:
-            print('Showing!')
+            self.update()
+        elif event.key == 'Escape':
+            self.selected_electrodes = []
+            self.update_extra_text()
 
     def on_mouse_wheel(self, event):
         pass
@@ -188,4 +234,4 @@ class MEA120ConductionVisualization(Visualization):
         self.create_grid()
 
     def on_show(self):
-        pass
+        self.canvas.enable_antialiasing()

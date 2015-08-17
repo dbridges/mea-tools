@@ -31,7 +31,7 @@ class VisualizationCanvas(app.Canvas):
         self.visualization = None
 
         self.tr_sys = visuals.transforms.TransformSystem(self)
-        self._timer = app.Timer(1/30, connect=self.on_tick, start=True)
+        self._timer = app.Timer(1 / 30, connect=self.on_tick, start=True)
 
         self.mouse_pos = (0, 0)
         self.prev_mouse_pos = (0, 0)
@@ -106,7 +106,7 @@ class VisualizationCanvas(app.Canvas):
     def _normalize(self, x_y):
         x, y = x_y
         w, h = float(self.width), float(self.height)
-        return x/(w/2.)-1., y/(h/2.)-1.
+        return x / (w / 2.) - 1., y / (h / 2.) - 1.
 
     def enable_antialiasing(self):
         try:
@@ -180,6 +180,7 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
     """
     Subclass of QMainWindow
     """
+
     def __init__(self, analog_file, spike_file, start_vis, parent=None):
         super().__init__(parent)
 
@@ -264,7 +265,7 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
             store = mea.MEARecording(self.analog_file)
             self._analog_data = store.get('all')
         except:
-            self._analog_data = pd.DataFrame(index=[0, 1/20000.0])
+            self._analog_data = pd.DataFrame(index=[0, 1 / 20000.0])
         print('done.')
 
     def on_visualization_updated(self):
@@ -317,7 +318,14 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         elif text == 'Analog':
             self.canvas.show_analog_grid()
         elif text == 'Conduction':
+            if (self.canvas.visualization is self.canvas.analog_grid_vis and
+                        self.canvas.visualization is not None):
+                selected_electrodes = \
+                    self.canvas.analog_grid_vis.selected_electrodes
+            else:
+                selected_electrodes = []
             self.canvas.show_conduction()
+            self.canvas.visualization.selected_electrodes = selected_electrodes
 
     @QtCore.pyqtSlot(float)
     def on_analogScaleSpinBox_valueChanged(self, val):
@@ -326,6 +334,11 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         if self.canvas.analog_vis is not None:
             self.canvas.analog_vis.y_scale = val
 
+    @QtCore.pyqtSlot(float)
+    def on_conductionScaleSpinBox_valueChanged(self, val):
+        if self.canvas.conduction_vis is not None:
+            self.canvas.conduction_vis.y_scale = val
+
     @QtCore.pyqtSlot(str)
     def on_flashingSpikeTimescaleComboBox_currentIndexChanged(self, text):
         if self.canvas.flashing_spike_vis is None:
@@ -333,19 +346,19 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         if text == '1x':
             self.canvas.flashing_spike_vis.time_scale = 1
         elif text == '1/2x':
-            self.canvas.flashing_spike_vis.time_scale = 1/2
+            self.canvas.flashing_spike_vis.time_scale = 1 / 2
         elif text == '1/20x':
-            self.canvas.flashing_spike_vis.time_scale = 1/20
+            self.canvas.flashing_spike_vis.time_scale = 1 / 20
         elif text == '1/100x':
-            self.canvas.flashing_spike_vis.time_scale = 1/100
+            self.canvas.flashing_spike_vis.time_scale = 1 / 100
         elif text == '1/200x':
-            self.canvas.flashing_spike_vis.time_scale = 1/200
+            self.canvas.flashing_spike_vis.time_scale = 1 / 200
         elif text == '1/400x':
-            self.canvas.flashing_spike_vis.time_scale = 1/400
+            self.canvas.flashing_spike_vis.time_scale = 1 / 400
         elif text == '1/800x':
-            self.canvas.flashing_spike_vis.time_scale = 1/800
+            self.canvas.flashing_spike_vis.time_scale = 1 / 800
         elif text == '1/1600x':
-            self.canvas.flashing_spike_vis.time_scale = 1/1600
+            self.canvas.flashing_spike_vis.time_scale = 1 / 1600
 
     @QtCore.pyqtSlot(bool)
     def on_filterCheckBox_toggled(self, checked):
@@ -412,5 +425,6 @@ def run(analog_file, spike_file, start_vis):
     win = MainWindow(analog_file, spike_file, start_vis)
     win.show()
     if platform.system() == 'Darwin':
-        os.system('''osascript -e 'tell app "Finder" to set frontmost of process "python" to true' ''')  # noqa
+        os.system(
+            '''osascript -e 'tell app "Finder" to set frontmost of process "python" to true' ''')  # noqa
     appQt.exec_()
