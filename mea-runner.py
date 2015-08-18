@@ -149,7 +149,7 @@ def main():
     parser_detect_spikes.add_argument('--neg-only',
                                       dest='neg_only',
                                       action='store_true',
-                                      help='Only detect negative amplitudes')  # noqa
+                                      help='Only detect negative amplitudes.')
     parser_detect_spikes.add_argument('--sort',
                                       dest='sort',
                                       action='store_true',

@@ -44,17 +44,39 @@ The core of the package is a Python 3 module, PyMEA, which has many components f
 
 Open a data file for viewing in the MEA Viewer application. MEA Viewer displays analog and spike data in an interactive application. Input data files should have a `*.h5` or `*.csv` file extension. All csv files should be built with the `detect` command listed below.
 
+The MEA Viewer application allows you to seemlesly move between spike data and analog data. As you switch views the time window of displayed data is maintained for easy comparison.
+
+##### Raster
+
+Show an interactive raster plot of spike data:
+
+```shell
+mea view 2015-03-20_I9119.csv
+```
+
+Use the mouse wheel to zoom in and out of time. Sort the raster rows by average firing rate or by latency from the left edge of the window. The latency sorting allows you to easily recognize repeating patterns of activity.
+
+##### Flashing Spike
+
+Once you have opened a spike file, you can change the view from the raster plot to a flashing spike display. This display slows down time, allowing you to view the patterns of activity. Each spike creates a flash at its electrode, which slowly fades out. First scroll the raster view so that the time of interest is on the far left edge. Then when you switch to the flashing spike view it will begin playing from this time.
+
+Click inside the view window, then press Space to start and stop playing. The current time is displayed in the status bar.
+
+##### Analog
+
 Interactively view an analog file:
 
 ```shell
 mea view 2015-03-20_I9119.h5
 ```
 
-or show an interactive raster plot of spike data:
+This brings up a grid showing the analog data for all of the channels. From here you can drag left and right to move through the data file. You can compare multiple electrodes by Shift-clicking on them, then press Enter to bring up the analog comparison view. From here you can right click and drag to measure time differences. You can also overlay spike data to verify the accuracy of spike detection and sorting.
 
-```shell
-mea view 2015-03-20_I9119.h5
-```
+##### Conduction
+
+The conduction view detects conduction signals from two electrodes, then extracts the analog data in a user selectable time window for each electrode. This data is aggregated, aligned, and superimposed to give a view of the signals read by each electrode for this one neuron.
+
+The easiest way to use the conduction view is by starting in the analog grid view, then select two channels and press 'C'. The first channel is used as the index, and the second is used as a test by seeing if a spike occurs within 0.7 ms for each spike in the first channel.
 
 #### info
 
@@ -91,6 +113,24 @@ Export a file using a threshold cutoff of 5 times the standard deviation of the 
 mea detect --amplitude=5 2015-03-20_I9119.h5
 ```
 
+Full usage:
+
+```shell
+usage: mea detect [-h] [--amplitude AMPLITUDE] [--neg-only]
+                  [--no-sort]
+                  FILES [FILES ...]
+
+positional arguments:
+  FILES                 Files to convert.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --amplitude AMPLITUDE
+                        Amplitude threshold in std devs.
+  --neg-only            Only detect negative amplitudes.
+  --no-sort             Do not sort spikes after detection.
+```
+
 #### export_cond
 
 Export conduction traces.
@@ -99,7 +139,7 @@ Export conduction traces.
 $ mea export_cond 2014-10-30_I9119_Stimulate_D3.h5 'h8,g8,g7'
 ```
 
-Uses h8 as the source electrode and finds all signals in g8 that occur within +- 0.7ms. Once signals are found, it exports the raw analog data for a 5 ms window for each electrode given in the list. The datafiles are automatically labeled in accordance to the source file and the electrode.
+Uses h8 as the source electrode and finds all signals in g8 that occur within +- 0.7 ms. Once signals are found, it exports the raw analog data for a 5 ms window for each electrode given in the list. The datafiles are automatically labeled in accordance to the source file and the electrode.
 
 ## Mathematica Tools
 
