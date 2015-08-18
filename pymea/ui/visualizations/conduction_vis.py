@@ -18,12 +18,14 @@ import pymea.util as util
 class MEA120ConductionVisualization(Visualization):
     VERTEX_SHADER = """
     attribute vec4 a_position;
+    attribute vec4 a_color;
 
     uniform float u_width;
     uniform vec2 u_pan;
     uniform float u_y_scale;
 
     varying vec2 v_index;
+    varying vec4 v_color;
 
     void main (void)
     {
@@ -37,17 +39,18 @@ class MEA120ConductionVisualization(Visualization):
                             a_position.y * height + height / 2 + scale *
                             clamp(a_position.w, -u_y_scale, u_y_scale));
         v_index = a_position.xy;
+        v_color = a_color;
         gl_Position = vec4(position + pan, 0.0, 1.0);
     }
     """
 
     FRAGMENT_SHADER = """
-    uniform vec4 u_color;
     varying vec2 v_index;
+    varying vec4 v_color;
 
     void main()
     {
-        gl_FragColor = u_color;
+        gl_FragColor = v_color;
 
         if (fract(v_index.x) > 0.0 || fract(v_index.y) > 0.0) {
             discard;
@@ -75,9 +78,9 @@ class MEA120ConductionVisualization(Visualization):
         # Create shaders
         self.program = gloo.Program(self.VERTEX_SHADER,
                                     self.FRAGMENT_SHADER)
-        self.program['u_color'] = Theme.transparent_black
         self.program['u_y_scale'] = self._y_scale
         self.program['a_position'] = [[0,0,0,0]]
+        self.program['a_color'] = [[0,0,0,0]]
         self.program['u_width'] = 100
         self.grid = LineCollection()
         self.create_grid()
@@ -168,9 +171,12 @@ class MEA120ConductionVisualization(Visualization):
         count = int(self.time_window / dt / 1000)
 
         n = 0
-        data = np.empty((len(waveforms) * count * len(waveforms['a8']), 4),
-                        dtype=np.float32)
+        data = np.empty(
+            (2 * len(waveforms) * count * len(waveforms['a8']), 4),
+            dtype=np.float32)
+        colors = np.empty_like(data)
         flip = False
+        opacity = 0.03 - 0.0001 * len(waveforms['a8'])
         for electrode, waves in waveforms.items():
             col, row = mea.coordinates_for_electrode(electrode)
             row = 12 - row - 1
@@ -184,10 +190,24 @@ class MEA120ConductionVisualization(Visualization):
                     np.arange(count, 0, -1) if flip else np.arange(count),
                     wave
                 ])
+                colors[n:n+count] = np.array((0.4, 0.4, 0.4, opacity))
                 n += count
+            if flip:
+                avg_wave = waves.mean(0)
+            else:
+                avg_wave = waves.mean(0)[::-1]
+            data[n:n+count] = np.transpose([
+                [col]*count,
+                [row]*count,
+                np.arange(count, 0, -1) if not flip else np.arange(count),
+                avg_wave
+            ])
+            colors[n:n+count] = np.array(Theme.black)
+            n += count
 
         self.program['u_width'] = count
         self.program['a_position'] = data
+        self.program['a_color'] = colors
 
     def update(self, resample=True):
         if resample:
