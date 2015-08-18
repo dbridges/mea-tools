@@ -82,6 +82,11 @@ class RasterPlotVisualization(Visualization):
         self.mouse_t = 0
         self.extra_text = ''
 
+        self.measuring = False
+        self.measure_start = (0, 0)
+        self.measure_line = visuals.LineVisual(np.array(((0, 0), (100, 100))),
+                                               Theme.yellow)
+
     @property
     def t0(self):
         return self._t0
@@ -217,6 +222,8 @@ class RasterPlotVisualization(Visualization):
 
     def draw(self):
         gloo.clear((0.5, 0.5, 0.5, 1))
+        if self.measuring:
+            self.measure_line.draw(self.canvas.tr_sys)
         self.program.draw('lines')
         for label in self.tick_labels:
             label.draw(self.canvas.tr_sys)
@@ -226,9 +233,16 @@ class RasterPlotVisualization(Visualization):
         x, y = event.pos
         sec_per_pixel = self.dt / self.canvas.size[0]
         if event.is_dragging:
-            x1, y1 = event.last_event.pos
-            dx = x1 - x
-            self.t0 += dx * sec_per_pixel
+            if event.button == 1:
+                x1, y1 = event.last_event.pos
+                dx = x1 - x
+                self.t0 += dx * sec_per_pixel
+            elif event.button == 2:
+                self.measuring = True
+                self.update_extra_text(sec_per_pixel *
+                                       np.abs(x - self.measure_start[0]))
+                self.measure_line.set_data(np.array((self.measure_start,
+                                                     event.pos)))
         row_height = ((self.canvas.height - self.margin['top']) /
                       self.row_count)
         row = util.clip(int((event.pos[1] - self.margin['top']) / row_height),
@@ -273,10 +287,13 @@ class RasterPlotVisualization(Visualization):
                 self.selected_electrodes.remove(self.electrode)
             else:
                 self.selected_electrodes.append(self.electrode)
-            self.update_extra_text()
+        self.measuring = False
+        self.update_extra_text()
 
     def on_mouse_press(self, event):
         self.velocity = 0
+        if event.button == 2:
+            self.measure_start = event.pos
 
     def on_mouse_double_click(self, event):
         if self.display_selected:
@@ -302,9 +319,15 @@ class RasterPlotVisualization(Visualization):
     def on_hide(self):
         self.velocity = 0
 
-    def update_extra_text(self):
+    def update_extra_text(self, measurement=None):
         if len(self.selected_electrodes) > 0:
-            self.extra_text = ('Selected: %s' %
+            selected_str = ('Selected: %s' %
                                ', '.join(self.selected_electrodes))
         else:
-            self.extra_text = ''
+            selected_str = ''
+        if measurement is None:
+            measure_str = ''
+        else:
+            measure_str = 'dt: %1.4f' % measurement
+
+        self.extra_text = '%s    %s' % (selected_str, measure_str)
