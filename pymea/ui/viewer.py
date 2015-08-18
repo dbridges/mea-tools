@@ -36,8 +36,6 @@ class VisualizationCanvas(app.Canvas):
         self.mouse_pos = (0, 0)
         self.prev_mouse_pos = (0, 0)
 
-        self.last_mouse_release_t = time.time()
-
     def show_raster(self):
         if self.raster_vis is None:
             self.raster_vis = RasterPlotVisualization(
@@ -160,13 +158,8 @@ class VisualizationCanvas(app.Canvas):
             self.visualization.on_mouse_press(event)
 
     def on_mouse_release(self, event):
-        event_time = time.time()
-        if event_time - self.last_mouse_release_t < 0.25:
-            self.on_mouse_double_click(event)
-        else:
-            if self.visualization is not None:
-                self.visualization.on_mouse_release(event)
-        self.last_mouse_release_t = event_time
+        if self.visualization is not None:
+            self.visualization.on_mouse_release(event)
 
     def on_mouse_double_click(self, event):
         if self.visualization is not None:

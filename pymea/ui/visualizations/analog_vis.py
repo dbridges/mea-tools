@@ -114,7 +114,7 @@ class MEAAnalogVisualization(Visualization):
         self.measuring = False
         self.measure_start = (0, 0)
         self.measure_line = visuals.LineVisual(np.array(((0, 0), (100, 100))),
-                                               Theme.grid_line)
+                                               Theme.yellow)
         self.extra_text = ''
         self._filtered = False
         self._filter_cutoff = [200, 4000]

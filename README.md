@@ -9,7 +9,7 @@ MEA Tools consists of three main components: (1) a Python module (pymea) and com
 MEA Tools requires:
 
 - Python 3.4
-- [vispy](http://www.vispy.org) (best to install this from source due to its rapid development)
+- [vispy](http://www.vispy.org) 0.4.0
 - PyQt4
 - numpy
 - scipy

@@ -8,7 +8,7 @@ import sys
 import math
 
 import numpy as np
-from vispy import gloo
+from vispy import visuals, gloo
 
 from .base import LineCollection, Visualization, Theme
 import pymea as mea
@@ -84,6 +84,12 @@ class MEA120ConductionVisualization(Visualization):
         self.electrode_cols = [c for c in 'ABCDEFGHJKLM']
         self.sample_rate = 1.0 / (
             self.analog_data.index[1] - self.analog_data.index[0])
+
+        self.measuring = False
+        self.measure_start = (0, 0)
+        self.measure_line = visuals.LineVisual(np.array(((0, 0), (100, 100))),
+                                               Theme.yellow,
+                                               method='agg')
 
 
     @property
@@ -189,11 +195,14 @@ class MEA120ConductionVisualization(Visualization):
 
     def draw(self):
         gloo.clear(Theme.white)
-        self.program.draw('line_strip')
         self.grid.draw(self.canvas.tr_sys)
+        if self.measuring:
+            self.measure_line.draw(self.canvas.tr_sys)
+        self.program.draw('line_strip')
 
     def on_mouse_move(self, event):
         x, y = event.pos
+
         cell_width = self.canvas.size[0] / 12.0
         cell_height = self.canvas.size[1] / 12.0
         col = int(x / cell_width)
@@ -203,34 +212,33 @@ class MEA120ConductionVisualization(Visualization):
         else:
             self.electrode = mea.tag_for_electrode((col, row))
 
+        sec_per_pixel = self.time_window / self.canvas.size[0] * 12
+
+        if event.is_dragging and event.button == 2:
+            self.measuring = True
+            self.extra_text = 'dt: %1.1f ms' % (
+                sec_per_pixel * ((x%cell_width - self.measure_start[0]%cell_width)))
+            self.measure_line.set_data(np.array((self.measure_start,
+                                                 event.pos)))
+
     def on_mouse_double_click(self, event):
         self.canvas.show_analog_grid()
 
+    def on_mouse_press(self, event):
+        if event.button == 2:
+            self.measure_start = event.pos
+
     def on_mouse_release(self, event):
-        if 'shift' in event.modifiers:
-            if self.electrode in self.selected_electrodes:
-                self.selected_electrodes.remove(self.electrode)
-            else:
-                self.selected_electrodes.append(self.electrode)
-            self.update_extra_text()
+        self.extra_text = ''
+        self.measuring = False
 
     def on_key_release(self, event):
-        if event.key == 'Enter' and len(self.selected_electrodes) > 0:
-            self.update()
-        elif event.key == 'Escape':
-            self.selected_electrodes = []
-            self.update_extra_text()
+        if event.key == 'Escape':
+            self.canvas.show_analog_grid()
 
     def on_mouse_wheel(self, event):
         scale = math.exp(2.5 * -np.sign(event.delta[1]) * self.scroll_factor)
         self.y_scale *= scale
-
-    def update_extra_text(self):
-        if len(self.selected_electrodes) > 0:
-            self.extra_text = ('Selected: %s' %
-                               ', '.join(self.selected_electrodes))
-        else:
-            self.extra_text = ''
 
     def on_tick(self, event):
         pass
