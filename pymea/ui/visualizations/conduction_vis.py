@@ -246,7 +246,7 @@ class MEA120ConductionVisualization(Visualization):
         if event.is_dragging and event.button == 2:
             self.measuring = True
             self.extra_text = 'dt: %1.1f ms' % (
-                sec_per_pixel * ((x%cell_width - self.measure_start[0]%cell_width)))
+                sec_per_pixel * (x%cell_width - self.measure_start[0]%cell_width))
             self.measure_line.set_data(np.array((self.measure_start,
                                                  event.pos)))
 

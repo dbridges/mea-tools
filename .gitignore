@@ -3,3 +3,5 @@
 *.dll
 __pycache__
 build
+**/.idea/workspace.xml
+**/.idea/tasks.xml
