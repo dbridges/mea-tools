@@ -168,15 +168,22 @@ class MEA120ConductionVisualization(Visualization):
             keys, self.spike_data, self.analog_data, self.time_window / 1000)
 
         dt = self.analog_data['a8'].index[1] - self.analog_data['a8'].index[0]
-        count = int(self.time_window / dt / 1000)
+        pt_count = int(self.time_window / dt / 1000)
 
+        # Only show first 50 waves, but average all of them
         n = 0
+        channel_count = len(waveforms)
+
+        waveform_count = len(waveforms['a8'])
+        if waveform_count > 50:
+            waveform_count = 50
+
         data = np.empty(
-            (2 * len(waveforms) * count * len(waveforms['a8']), 4),
+            (channel_count * pt_count * (waveform_count + 2), 4),  # noqa
             dtype=np.float32)
         colors = np.empty_like(data)
         flip = False
-        opacity = 0.03 - 0.0001 * len(waveforms['a8'])
+        opacity = 0.03 - 0.0001 * waveform_count
         for electrode, waves in waveforms.items():
             col, row = mea.coordinates_for_electrode(electrode)
             row = 12 - row - 1
@@ -184,28 +191,30 @@ class MEA120ConductionVisualization(Visualization):
                 flip = i % 2 == 1
                 if flip:
                     wave = wave[::-1]
-                data[n:n+count] = np.transpose([
-                    [col]*count,
-                    [row]*count,
-                    np.arange(count, 0, -1) if flip else np.arange(count),
+                data[n:n+pt_count] = np.transpose([
+                    [col]*pt_count,
+                    [row]*pt_count,
+                    np.arange(pt_count, 0, -1) if flip else np.arange(pt_count),
                     wave
                 ])
-                colors[n:n+count] = np.array((0.4, 0.4, 0.4, opacity))
-                n += count
+                colors[n:n+pt_count] = np.array((0.4, 0.4, 0.4, opacity))
+                n += pt_count
+                if i >= waveform_count:
+                    break
             if flip:
                 avg_wave = waves.mean(0)
             else:
                 avg_wave = waves.mean(0)[::-1]
-            data[n:n+count] = np.transpose([
-                [col]*count,
-                [row]*count,
-                np.arange(count, 0, -1) if not flip else np.arange(count),
+            data[n:n+pt_count] = np.transpose([
+                [col]*pt_count,
+                [row]*pt_count,
+                np.arange(pt_count, 0, -1) if not flip else np.arange(pt_count),
                 avg_wave
             ])
-            colors[n:n+count] = np.array(Theme.black)
-            n += count
+            colors[n:n+pt_count] = np.array(Theme.black)
+            n += pt_count
 
-        self.program['u_width'] = count
+        self.program['u_width'] = pt_count
         self.program['a_position'] = data
         self.program['a_color'] = colors
 
