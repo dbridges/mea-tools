@@ -67,21 +67,21 @@ class FlashingSpikeVisualization(Visualization):
          [3.0, 1.0], [3.0, 0.0]], dtype=np.float32)
 
     def __init__(self, canvas, spike_data):
+        super().__init__()
         self.canvas = canvas
         self.program = ModularProgram(self.VERTEX_SHADER,
                                       self.FRAGMENT_SHADER)
         self._t0 = 0
         self._dt = 10
         self.mouse_t = self.t0
-        self._interval = 1/30.0
+        self._interval = 1 / 30.0
         self.electrode = ''
-        self.time_scale = 1/200
-        self._vert = np.zeros((120*6, 2), dtype=np.float32)
-        self._color = np.zeros(120*6, dtype=np.float32)
+        self.time_scale = 1 / 200
+        self._vert = np.zeros((120 * 6, 2), dtype=np.float32)
+        self._color = np.zeros(120 * 6, dtype=np.float32)
         self.electrodes = []
         self.spikes = spike_data.copy()
         self.spikes.electrode = self.spikes.electrode.str.extract('(\w+)\.*')
-        # We need to condense sorted data.
         for tag, df in self.spikes.groupby('electrode'):
             self.electrodes.append(FlashingSpikeElectrode(tag,
                                                           df['time'].values))

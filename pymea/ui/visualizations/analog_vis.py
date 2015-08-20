@@ -86,6 +86,7 @@ class MEAAnalogVisualization(Visualization):
     """
 
     def __init__(self, canvas, analog_data, spike_data):
+        super().__init__()
         self.canvas = canvas
         self.analog_data = analog_data
         self.spike_data = mea.MEASpikeDict(spike_data)
@@ -98,19 +99,14 @@ class MEAAnalogVisualization(Visualization):
         self.mouse_t = 0
         self.electrode = ''
         self.electrodes = ['h11']  # l5, m5
-
         self.strip_program = gloo.Program(self.STRIP_VERTEX_SHADER,
                                           self.STRIP_FRAGMENT_SHADER)
         self.strip_program['u_color'] = Theme.blue
-
         self.point_program = gloo.Program(self.POINT_VERTEX_SHADER,
                                           self.POINT_FRAGMENT_SHADER)
-
         self.pan = self._t0
-        self.scale = (2.0/self._dt, 1/self._y_scale)
-
+        self.scale = (2.0 / self._dt, 1 / self._y_scale)
         self.velocity = 0
-
         self.measuring = False
         self.measure_start = (0, 0)
         self.measure_line = visuals.LineVisual(np.array(((0, 0), (100, 100))),
@@ -119,7 +115,6 @@ class MEAAnalogVisualization(Visualization):
         self._filtered = False
         self._filter_cutoff = [200, 4000]
         self.resample()
-
         self.background_color = Theme.background
 
     @property

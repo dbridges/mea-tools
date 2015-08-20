@@ -45,35 +45,28 @@ class RasterPlotVisualization(Visualization):
     """
 
     def __init__(self, canvas, spike_data):
+        super().__init__()
         self.canvas = canvas
-
-        # Load data
         if 'conductance' not in spike_data.columns:
             spike_data['conductance'] = False
-
         self.spike_data = mea.MEASpikeDict(spike_data)
         self.spike_data.sort()
-
         self.program = gloo.Program(RasterPlotVisualization.VERTEX_SHADER,
                                     RasterPlotVisualization.FRAGMENT_SHADER)
         self._t0 = 0
         self._dt = self.spike_data.max_time()
         self.electrode = ''
         self.program['u_pan'] = self._t0
-        self.program['u_y_scale'] = self._dt/2
+        self.program['u_y_scale'] = self._dt / 2
         self.program['u_top_margin'] = 20.0 * 2.0 / canvas.size[1]
-
         self._row_count = 120
         self._display_selected = False
         self.selected_electrodes = []
-
         self.row_count = len(self.spike_data)
         self._unselected_row_count = self.row_count
         self._dim_conductance = False
         self.resample()
-        self.margin = {}
-        self.margin['top'] = 20
-
+        self.margin = {'top': 20}
         self.velocity = 0
         self.tick_separtion = 50
         self.tick_labels = [visuals.TextVisual('', font_size=10, color='w')
@@ -81,7 +74,6 @@ class RasterPlotVisualization(Visualization):
         self.tick_marks = LineCollection()
         self.mouse_t = 0
         self.extra_text = ''
-
         self.measuring = False
         self.measure_start = (0, 0)
         self.measure_line = visuals.LineVisual(np.array(((0, 0), (100, 100))),

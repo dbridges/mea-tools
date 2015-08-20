@@ -156,7 +156,7 @@ class MEARecording:
         self.store.close()
 
 
-class MEASpikeDict():
+class MEASpikeDict:
     """
     An immuatable data structure for manipulating spike data.
 
@@ -172,9 +172,9 @@ class MEASpikeDict():
 
     Examples:
 
-    >>> spikes = MEASpikeDict(spike_table)
+    spikes = MEASpikeDict(spike_table)
 
-    >>> spikes['e8']
+    spikes['e8']
 
         electrode      time  amplitude  threshold
     158        e8   8.23285 -23.280405 -18.782986
@@ -190,13 +190,13 @@ class MEASpikeDict():
     [9 rows x 4 columns]
 
     Iterate through keys:
-    >>> for electrode in spikes:
+    for electrode in spikes:
 
     Iterate through keys and values:
-    >>> for electrode, data in spikes.items()
+    for electrode, data in spikes.items()
 
     Sort by firing rate:
-    >>> spikes.sort()
+    spikes.sort()
     """
     def __init__(self, spike_table):
         self.spike_table = spike_table

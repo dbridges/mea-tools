@@ -59,6 +59,7 @@ class MEA120ConductionVisualization(Visualization):
     """
 
     def __init__(self, canvas, analog_data, spike_data):
+        super().__init__()
         self.canvas = canvas
         self.analog_data = analog_data
         prespikes = spike_data
@@ -69,31 +70,25 @@ class MEA120ConductionVisualization(Visualization):
         self.mouse_t = 0
         self.electrode = ''
         self._y_scale = 150
-
         self.extra_text = ''
-
         self._time_window = 5  # in milliseconds
         self._selected_electrodes = []
-
-        # Create shaders
         self.program = gloo.Program(self.VERTEX_SHADER,
                                     self.FRAGMENT_SHADER)
         self.program['u_y_scale'] = self._y_scale
-        self.program['a_position'] = [[0,0,0,0]]
-        self.program['a_color'] = [[0,0,0,0]]
+        self.program['a_position'] = [[0, 0, 0, 0]]
+        self.program['a_color'] = [[0, 0, 0, 0]]
         self.program['u_width'] = 100
         self.grid = LineCollection()
         self.create_grid()
         self.electrode_cols = [c for c in 'ABCDEFGHJKLM']
         self.sample_rate = 1.0 / (
             self.analog_data.index[1] - self.analog_data.index[0])
-
         self.measuring = False
         self.measure_start = (0, 0)
         self.measure_line = visuals.LineVisual(np.array(((0, 0), (100, 100))),
                                                Theme.yellow,
                                                method='agg')
-
 
     @property
     def t0(self):

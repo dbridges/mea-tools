@@ -56,6 +56,7 @@ class MEA120GridVisualization(Visualization):
     """
 
     def __init__(self, canvas, data):
+        super().__init__()
         self.canvas = canvas
         self.data = data
         self._t0 = 0
@@ -63,8 +64,6 @@ class MEA120GridVisualization(Visualization):
         self.mouse_t = 0
         self.electrode = ''
         self._y_scale = 150
-
-        # Create shaders
         self.program = gloo.Program(self.VERTEX_SHADER,
                                     self.FRAGMENT_SHADER)
         self.program['u_color'] = Theme.blue
@@ -73,9 +72,7 @@ class MEA120GridVisualization(Visualization):
         self.create_grid()
         self.electrode_cols = [c for c in 'ABCDEFGHJKLM']
         self.sample_rate = 1.0 / (self.data.index[1] - self.data.index[0])
-
         self.resample()
-
         self.selected_electrodes = []
         self.extra_text = ''
 

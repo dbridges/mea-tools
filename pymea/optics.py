@@ -244,7 +244,7 @@ class OPTICS(BaseEstimator, ClusterMixin):
 
 
     def extract(self, epsPrime):
-        if self.processed == True:
+        if self.processed:
             if epsPrime > self.eps:
                 pass
             else:

@@ -72,7 +72,7 @@ class LineCollection:
         self._vert = []
         self._color = []
 
-    def append(self, pt1, pt2, color=[1, 1, 1, 1]):
+    def append(self, pt1, pt2, color=(1, 1, 1, 1)):
         """
         pt1 : 2 tuple
             The first point on the line, in screen coordinates.
