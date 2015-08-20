@@ -1,7 +1,6 @@
 import os
 import sys
 import platform
-import time
 
 import pymea.pymea as mea
 from pymea.ui.visualizations import (MEA120GridVisualization,
