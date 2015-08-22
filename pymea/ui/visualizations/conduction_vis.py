@@ -163,7 +163,7 @@ class MEA120ConductionVisualization(Visualization):
             keys, self.spike_data, self.analog_data, self.time_window / 1000)
 
         dt = self.analog_data['a8'].index[1] - self.analog_data['a8'].index[0]
-        pt_count = int(self.time_window / dt / 1000)
+        pt_count = len(waveforms['a8'][0])
 
         # Only show first 50 waves, but average all of them
         n = 0
