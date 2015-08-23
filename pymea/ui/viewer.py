@@ -400,13 +400,6 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
             self.filterHighSpinBox.value()
         ]
 
-    @QtCore.pyqtSlot(float)
-    def on_conductionTimeWindowSpinBox_valueChanged(self, val):
-        if self.canvas.conduction_vis is None:
-            return
-        self.canvas.conduction_vis.time_window = \
-            self.conductionTimeWindowSpinBox.value()
-
     @QtCore.pyqtSlot(str)
     def on_sortRasterComboBox_activated(self, text):
         if self.canvas.raster_vis is None:

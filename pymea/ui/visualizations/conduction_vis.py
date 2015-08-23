@@ -22,24 +22,30 @@ class MEA120ConductionVisualization(Visualization):
 
     uniform float u_width;
     uniform vec2 u_pan;
-    uniform float u_y_scale;
+    uniform vec2 u_scale;
 
     varying vec2 v_index;
     varying vec4 v_color;
+    varying float v_drop;
 
     void main (void)
     {
         float height = 2.0 / 12.0;
         float width = 2.0 / 12.0;
-        float scale = height / (2 * u_y_scale);
+        float y_scale = height / (2 * u_scale.y);
         vec2 pan = vec2(-1, -1);
 
-        vec2 position = vec2(a_position.x * width +
-                            width * a_position.z / u_width,
-                            a_position.y * height + height / 2 + scale *
-                            clamp(a_position.w, -u_y_scale, u_y_scale));
+        vec2 position = vec2(a_position.x * width - (u_width / 2 - u_scale.x * 10) * width / (u_scale.x * 20) +
+                             width * a_position.z / (u_scale.x * 20),
+                             a_position.y * height + height / 2 + y_scale *
+                             clamp(a_position.w, -u_scale.y, u_scale.y));
         v_index = a_position.xy;
         v_color = a_color;
+        if (position.x < a_position.x * width || position.x > (a_position.x + 1) * width) {
+            v_drop = 1;
+        } else {
+            v_drop = 0;
+        }
         gl_Position = vec4(position + pan, 0.0, 1.0);
     }
     """
@@ -47,12 +53,13 @@ class MEA120ConductionVisualization(Visualization):
     FRAGMENT_SHADER = """
     varying vec2 v_index;
     varying vec4 v_color;
+    varying float v_drop;
 
     void main()
     {
         gl_FragColor = v_color;
 
-        if (fract(v_index.x) > 0.0 || fract(v_index.y) > 0.0) {
+        if (v_drop > 0.5 || fract(v_index.x) > 0.0 || fract(v_index.y) > 0.0) {
             discard;
         }
     }
@@ -69,13 +76,13 @@ class MEA120ConductionVisualization(Visualization):
         self._dt = 20
         self.mouse_t = 0
         self.electrode = ''
-        self._y_scale = 150
+        self._time_window = 20  # in milliseconds
+        self._scale = (5, 150)
         self.extra_text = ''
-        self._time_window = 5  # in milliseconds
         self._selected_electrodes = []
         self.program = gloo.Program(self.VERTEX_SHADER,
                                     self.FRAGMENT_SHADER)
-        self.program['u_y_scale'] = self._y_scale
+        self.program['u_scale'] = self._scale
         self.program['a_position'] = [[0, 0, 0, 0]]
         self.program['a_color'] = [[0, 0, 0, 0]]
         self.program['u_width'] = 100
@@ -117,13 +124,13 @@ class MEA120ConductionVisualization(Visualization):
         self.update()
 
     @property
-    def y_scale(self):
-        return self._y_scale
+    def scale(self):
+        return self._scale
 
-    @y_scale.setter
-    def y_scale(self, val):
-        self.program['u_y_scale'] = val
-        self._y_scale = val
+    @scale.setter
+    def scale(self, val):
+        self.program['u_scale'] = val
+        self._scale = val
 
     @property
     def selected_electrodes(self):
@@ -178,7 +185,7 @@ class MEA120ConductionVisualization(Visualization):
             dtype=np.float32)
         colors = np.empty_like(data)
         flip = False
-        opacity = 0.03 - 0.0001 * waveform_count
+        opacity = 0.16 - 0.0001 * waveform_count
         for electrode, waves in waveforms.items():
             col, row = mea.coordinates_for_electrode(electrode)
             row = 12 - row - 1
@@ -236,7 +243,7 @@ class MEA120ConductionVisualization(Visualization):
         else:
             self.electrode = mea.tag_for_electrode((col, row))
 
-        sec_per_pixel = self.time_window / self.canvas.size[0] * 12
+        sec_per_pixel = self.scale[0] / self.canvas.size[0] * 12
 
         if event.is_dragging and event.button == 2:
             self.measuring = True
@@ -261,8 +268,19 @@ class MEA120ConductionVisualization(Visualization):
             self.canvas.show_analog_grid()
 
     def on_mouse_wheel(self, event):
-        scale = math.exp(2.5 * -np.sign(event.delta[1]) * self.scroll_factor)
-        self.y_scale *= scale
+        if 'shift' in event.modifiers:
+            # Time window scaling.
+            scale = math.exp(
+                2.5 * -np.sign(event.delta[1]) * self.scroll_factor)
+            self.scale = (util.clip(scale * self.scale[0],
+                                    0.33 * 5,
+                                    3*self.time_window),
+                          self.scale[1])
+        else:
+            # Amplitude scaling
+            scale = math.exp(
+                2.5 * -np.sign(event.delta[1]) * self.scroll_factor)
+            self.scale = (self.scale[0], scale * self.scale[1])
 
     def on_tick(self, event):
         pass

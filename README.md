@@ -76,7 +76,7 @@ This brings up a grid showing the analog data for all of the channels. From here
 
 The conduction view detects conduction signals from two electrodes, then extracts the analog data in a user selectable time window for each electrode. This data is aggregated, aligned, and superimposed to give a view of the signals read by each electrode for this one neuron.
 
-The easiest way to use the conduction view is by starting in the analog grid view, then select two channels and press 'C'. The first channel is used as the index, and the second is used as a test by seeing if a spike occurs within 0.7 ms for each spike in the first channel.
+The easiest way to use the conduction view is by starting in the analog grid view, then select two channels and press 'C'. The first channel is used as the index, and the second is used as a test by seeing if a spike occurs within 0.7 ms for each spike in the first channel. Scroll to change y-scale, shift-scroll to change time window size.
 
 #### info
 

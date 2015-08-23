@@ -115,7 +115,8 @@ def export_cond(args):
         return
 
     import pymea as mea
-    mea.export_conduction_waveforms(keys, spike_file, args.FILE)
+    mea.export_conduction_waveforms(keys, spike_file, args.FILE,
+                                    args.window/1000.0)
 
 
 def main():
@@ -174,6 +175,10 @@ def main():
     parser_export_cond = subparsers.add_parser(
         'export_cond', help='Export conduction waveforms.'
     )
+    parser_export_cond.add_argument('--window',
+                                    type=float,
+                                    default=5.0,
+                                    help='Width in ms of extracted window.')
     parser_export_cond.add_argument('FILE')
     parser_export_cond.add_argument('ELECTRODES')
     parser_export_cond.set_defaults(sort=True, func=export_cond)
