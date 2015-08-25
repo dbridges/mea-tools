@@ -4,9 +4,13 @@ import os
 import sys
 import argparse
 import glob
+import logging
 
 import pandas as pd
 
+
+logging.basicConfig(filename=os.path.expanduser('~/.mea-tools-log.txt'),
+                    level=logging.INFO)
 
 def view(args):
     import pymea.ui.viewer
@@ -184,11 +188,14 @@ def main():
     parser_export_cond.set_defaults(sort=True, func=export_cond)
 
     args = parser.parse_args()
-
     if len(sys.argv) == 1:
         parser.print_usage()
     else:
-        args.func(args)
+        try:
+            logging.info(sys.argv)
+            args.func(args)
+        except Exception as e:
+            logging.exception(e)
 
 if __name__ == '__main__':
     main()
