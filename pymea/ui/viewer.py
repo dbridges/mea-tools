@@ -78,6 +78,11 @@ class VisualizationCanvas(app.Canvas):
                     self.visualization is not None):
             selected_electrodes = \
                 self.analog_grid_vis.selected_electrodes
+        elif (self.visualization is self.analog_vis and
+                    self.visualization is not None and
+              len(self.analog_vis.electrodes) > 1):
+            selected_electrodes = \
+                self.analog_vis.electrodes[:2]
         else:
             selected_electrodes = []
         if self.conduction_vis is None:

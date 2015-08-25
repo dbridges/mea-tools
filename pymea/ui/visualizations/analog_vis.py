@@ -308,6 +308,8 @@ class MEAAnalogVisualization(Visualization):
                 self.background_color = Theme.white
             else:
                 self.background_color = Theme.background
+        elif event.key == 'c':
+            self.canvas.show_conduction()
 
     def on_show(self):
         self.canvas.disable_antialiasing()
