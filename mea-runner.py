@@ -68,11 +68,14 @@ def detect_spikes(args):
                  if f.endswith('.h5') and os.path.exists(f)]
     import pymea as mea
     for i, f in enumerate(files):
-        mea.export_spikes(f, args.amplitude,
-                          sort=args.sort,
-                          conductance=args.sort,
-                          neg_only=args.neg_only)
-        print('%d of %d exported.' % (i + 1, len(files)))
+        try:
+            mea.export_spikes(f, args.amplitude,
+                              sort=args.sort,
+                              conductance=args.sort,
+                              neg_only=args.neg_only)
+            print('%d of %d exported.' % (i + 1, len(files)))
+        except:
+            print('Error processing: %s' % f)
 
 
 def tag_cond(args):
