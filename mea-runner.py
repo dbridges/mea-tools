@@ -74,8 +74,9 @@ def detect_spikes(args):
                               conductance=args.sort,
                               neg_only=args.neg_only)
             print('%d of %d exported.' % (i + 1, len(files)))
-        except:
+        except Exception as e:
             print('Error processing: %s' % f)
+            logging.exception(e)
 
 
 def tag_cond(args):
