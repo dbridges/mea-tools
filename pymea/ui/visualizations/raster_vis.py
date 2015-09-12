@@ -307,6 +307,11 @@ class RasterPlotVisualization(Visualization):
 
     def on_show(self):
         self.canvas.enable_antialiasing()
+        if len(self.selected_electrodes) > 0:
+            self.selected_electrodes = [e for e in self.spike_data.keys()
+                                        if e.split('.')[0] in self.selected_electrodes]
+            self.display_selected = True
+            self.resample()
 
     def on_hide(self):
         self.velocity = 0

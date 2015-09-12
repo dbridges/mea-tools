@@ -35,7 +35,7 @@ class VisualizationCanvas(app.Canvas):
         self.mouse_pos = (0, 0)
         self.prev_mouse_pos = (0, 0)
 
-    def show_raster(self):
+    def show_raster(self, selected=None):
         if self.raster_vis is None:
             self.raster_vis = RasterPlotVisualization(
                 self, self.controller.spike_data)
@@ -44,6 +44,8 @@ class VisualizationCanvas(app.Canvas):
             self.raster_vis.dt = self.visualization.dt
             self.visualization.on_hide()
         self.visualization = self.raster_vis
+        if selected is not None:
+            self.raster_vis.selected_electrodes = selected
         self.visualization.on_show()
         self.controller.on_show_raster()
 

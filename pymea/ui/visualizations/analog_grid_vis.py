@@ -193,6 +193,8 @@ class MEA120GridVisualization(Visualization):
             self.update_extra_text()
         elif event.key == 'c':
             self.canvas.show_conduction()
+        elif event.key == 'r':
+            self.canvas.show_raster(selected=self.selected_electrodes)
 
     def on_mouse_wheel(self, event):
         sec_per_pixel = self.dt / (self.canvas.size[0] / 12)
