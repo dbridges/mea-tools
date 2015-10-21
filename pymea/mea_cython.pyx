@@ -3,6 +3,7 @@ import sys
 import numpy as np
 import pandas as pd
 cimport numpy as np
+cimport cython
 from scipy import signal
 
 import pymea as mea
@@ -115,11 +116,12 @@ def fitted_peak_loc(x, y):
     x = -b/(2*a)
     return x
 
-def min_max(np.ndarray[float] d):
+@cython.boundscheck(False)
+cdef min_max(np.ndarray[float] d):
     if len(d) == 0:
         return 0, 0
 
-    cdef int n
+    cdef unsigned int n
     cdef float minval = d[0]
     cdef float maxval = d[0]
     for n in range(len(d)):
@@ -131,13 +133,13 @@ def min_max(np.ndarray[float] d):
 
 
 def min_max_bin(np.ndarray[float] series, int bin_size, int bin_count):
-    cdef np.ndarray[float] sub
+    cdef unsigned int n
+    cdef float minval, maxval
     cdef np.ndarray[long] edges = np.arange(0, bin_count * bin_size, bin_size)
     cdef np.ndarray[float] vals = np.empty(len(edges)*2 - 2, np.float32)
 
     for n in range(len(edges) - 1):
-        sub = series[edges[n]:edges[n+1]]
-        minval, maxval = min_max(sub)
+        minval, maxval = min_max(series[edges[n]:edges[n+1]])
         vals[2*n] = minval
         vals[2*n+1] = maxval
 

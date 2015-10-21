@@ -75,6 +75,7 @@ class MEA120GridVisualization(Visualization):
         self.resample()
         self.selected_electrodes = []
         self.extra_text = ''
+        self.needs_update = False
 
     @property
     def t0(self):
@@ -83,7 +84,6 @@ class MEA120GridVisualization(Visualization):
     @t0.setter
     def t0(self, val):
         self._t0 = util.clip(val, 0, self.data.index[-1] - self.dt/2)
-        self.update()
 
     @property
     def dt(self):
@@ -93,7 +93,6 @@ class MEA120GridVisualization(Visualization):
     def dt(self, val):
         self._dt = util.clip(val, 0.0025, 10)
         self.mouse_t = self._t0
-        self.update()
 
     @property
     def y_scale(self):
@@ -103,7 +102,6 @@ class MEA120GridVisualization(Visualization):
     def y_scale(self, val):
         self.program['u_y_scale'] = val
         self._y_scale = val
-        self.update()
 
     def create_grid(self):
         self.grid.clear()
@@ -119,7 +117,7 @@ class MEA120GridVisualization(Visualization):
         for y in np.arange(cell_height, height, cell_height):
             self.grid.append((0, y), (width, y), Theme.grid_line)
 
-    def resample(self, bin_count=120):
+    def resample(self, bin_count=100):
         start_i = int(self.t0 * self.sample_rate)
         end_i = util.clip(start_i + int(self.dt * self.sample_rate),
                           start_i, sys.maxsize)
@@ -160,6 +158,7 @@ class MEA120GridVisualization(Visualization):
             x1, y1 = event.last_event.pos
             dx = x1 - x
             self.t0 += dx * sec_per_pixel
+            self.needs_update = True
 
         x, y = event.pos
         cell_width = self.canvas.size[0] / 12.0
@@ -206,6 +205,7 @@ class MEA120GridVisualization(Visualization):
 
         sec_per_pixel = self.dt / (self.canvas.size[0] / 12)
         self.t0 = target_time - (rel_x * sec_per_pixel)
+        self.needs_update = True
 
     def update_extra_text(self):
         if len(self.selected_electrodes) > 0:
@@ -215,7 +215,9 @@ class MEA120GridVisualization(Visualization):
             self.extra_text = ''
 
     def on_tick(self, event):
-        pass
+        if self.needs_update:
+            self.update()
+            self.needs_update = False
 
     def on_resize(self, event):
         self.create_grid()
