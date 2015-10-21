@@ -91,7 +91,7 @@ class MEA120GridVisualization(Visualization):
 
     @dt.setter
     def dt(self, val):
-        self._dt = util.clip(val, 0.0025, 10)
+        self._dt = util.clip(val, 0.0025, 30)
         self.mouse_t = self._t0
 
     @property
