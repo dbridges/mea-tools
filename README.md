@@ -46,7 +46,7 @@ Open a data file for viewing in the MEA Viewer application. MEA Viewer displays 
 
 The MEA Viewer application allows you to seemlesly move between spike data and analog data. As you switch views the time window of displayed data is maintained for easy comparison.
 
-![alt tag](http://dl.dropboxusercontent.com/u/4497111/mea_viewer.png "MEA Viewer Screenshot")
+![MEA Viwer screenshot](http://mea-data.s3-website-us-east-1.amazonaws.com/mea_viewer.png)
 
 ##### Raster
 
