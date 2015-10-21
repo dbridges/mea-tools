@@ -117,7 +117,7 @@ class MEA120GridVisualization(Visualization):
         for y in np.arange(cell_height, height, cell_height):
             self.grid.append((0, y), (width, y), Theme.grid_line)
 
-    def resample(self, bin_count=100):
+    def resample(self, bin_count=150):
         start_i = int(self.t0 * self.sample_rate)
         end_i = util.clip(start_i + int(self.dt * self.sample_rate),
                           start_i, sys.maxsize)
