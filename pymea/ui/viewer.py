@@ -8,6 +8,7 @@ from pymea.ui.visualizations import (MEA120GridVisualization,
                                      RasterPlotVisualization,
                                      FlashingSpikeVisualization,
                                      MEA120ConductionVisualization)
+import pymea.rsc  # noqa
 
 import pandas as pd
 from vispy import app, gloo, visuals
@@ -77,11 +78,11 @@ class VisualizationCanvas(app.Canvas):
 
     def show_conduction(self):
         if (self.visualization is self.analog_grid_vis and
-                    self.visualization is not None):
+                self.visualization is not None):
             selected_electrodes = \
                 self.analog_grid_vis.selected_electrodes
         elif (self.visualization is self.analog_vis and
-                    self.visualization is not None and
+                self.visualization is not None and
               len(self.analog_vis.electrodes) > 1):
             selected_electrodes = \
                 self.analog_vis.electrodes[:2]
@@ -195,6 +196,8 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
     def __init__(self, analog_file, spike_file, start_vis, parent=None):
         super().__init__(parent)
 
+        splash = QtGui.QSplashScreen(QtGui.QPixmap(':/splash.png'))
+        splash.show()
         self.analog_file = analog_file
         self.spike_file = spike_file
 
@@ -230,6 +233,8 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         self.load_settings()
 
         self.setWindowTitle('MEA Viewer - ' + os.path.basename(filepath))
+
+        splash.finish(self)
 
     def load_settings(self):
         # Load gui settings and restore window geometery
@@ -449,8 +454,42 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         sys.exit()
 
 
+def get_file():
+    fname = QtGui.QFileDialog.getOpenFileName(
+        None,
+        'Open datafile',
+        os.path.expanduser('~/Desktop'),
+        'HDF5 or CSV file (*.h5 *.csv)')
+    if os.path.exists(fname):
+        spike_file = None
+        analog_file = None
+        spike_file = None
+        analog_file = None
+        if fname.endswith('.csv'):
+            spike_file = fname
+            if os.path.exists(fname[:-4] + '.h5'):
+                analog_file = fname[:-4] + '.h5'
+        elif fname.endswith('.h5'):
+            analog_file = fname
+            if os.path.exists(fname[:-3] + '.csv'):
+                spike_file = fname[:-3] + '.csv'
+        else:
+            raise IOError('Invalid input file, must be of type csv or h5.')
+
+        if fname.endswith('csv'):
+            show = 'raster'
+        else:
+            show = 'analog'
+
+        return (analog_file, spike_file, show)
+    else:
+        raise IOError('Invalid input file, must be of type csv or h5.')
+
+
 def run(analog_file, spike_file, start_vis):
     appQt = QtGui.QApplication(sys.argv)
+    if analog_file is None and spike_file is None:
+        analog_file, spike_file, start_vis = get_file()
     win = MainWindow(analog_file, spike_file, start_vis)
     win.show()
     if platform.system() == 'Darwin':

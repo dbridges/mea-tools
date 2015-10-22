@@ -25,3 +25,6 @@ update:
 	git pull
 	$(PYTHON) setup.py build_ext $(DFLAGS) --inplace
 	@echo "done."
+
+resources:
+	pyrcc4 -py3 pymea/rsc/resources.qrc -o pymea/rsc.py
