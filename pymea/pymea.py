@@ -15,11 +15,11 @@ from scipy import interpolate
 
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
-from skimage.feature import peak_local_max
 
 from . import util
 from . import optics
 from . import mea_cython
+from .skimage_sub import peak_local_max
 
 __all__ = ['MEARecording', 'MEASpikeDict', 'coordinates_for_electrode',
            'tag_for_electrode', 'condense_spikes', 'bandpass_filter',
