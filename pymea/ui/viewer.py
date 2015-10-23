@@ -196,7 +196,7 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
     def __init__(self, analog_file, spike_file, start_vis, parent=None):
         super().__init__(parent)
 
-        splash = QtGui.QSplashScreen(QtGui.QPixmap(':/splash.png'))
+        splash = QtGui.QSplashScreen(QtGui.QPixmap(':/splash@2x.png'))
         splash.show()
         self.analog_file = analog_file
         self.spike_file = spike_file

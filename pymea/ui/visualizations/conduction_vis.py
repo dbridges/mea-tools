@@ -156,20 +156,32 @@ class MEA120ConductionVisualization(Visualization):
             self.grid.append((0, y), (width, y), Theme.grid_line)
 
     def resample(self):
-        if len(self.selected_electrodes) != 2:
+        if len(self.selected_electrodes) < 1:
             return
+        elif len(self.selected_electrodes) == 2:
+            keys = self.selected_electrodes
+            keys = [keys[0], keys[1]]
+            rest = list(self.analog_data.columns.values)
+            rest.remove(keys[0])
+            rest.remove(keys[1])
+            keys.extend(rest)
 
-        keys = self.selected_electrodes
-        keys = [keys[0], keys[1]]
-        rest = list(self.analog_data.columns.values)
-        rest.remove(keys[0])
-        rest.remove(keys[1])
-        keys.extend(rest)
+            waveforms = mea.extract_conduction_windows(
+                keys,
+                self.spike_data,
+                self.analog_data,
+                self.time_window / 1000)
+        else:
+            # just use first electrode
+            waveforms = {}
+            times = self.spike_data[self.selected_electrodes[0]][:200].time
+            for key in self.analog_data.columns.values:
+                waveforms[key] = mea.extract_waveforms(
+                    self.analog_data[key],
+                    times,
+                    window_len=self.time_window / 1000,
+                    upsample=1)
 
-        waveforms = mea.extract_conduction_windows(
-            keys, self.spike_data, self.analog_data, self.time_window / 1000)
-
-        dt = self.analog_data['a8'].index[1] - self.analog_data['a8'].index[0]
         pt_count = len(waveforms['a8'][0])
 
         # Only show first 50 waves, but average all of them
