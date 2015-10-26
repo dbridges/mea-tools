@@ -98,7 +98,7 @@ class MEAAnalogVisualization(Visualization):
         self._scale = 1
         self.mouse_t = 0
         self.electrode = ''
-        self.electrodes = ['h11']  # l5, m5
+        self.selected_electrodes = ['h11']  # l5, m5
         self.strip_program = gloo.Program(self.STRIP_VERTEX_SHADER,
                                           self.STRIP_FRAGMENT_SHADER)
         self.strip_program['u_color'] = Theme.blue
@@ -162,11 +162,11 @@ class MEAAnalogVisualization(Visualization):
     def y_scale(self, val):
         self._y_scale = val
         self.strip_program['u_adj_y_scale'] = 1 / (
-            self._y_scale * len(self.electrodes))
-        self.strip_program['u_height'] = 2.0 / len(self.electrodes)
+            self._y_scale * len(self.selected_electrodes))
+        self.strip_program['u_height'] = 2.0 / len(self.selected_electrodes)
         self.point_program['u_adj_y_scale'] = 1 / (
-            self._y_scale * len(self.electrodes))
-        self.point_program['u_height'] = 2.0 / len(self.electrodes)
+            self._y_scale * len(self.selected_electrodes))
+        self.point_program['u_height'] = 2.0 / len(self.selected_electrodes)
         self.update()
 
     @property
@@ -201,7 +201,7 @@ class MEAAnalogVisualization(Visualization):
         zs = []
         spike_data = []
         spike_colors = []
-        for i, e in enumerate(self.electrodes):
+        for i, e in enumerate(self.selected_electrodes):
             x = self.analog_data[e].index.values.astype(np.float32)
             if self.filtered:
                 y = mea.bandpass_filter(self.analog_data[e],
@@ -265,8 +265,8 @@ class MEAAnalogVisualization(Visualization):
                                                      event.pos)))
         self.mouse_t = self.t0 + sec_per_pixel * x
         try:
-            self.electrode = self.electrodes[int(
-                y // (self.canvas.size[1] / len(self.electrodes)))]
+            self.electrode = self.selected_electrodes[int(
+                y // (self.canvas.size[1] / len(self.selected_electrodes)))]
         except IndexError:
             self.electrode = ''
 

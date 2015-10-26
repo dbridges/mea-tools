@@ -226,3 +226,4 @@ class MEA120GridVisualization(Visualization):
         self.selected_electrodes = []
         self.update_extra_text()
         self.canvas.disable_antialiasing()
+        self.needs_update = True

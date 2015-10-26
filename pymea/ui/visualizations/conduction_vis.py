@@ -93,7 +93,7 @@ class MEA120ConductionVisualization(Visualization):
             self.analog_data.index[1] - self.analog_data.index[0])
         self.measuring = False
         self.measure_start = (0, 0)
-        self.measure_line = visuals.LineVisual(np.array(((0, 0), (100, 100))),
+        self.measure_line = visuals.LineVisual(np.array(((0, 0), (0, 0))),
                                                Theme.yellow,
                                                method='agg')
 
@@ -302,3 +302,4 @@ class MEA120ConductionVisualization(Visualization):
 
     def on_show(self):
         self.canvas.enable_antialiasing()
+        self.measure_line.draw(self.canvas.tr_sys)

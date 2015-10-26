@@ -82,10 +82,9 @@ class VisualizationCanvas(app.Canvas):
             selected_electrodes = \
                 self.analog_grid_vis.selected_electrodes
         elif (self.visualization is self.analog_vis and
-                self.visualization is not None and
-              len(self.analog_vis.electrodes) > 1):
+                self.visualization is not None):
             selected_electrodes = \
-                self.analog_vis.electrodes[:2]
+                self.analog_vis.selected_electrodes
         else:
             selected_electrodes = []
         if self.conduction_vis is None:
@@ -114,8 +113,8 @@ class VisualizationCanvas(app.Canvas):
             self.analog_vis.dt = self.visualization.dt
             self.visualization.on_hide()
         self.visualization = self.analog_vis
-        self.analog_vis.electrodes = [s.lower() for s in
-                                      self.analog_grid_vis.selected_electrodes]
+        self.analog_vis.selected_electrodes = [
+            s.lower() for s in self.analog_grid_vis.selected_electrodes]
         self.analog_vis.y_scale = self.analog_grid_vis.y_scale
         self.visualization.on_show()
         self.controller.on_show_analog()
