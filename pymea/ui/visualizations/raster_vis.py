@@ -225,11 +225,11 @@ class RasterPlotVisualization(Visualization):
         x, y = event.pos
         sec_per_pixel = self.dt / self.canvas.size[0]
         if event.is_dragging:
-            if event.button == 1:
+            if event.button == 1 and 'shift' not in event.modifiers:
                 x1, y1 = event.last_event.pos
                 dx = x1 - x
                 self.t0 += dx * sec_per_pixel
-            elif event.button == 2:
+            elif event.button == 1 and 'shift' in event.modifiers:
                 self.measuring = True
                 self.update_extra_text(sec_per_pixel *
                                        np.abs(x - self.measure_start[0]))
@@ -284,7 +284,7 @@ class RasterPlotVisualization(Visualization):
 
     def on_mouse_press(self, event):
         self.velocity = 0
-        if event.button == 2:
+        if event.button == 1 and 'shift' in event.modifiers:
             self.measure_start = event.pos
 
     def on_mouse_double_click(self, event):
@@ -309,7 +309,7 @@ class RasterPlotVisualization(Visualization):
         self.canvas.enable_antialiasing()
         if len(self.selected_electrodes) > 0:
             self.selected_electrodes = [e for e in self.spike_data.keys()
-                                        if e.split('.')[0] in self.selected_electrodes]
+                                        if e.split('.')[0] in self.selected_electrodes]  # noqa
             self.display_selected = True
             self.resample()
 
@@ -319,7 +319,7 @@ class RasterPlotVisualization(Visualization):
     def update_extra_text(self, measurement=None):
         if len(self.selected_electrodes) > 0:
             selected_str = ('Selected: %s' %
-                               ', '.join(self.selected_electrodes))
+                            ', '.join(self.selected_electrodes))
         else:
             selected_str = ''
         if measurement is None:

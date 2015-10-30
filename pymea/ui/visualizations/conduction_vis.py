@@ -257,7 +257,10 @@ class MEA120ConductionVisualization(Visualization):
 
         sec_per_pixel = self.scale[0] / self.canvas.size[0] * 12
 
-        if event.is_dragging and event.button == 2:
+        if event.button != 1:
+            return
+
+        if event.is_dragging and 'shift' in event.modifiers:
             self.measuring = True
             self.extra_text = 'dt: %1.1f ms' % (
                 sec_per_pixel * (x%cell_width - self.measure_start[0]%cell_width))
@@ -268,7 +271,7 @@ class MEA120ConductionVisualization(Visualization):
         self.canvas.show_analog_grid()
 
     def on_mouse_press(self, event):
-        if event.button == 2:
+        if event.button == 1 and 'shift' in event.modifiers:
             self.measure_start = event.pos
 
     def on_mouse_release(self, event):

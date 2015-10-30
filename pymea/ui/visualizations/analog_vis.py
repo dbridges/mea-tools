@@ -13,6 +13,8 @@ import pymea as mea
 from .base import Visualization, Theme
 import pymea.util as util
 
+from PyQt4 import QtGui, QtCore  # noqa
+
 
 class MEAAnalogVisualization(Visualization):
     STRIP_VERTEX_SHADER = """
@@ -254,10 +256,10 @@ class MEAAnalogVisualization(Visualization):
         x1, y1 = event.last_event.pos
         sec_per_pixel = self.dt / self.canvas.size[0]
         if event.is_dragging:
-            if event.button == 1:
+            if event.button == 1 and 'shift' not in event.modifiers:
                 dx = x1 - x
                 self.t0 += dx * sec_per_pixel
-            elif event.button == 2:
+            elif event.button == 1 and 'shift' in event.modifiers:
                 self.measuring = True
                 self.extra_text = 'dt: %1.4f' % (
                     sec_per_pixel * np.abs(x - self.measure_start[0]))
@@ -274,12 +276,21 @@ class MEAAnalogVisualization(Visualization):
         if event.button == 1:
             dx = self.canvas.mouse_pos[0] - self.canvas.prev_mouse_pos[0]
             self.velocity = self.dt * dx / self.canvas.size[0]
+        elif event.button == 2:
+            menu = QtGui.QMenu(None)
+            menu.addAction('Show Multi-electrode Signal')
+            try:
+                action = menu.exec_(event.native.globalPos())
+                if action.text() == 'Show Multi-electrode Signal':
+                    self.canvas.show_conduction()
+            except RuntimeError:
+                pass
         self.measuring = False
         self.extra_text = ''
 
     def on_mouse_press(self, event):
         self.velocity = 0
-        if event.button == 2:
+        if event.button == 1 and 'shift' in event.modifiers:
             self.measure_start = event.pos
 
     def on_mouse_wheel(self, event):
