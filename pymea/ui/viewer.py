@@ -76,17 +76,18 @@ class VisualizationCanvas(app.Canvas):
         self.visualization.on_show()
         self.controller.on_show_analog_grid()
 
-    def show_conduction(self):
-        if (self.visualization is self.analog_grid_vis and
-                self.visualization is not None):
-            selected_electrodes = \
-                self.analog_grid_vis.selected_electrodes
-        elif (self.visualization is self.analog_vis and
-                self.visualization is not None):
-            selected_electrodes = \
-                self.analog_vis.selected_electrodes
-        else:
-            selected_electrodes = []
+    def show_conduction(self, selected_electrodes=None):
+        if selected_electrodes is None:
+            if (self.visualization is self.analog_grid_vis and
+                    self.visualization is not None):
+                selected_electrodes = \
+                    self.analog_grid_vis.selected_electrodes
+            elif (self.visualization is self.analog_vis and
+                    self.visualization is not None):
+                selected_electrodes = \
+                    self.analog_vis.selected_electrodes
+            else:
+                selected_electrodes = []
         if self.conduction_vis is None:
             self.conduction_vis = MEA120ConductionVisualization(
                 self, self.controller.analog_data,
