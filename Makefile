@@ -1,4 +1,4 @@
-.PHONY: inline ui clean update
+.PHONY: inline ui clean update resources test
 
 OS := $(shell uname)
 
@@ -28,3 +28,6 @@ update:
 
 resources:
 	pyrcc4 -py3 pymea/rsc/resources.qrc -o pymea/rsc.py
+
+test:
+	python3 ~/mea-tools/mea-runner.py view ~/Dropbox/neuron/mea/pymea/2014-10-30_I9119_Stimulate_D3.h5
