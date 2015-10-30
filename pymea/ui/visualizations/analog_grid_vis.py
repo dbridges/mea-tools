@@ -14,6 +14,8 @@ from .base import LineCollection, Visualization, Theme
 import pymea as mea
 import pymea.util as util
 
+from PyQt4 import QtGui, QtCore  # noqa
+
 
 class MEA120GridVisualization(Visualization):
     VERTEX_SHADER = """
@@ -177,12 +179,22 @@ class MEA120GridVisualization(Visualization):
         self.canvas.show_analog()
 
     def on_mouse_release(self, event):
-        if 'shift' in event.modifiers:
+        if event.button == 1 and 'shift' in event.modifiers:
             if self.electrode in self.selected_electrodes:
                 self.selected_electrodes.remove(self.electrode)
             else:
                 self.selected_electrodes.append(self.electrode)
             self.update_extra_text()
+        elif event.button == 2:
+            menu = QtGui.QMenu(None)
+            menu.addAction('Show Multi-electrode Signal')
+            try:
+                action = menu.exec_(event.native.globalPos())
+                if action.text() == 'Show Multi-electrode Signal':
+                    self.canvas.show_conduction([self.electrode])
+            except RuntimeError:
+                pass
+
 
     def on_key_release(self, event):
         if event.key == 'Enter' and len(self.selected_electrodes) > 0:
