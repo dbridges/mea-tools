@@ -135,7 +135,7 @@ class MEA120ConductionVisualization(Visualization):
 
     @property
     def selected_electrodes(self):
-        return self._selected_electrodes
+        return [e.split('.')[0] for e in self._selected_electrodes]
 
     @selected_electrodes.setter
     def selected_electrodes(self, val):
@@ -157,10 +157,10 @@ class MEA120ConductionVisualization(Visualization):
             self.grid.append((0, y), (width, y), Theme.grid_line)
 
     def resample(self):
-        if len(self.selected_electrodes) < 1:
+        if len(self._selected_electrodes) < 1:
             return
-        elif len(self.selected_electrodes) == 2:
-            keys = self.selected_electrodes
+        elif len(self._selected_electrodes) == 2:
+            keys = self._selected_electrodes
             keys = [keys[0], keys[1]]
             rest = list(self.analog_data.columns.values)
             rest.remove(keys[0])
@@ -174,7 +174,7 @@ class MEA120ConductionVisualization(Visualization):
                 self.time_window / 1000)
         else:
             # just use first electrode
-            electrode = self.selected_electrodes[0]
+            electrode = self._selected_electrodes[0]
             if '.' in electrode:
                 times = self.spike_data[electrode][:200].time
             else:
@@ -273,7 +273,7 @@ class MEA120ConductionVisualization(Visualization):
                                                  event.pos)))
 
     def on_mouse_double_click(self, event):
-        self.canvas.show_analog_grid()
+        self.canvas.show_previous()
 
     def on_mouse_press(self, event):
         if event.button == 1 and 'shift' in event.modifiers:

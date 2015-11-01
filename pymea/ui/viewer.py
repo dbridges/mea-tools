@@ -28,10 +28,11 @@ class VisualizationCanvas(app.Canvas):
         self.flashing_spike_vis = None
         self.conduction_vis = None
 
+        self.previous_vis = None
         self.visualization = None
 
         self.tr_sys = visuals.transforms.TransformSystem(self)
-        self._timer = app.Timer(1 / 30, connect=self.on_tick, start=True)
+        self._timer = app.Timer(1/30.0, connect=self.on_tick, start=True)
 
         self.mouse_pos = (0, 0)
         self.prev_mouse_pos = (0, 0)
@@ -43,6 +44,7 @@ class VisualizationCanvas(app.Canvas):
         if self.visualization is not None:
             self.raster_vis.t0 = self.visualization.t0
             self.raster_vis.dt = self.visualization.dt
+            self.previous_vis = self.visualization
             self.visualization.on_hide()
         self.visualization = self.raster_vis
         if selected is not None:
@@ -57,6 +59,7 @@ class VisualizationCanvas(app.Canvas):
         if self.visualization is not None:
             self.flashing_spike_vis.t0 = self.visualization.t0
             self.flashing_spike_vis.dt = self.visualization.dt
+            self.previous_vis = self.visualization
             self.visualization.on_hide()
         self.visualization = self.flashing_spike_vis
         self.visualization.on_show()
@@ -69,6 +72,7 @@ class VisualizationCanvas(app.Canvas):
         if self.visualization is not None:
             self.analog_grid_vis.t0 = self.visualization.t0
             self.analog_grid_vis.dt = self.visualization.dt
+            self.previous_vis = self.visualization
             self.visualization.on_hide()
         self.analog_grid_vis.y_scale = \
             self.controller.analogScaleSpinBox.value()
@@ -95,6 +99,7 @@ class VisualizationCanvas(app.Canvas):
         if self.visualization is not None:
             self.conduction_vis.t0 = self.visualization.t0
             self.conduction_vis.dt = self.visualization.dt
+            self.previous_vis = self.visualization
             self.visualization.on_hide()
         self.visualization = self.conduction_vis
         self.visualization.on_show()
@@ -112,6 +117,7 @@ class VisualizationCanvas(app.Canvas):
         if self.visualization is not None:
             self.analog_vis.t0 = self.visualization.t0
             self.analog_vis.dt = self.visualization.dt
+            self.previous_vis = self.visualization
             self.visualization.on_hide()
         self.visualization = self.analog_vis
         self.analog_vis.selected_electrodes = [
@@ -119,6 +125,27 @@ class VisualizationCanvas(app.Canvas):
         self.analog_vis.y_scale = self.analog_grid_vis.y_scale
         self.visualization.on_show()
         self.controller.on_show_analog()
+
+    def show_previous(self):
+        if self.previous_vis is None:
+            return
+        self.previous_vis.selected_electrodes = \
+            self.visualization.selected_electrodes
+        self.previous_vis.t0 = self.visualization.t0
+        self.previous_vis.dt = self.visualization.dt
+        self.visualization.on_hide()
+        self.visualization = self.previous_vis
+        self.visualization.on_show()
+        if isinstance(self.visualization, MEAAnalogVisualization):
+            self.controller.on_show_analog()
+        elif isinstance(self.visualization, MEA120GridVisualization):
+            self.controller.on_show_analog_grid()
+        elif isinstance(self.visualization, MEA120ConductionVisualization):
+            self.controller.on_show_conduction()
+        elif isinstance(self.visualization, FlashingSpikeVisualization):
+            self.controller.on_show_flashing_spike()
+        elif isinstance(self.visualization, RasterPlotVisualization):
+            self.controller.on_show_raster()
 
     def _normalize(self, x_y):
         x, y = x_y

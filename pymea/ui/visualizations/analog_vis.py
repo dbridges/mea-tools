@@ -252,6 +252,24 @@ class MEAAnalogVisualization(Visualization):
         self.pan = self.t0
         self.scale = (2.0 / self.dt, 1 / self._y_scale)
 
+    def selected_unit(self):
+        """
+        Returns the electrode + unit number (i.e. h11.0), of the closest spike
+        to the mouse.
+        """
+        # Get label of electrode closest to mouse for selected
+        # channel.
+        df = self.raw_data[
+            self.raw_data.electrode.str.startswith(
+                self.electrode + '.')]
+        if len(df) == 0:
+            # We probably don't have spike sorted data, so just return the
+            # electrode.
+            return self.electrode
+        electrode = df.iloc[
+            (df.time - self.mouse_t).abs().argsort()].iloc[0].electrode
+        return electrode
+
     def on_mouse_move(self, event):
         x, y = event.pos
         x1, y1 = event.last_event.pos
@@ -278,25 +296,13 @@ class MEAAnalogVisualization(Visualization):
             dx = self.canvas.mouse_pos[0] - self.canvas.prev_mouse_pos[0]
             self.velocity = self.dt * dx / self.canvas.size[0]
         elif event.button == 2:
-            t = self.mouse_t
+            unit = self.selected_unit()
             menu = QtGui.QMenu(None)
-            menu.addAction('Show Multi-electrode Signal')
+            menu.addAction('Show Multi-electrode Signal (%s)' % unit.upper())
             try:
                 action = menu.exec_(event.native.globalPos())
-                if action.text() == 'Show Multi-electrode Signal':
-                    if len(self.selected_electrodes) == 1:
-                        # Get label of electrode closest to mouse for selected
-                        # channel.
-                        df = self.raw_data[
-                            self.raw_data.electrode.str.startswith(
-                                self.electrode + '.')]
-                        electrode = df.iloc[
-                            (df.time - t).abs().argsort()].iloc[0].electrode  # noqa
-                        self.canvas.show_conduction([electrode])
-                    else:
-                        # If showing more than 1 channel, then just use the
-                        # normal ordering.
-                        self.canvas.show_conduction()
+                if action.text().startswith('Show Multi-electrode Signal'):
+                    self.canvas.show_conduction([unit])
             except RuntimeError:
                 pass
             except AttributeError:
