@@ -91,6 +91,7 @@ class MEAAnalogVisualization(Visualization):
         super().__init__()
         self.canvas = canvas
         self.analog_data = analog_data
+        self.raw_data = spike_data
         self.spike_data = mea.MEASpikeDict(spike_data)
         self.show_spikes = False
         self._t0 = 0
@@ -277,13 +278,28 @@ class MEAAnalogVisualization(Visualization):
             dx = self.canvas.mouse_pos[0] - self.canvas.prev_mouse_pos[0]
             self.velocity = self.dt * dx / self.canvas.size[0]
         elif event.button == 2:
+            t = self.mouse_t
             menu = QtGui.QMenu(None)
             menu.addAction('Show Multi-electrode Signal')
             try:
                 action = menu.exec_(event.native.globalPos())
                 if action.text() == 'Show Multi-electrode Signal':
-                    self.canvas.show_conduction()
+                    if len(self.selected_electrodes) == 1:
+                        # Get label of electrode closest to mouse for selected
+                        # channel.
+                        df = self.raw_data[
+                            self.raw_data.electrode.str.startswith(
+                                self.electrode + '.')]
+                        electrode = df.iloc[
+                            (df.time - t).abs().argsort()].iloc[0].electrode  # noqa
+                        self.canvas.show_conduction([electrode])
+                    else:
+                        # If showing more than 1 channel, then just use the
+                        # normal ordering.
+                        self.canvas.show_conduction()
             except RuntimeError:
+                pass
+            except AttributeError:
                 pass
         self.measuring = False
         self.extra_text = ''

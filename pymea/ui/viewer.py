@@ -495,7 +495,7 @@ def run(analog_file, spike_file, start_vis):
     if platform.system() == 'Darwin':
         try:
             os.system(
-                '''osascript -e 'tell app "Finder" to set frontmost of process "python" to true' ''')  # noqa
+                '''osascript -e 'tell app "Finder" to set frontmost of process "python3" to true' ''')  # noqa
         except:
             pass
     appQt.exec_()

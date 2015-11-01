@@ -4,7 +4,6 @@
 # Originally written by Daniel Bridges
 
 
-import sys
 import math
 
 import numpy as np
@@ -69,9 +68,12 @@ class MEA120ConductionVisualization(Visualization):
         super().__init__()
         self.canvas = canvas
         self.analog_data = analog_data
-        prespikes = spike_data
+        self.spike_data = mea.MEASpikeDict(spike_data)
+
+        prespikes = spike_data.copy()
         prespikes.electrode = prespikes.electrode.str.split('.').str.get(0)
-        self.spike_data = mea.MEASpikeDict(prespikes)
+        self.condensed_spike_data = mea.MEASpikeDict(prespikes)
+
         self._t0 = 0
         self._dt = 20
         self.mouse_t = 0
@@ -121,7 +123,6 @@ class MEA120ConductionVisualization(Visualization):
     @time_window.setter
     def time_window(self, val):
         self._time_window = val
-        self.update()
 
     @property
     def scale(self):
@@ -168,13 +169,17 @@ class MEA120ConductionVisualization(Visualization):
 
             waveforms = mea.extract_conduction_windows(
                 keys,
-                self.spike_data,
+                self.condensed_spike_data,
                 self.analog_data,
                 self.time_window / 1000)
         else:
             # just use first electrode
+            electrode = self.selected_electrodes[0]
+            if '.' in electrode:
+                times = self.spike_data[electrode][:200].time
+            else:
+                times = self.condensed_spike_data[electrode][:200].time
             waveforms = {}
-            times = self.spike_data[self.selected_electrodes[0]][:200].time
             for key in self.analog_data.columns.values:
                 waveforms[key] = mea.extract_waveforms(
                     self.analog_data[key],
@@ -263,7 +268,7 @@ class MEA120ConductionVisualization(Visualization):
         if event.is_dragging and 'shift' in event.modifiers:
             self.measuring = True
             self.extra_text = 'dt: %1.1f ms' % (
-                sec_per_pixel * (x%cell_width - self.measure_start[0]%cell_width))
+                sec_per_pixel * (x % cell_width - self.measure_start[0] % cell_width))
             self.measure_line.set_data(np.array((self.measure_start,
                                                  event.pos)))
 
