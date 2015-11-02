@@ -14,7 +14,7 @@ import pymea as mea
 import pymea.util as util
 
 
-class MEA120ConductionVisualization(Visualization):
+class MEAConductionVisualization(Visualization):
     VERTEX_SHADER = """
     attribute vec4 a_position;
     attribute vec4 a_color;
@@ -22,6 +22,8 @@ class MEA120ConductionVisualization(Visualization):
     uniform float u_width;
     uniform vec2 u_pan;
     uniform vec2 u_scale;
+    uniform float u_rows;
+    uniform float u_columns;
 
     varying vec2 v_index;
     varying vec4 v_color;
@@ -29,8 +31,8 @@ class MEA120ConductionVisualization(Visualization):
 
     void main (void)
     {
-        float height = 2.0 / 12.0;
-        float width = 2.0 / 12.0;
+        float height = 2.0 / u_rows;
+        float width = 2.0 / u_columns;
         float y_scale = height / (2 * u_scale.y);
         vec2 pan = vec2(-1, -1);
 
@@ -88,6 +90,8 @@ class MEA120ConductionVisualization(Visualization):
         self.program['a_position'] = [[0, 0, 0, 0]]
         self.program['a_color'] = [[0, 0, 0, 0]]
         self.program['u_width'] = 100
+        self.program['u_rows'] = self.canvas.layout.rows
+        self.program['u_columns'] = self.canvas.layout.columns
         self.grid = LineCollection()
         self.create_grid()
         self.electrode_cols = [c for c in 'ABCDEFGHJKLM']
@@ -146,8 +150,8 @@ class MEA120ConductionVisualization(Visualization):
         self.grid.clear()
         width = self.canvas.size[0]
         height = self.canvas.size[1]
-        cell_width = width / 12
-        cell_height = height / 12
+        cell_width = width / self.canvas.layout.columns
+        cell_height = height / self.canvas.layout.rows
 
         # vertical lines
         for x in np.arange(cell_width, width, cell_width):
@@ -204,8 +208,8 @@ class MEA120ConductionVisualization(Visualization):
         flip = False
         opacity = 0.16 - 0.0001 * waveform_count
         for electrode, waves in waveforms.items():
-            col, row = mea.coordinates_for_electrode(electrode)
-            row = 12 - row - 1
+            col, row = self.canvas.layout.coordinates_for_electrode(electrode)
+            row = self.canvas.layout.rows - row - 1
             for i, wave in enumerate(waves):
                 flip = i % 2 == 1
                 if flip:
@@ -213,7 +217,7 @@ class MEA120ConductionVisualization(Visualization):
                 data[n:n+pt_count] = np.transpose([
                     [col]*pt_count,
                     [row]*pt_count,
-                    np.arange(pt_count, 0, -1) if flip else np.arange(pt_count),
+                    np.arange(pt_count, 0, -1) if flip else np.arange(pt_count),  # noqa
                     wave
                 ])
                 colors[n:n+pt_count] = np.array((0.4, 0.4, 0.4, opacity))
@@ -227,7 +231,7 @@ class MEA120ConductionVisualization(Visualization):
             data[n:n+pt_count] = np.transpose([
                 [col]*pt_count,
                 [row]*pt_count,
-                np.arange(pt_count, 0, -1) if not flip else np.arange(pt_count),
+                np.arange(pt_count, 0, -1) if not flip else np.arange(pt_count),  # noqa
                 avg_wave
             ])
             colors[n:n+pt_count] = np.array(Theme.black)
@@ -251,16 +255,19 @@ class MEA120ConductionVisualization(Visualization):
     def on_mouse_move(self, event):
         x, y = event.pos
 
-        cell_width = self.canvas.size[0] / 12.0
-        cell_height = self.canvas.size[1] / 12.0
+        cell_width = self.canvas.size[0] / self.canvas.layout.columns
+        cell_height = self.canvas.size[1] / self.canvas.layout.rows
         col = int(x / cell_width)
         row = int(y / cell_height + 1)
-        if row < 1 or row > 12 or col < 0 or col > 11:
+        if (row < 1 or row > self.canvas.layout.rows or
+                col < 0 or col > self.canvas.layout.columns - 1):
             self.electrode = ''
         else:
-            self.electrode = mea.tag_for_electrode((col, row))
+            self.electrode = \
+                self.canvas.layout.electrode_for_coordinate((col, row))
 
-        sec_per_pixel = self.scale[0] / self.canvas.size[0] * 12
+        sec_per_pixel = (self.scale[0] / self.canvas.size[0] *
+                         self.layout.columns)
 
         if event.button != 1:
             return
@@ -268,7 +275,8 @@ class MEA120ConductionVisualization(Visualization):
         if event.is_dragging and 'shift' in event.modifiers:
             self.measuring = True
             self.extra_text = 'dt: %1.1f ms' % (
-                sec_per_pixel * (x % cell_width - self.measure_start[0] % cell_width))
+                sec_per_pixel * (x % cell_width -
+                                 self.measure_start[0] % cell_width))
             self.measure_line.set_data(np.array((self.measure_start,
                                                  event.pos)))
 

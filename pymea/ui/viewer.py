@@ -7,7 +7,7 @@ from pymea.ui.visualizations import (MEAGridVisualization,
                                      MEAAnalogVisualization,
                                      RasterPlotVisualization,
                                      FlashingSpikeVisualization,
-                                     MEA120ConductionVisualization)
+                                     MEAConductionVisualization)
 from pymea.ui.layouts import MCS120Layout
 import pymea.rsc  # noqa
 
@@ -97,7 +97,7 @@ class VisualizationCanvas(app.Canvas):
             else:
                 selected_electrodes = []
         if self.conduction_vis is None:
-            self.conduction_vis = MEA120ConductionVisualization(
+            self.conduction_vis = MEAConductionVisualization(
                 self, self.controller.analog_data,
                 self.controller.spike_data)
         if self.visualization is not None:
@@ -144,7 +144,7 @@ class VisualizationCanvas(app.Canvas):
             self.controller.on_show_analog()
         elif isinstance(self.visualization, MEAGridVisualization):
             self.controller.on_show_analog_grid()
-        elif isinstance(self.visualization, MEA120ConductionVisualization):
+        elif isinstance(self.visualization, MEAConductionVisualization):
             self.controller.on_show_conduction()
         elif isinstance(self.visualization, FlashingSpikeVisualization):
             self.controller.on_show_flashing_spike()
