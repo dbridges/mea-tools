@@ -255,10 +255,11 @@ class MEAAnalogVisualization(Visualization):
     def selected_unit(self):
         """
         Returns the electrode + unit number (i.e. h11.0), of the closest spike
-        to the mouse.
+        to the mouse if it is within 8 px.
         """
         # Get label of electrode closest to mouse for selected
         # channel.
+        t = self.mouse_t
         df = self.raw_data[
             self.raw_data.electrode.str.startswith(
                 self.electrode + '.')]
@@ -266,9 +267,13 @@ class MEAAnalogVisualization(Visualization):
             # We probably don't have spike sorted data, so just return the
             # electrode.
             return self.electrode
-        electrode = df.iloc[
-            (df.time - self.mouse_t).abs().argsort()].iloc[0].electrode
-        return electrode
+        row = df.iloc[(df.time - t).abs().argsort()].iloc[0]
+        tdiff = np.abs(row.time - t)
+        px_per_sec = self.canvas.size[0] / self.dt
+        if tdiff * px_per_sec < 8:
+            return row.electrode
+        else:
+            return self.electrode
 
     def on_mouse_move(self, event):
         x, y = event.pos
