@@ -3,11 +3,12 @@ import sys
 import platform
 
 import pymea.pymea as mea
-from pymea.ui.visualizations import (MEA120GridVisualization,
+from pymea.ui.visualizations import (MEAGridVisualization,
                                      MEAAnalogVisualization,
                                      RasterPlotVisualization,
                                      FlashingSpikeVisualization,
                                      MEA120ConductionVisualization)
+from pymea.ui.layouts import MCS120Layout
 import pymea.rsc  # noqa
 
 import pandas as pd
@@ -18,7 +19,7 @@ from .main_window import Ui_MainWindow
 
 
 class VisualizationCanvas(app.Canvas):
-    def __init__(self, controller):
+    def __init__(self, controller, layout='mcs_120'):
         app.Canvas.__init__(self, vsync=True)
         self.controller = controller
 
@@ -36,6 +37,9 @@ class VisualizationCanvas(app.Canvas):
 
         self.mouse_pos = (0, 0)
         self.prev_mouse_pos = (0, 0)
+
+        if layout == 'mcs_120':
+            self.layout = MCS120Layout()
 
     def show_raster(self, selected=None):
         if self.raster_vis is None:
@@ -67,7 +71,7 @@ class VisualizationCanvas(app.Canvas):
 
     def show_analog_grid(self):
         if self.analog_grid_vis is None:
-            self.analog_grid_vis = MEA120GridVisualization(
+            self.analog_grid_vis = MEAGridVisualization(
                 self, self.controller.analog_data)
         if self.visualization is not None:
             self.analog_grid_vis.t0 = self.visualization.t0
@@ -138,7 +142,7 @@ class VisualizationCanvas(app.Canvas):
         self.visualization.on_show()
         if isinstance(self.visualization, MEAAnalogVisualization):
             self.controller.on_show_analog()
-        elif isinstance(self.visualization, MEA120GridVisualization):
+        elif isinstance(self.visualization, MEAGridVisualization):
             self.controller.on_show_analog_grid()
         elif isinstance(self.visualization, MEA120ConductionVisualization):
             self.controller.on_show_conduction()

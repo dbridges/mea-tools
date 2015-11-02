@@ -17,7 +17,7 @@ import pymea.util as util
 from PyQt4 import QtGui, QtCore  # noqa
 
 
-class MEA120GridVisualization(Visualization):
+class MEAGridVisualization(Visualization):
     VERTEX_SHADER = """
     attribute vec4 a_position;
 
@@ -25,12 +25,15 @@ class MEA120GridVisualization(Visualization):
     uniform vec2 u_pan;
     uniform float u_y_scale;
 
+    uniform float u_rows;
+    uniform float u_columns;
+
     varying vec2 v_index;
 
     void main (void)
     {
-        float height = 2.0 / 12.0;
-        float width = 2.0 / 12.0;
+        float height = 2.0 / u_rows;
+        float width = 2.0 / u_columns;
         float scale = height / (2 * u_y_scale);
         vec2 pan = vec2(-1, -1);
 
@@ -70,6 +73,8 @@ class MEA120GridVisualization(Visualization):
                                     self.FRAGMENT_SHADER)
         self.program['u_color'] = Theme.blue
         self.program['u_y_scale'] = self._y_scale
+        self.program['u_rows'] = self.canvas.layout.rows
+        self.program['u_columns'] = self.canvas.layout.columns
         self.grid = LineCollection()
         self.create_grid()
         self.electrode_cols = [c for c in 'ABCDEFGHJKLM']
@@ -109,8 +114,8 @@ class MEA120GridVisualization(Visualization):
         self.grid.clear()
         width = self.canvas.size[0]
         height = self.canvas.size[1]
-        cell_width = width / 12
-        cell_height = height / 12
+        cell_width = width / self.canvas.layout.columns
+        cell_height = height / self.canvas.layout.rows
 
         # vertical lines
         for x in np.arange(cell_width, width, cell_width):
@@ -133,8 +138,8 @@ class MEA120GridVisualization(Visualization):
         for i, column in enumerate(self.data):
             v = mea.min_max_bin(self.data[column].values[start_i:end_i],
                                 bin_size, bin_count+1)
-            col, row = mea.coordinates_for_electrode(column)
-            row = 12 - row - 1
+            col, row = self.canvas.layout.coordinates_for_electrode(column)
+            row = self.canvas.layout.rows - row - 1
             x = np.full_like(v, col, dtype=np.float32)
             y = np.full_like(v, row, dtype=np.float32)
             t = np.arange(0, bin_count, 0.5, dtype=np.float32)
@@ -155,7 +160,8 @@ class MEA120GridVisualization(Visualization):
 
     def on_mouse_move(self, event):
         x, y = event.pos
-        sec_per_pixel = self.dt / (self.canvas.width / 12.0)
+        sec_per_pixel = (self.dt /
+                         (self.canvas.width / self.canvas.layout.columns))
         if event.is_dragging:
             x1, y1 = event.last_event.pos
             dx = x1 - x
@@ -163,14 +169,16 @@ class MEA120GridVisualization(Visualization):
             self.needs_update = True
 
         x, y = event.pos
-        cell_width = self.canvas.size[0] / 12.0
-        cell_height = self.canvas.size[1] / 12.0
+        cell_width = self.canvas.size[0] / self.canvas.layout.columns
+        cell_height = self.canvas.size[1] / self.canvas.layout.rows
         col = int(x / cell_width)
         row = int(y / cell_height + 1)
-        if row < 1 or row > 12 or col < 0 or col > 11:
+        if (row < 1 or row > self.canvas.layout.rows or
+                col < 0 or col > self.canvas.layout.columns - 1):
             self.electrode = ''
         else:
-            self.electrode = mea.tag_for_electrode((col, row))
+            self.electrode = \
+                self.canvas.layout.electrode_for_coordinate((col, row))
         self.mouse_t = self.t0 + sec_per_pixel * (x % cell_width)
 
     def on_mouse_double_click(self, event):
@@ -207,14 +215,17 @@ class MEA120GridVisualization(Visualization):
             self.canvas.show_raster(selected=self.selected_electrodes)
 
     def on_mouse_wheel(self, event):
-        sec_per_pixel = self.dt / (self.canvas.size[0] / 12)
-        rel_x = event.pos[0] % (self.canvas.size[0] / 12)
+        sec_per_pixel = (self.dt /
+                         (self.canvas.size[0] / self.canvas.layout.columns))
+        rel_x = event.pos[0] % (self.canvas.size[0] /
+                                self.canvas.layout.columns)
 
         target_time = rel_x * sec_per_pixel + self.t0
         dx = -np.sign(event.delta[1]) * 2*self.scroll_factor
         self.dt *= math.exp(2.5 * dx)
 
-        sec_per_pixel = self.dt / (self.canvas.size[0] / 12)
+        sec_per_pixel = (self.dt /
+                         (self.canvas.size[0] / self.canvas.layout.columns))
         self.t0 = target_time - (rel_x * sec_per_pixel)
         self.needs_update = True
 
