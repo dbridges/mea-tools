@@ -94,7 +94,6 @@ class MEAConductionVisualization(Visualization):
         self.program['u_columns'] = self.canvas.layout.columns
         self.grid = LineCollection()
         self.create_grid()
-        self.electrode_cols = [c for c in 'ABCDEFGHJKLM']
         self.sample_rate = 1.0 / (
             self.analog_data.index[1] - self.analog_data.index[0])
         self.measuring = False
@@ -202,7 +201,7 @@ class MEAConductionVisualization(Visualization):
             waveform_count = 50
 
         data = np.empty(
-            (channel_count * pt_count * (waveform_count + 2), 4),  # noqa
+            (channel_count * pt_count * (waveform_count + 2), 4),
             dtype=np.float32)
         colors = np.empty_like(data)
         flip = False
@@ -215,8 +214,8 @@ class MEAConductionVisualization(Visualization):
                 if flip:
                     wave = wave[::-1]
                 data[n:n+pt_count] = np.transpose([
-                    [col]*pt_count,
-                    [row]*pt_count,
+                    np.full((pt_count,), col),
+                    np.full((pt_count,), row),
                     np.arange(pt_count, 0, -1) if flip else np.arange(pt_count),  # noqa
                     wave
                 ])
@@ -229,8 +228,8 @@ class MEAConductionVisualization(Visualization):
             else:
                 avg_wave = waves.mean(0)[::-1]
             data[n:n+pt_count] = np.transpose([
-                [col]*pt_count,
-                [row]*pt_count,
+                np.full((pt_count,), col),
+                np.full((pt_count,), row),
                 np.arange(pt_count, 0, -1) if not flip else np.arange(pt_count),  # noqa
                 avg_wave
             ])

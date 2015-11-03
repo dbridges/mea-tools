@@ -128,7 +128,6 @@ class MEAAnalogVisualization(Visualization):
     def t0(self, val):
         self._t0 = util.clip(val, 0 - self.dt/2,
                              self.analog_data.index[-1] - self.dt/2)
-        self.update()
 
     @property
     def dt(self):
@@ -137,7 +136,6 @@ class MEAAnalogVisualization(Visualization):
     @dt.setter
     def dt(self, val):
         self._dt = util.clip(val, 0.0025, self.analog_data.index[-1])
-        self.update()
 
     @property
     def pan(self):
@@ -170,7 +168,6 @@ class MEAAnalogVisualization(Visualization):
         self.point_program['u_adj_y_scale'] = 1 / (
             self._y_scale * len(self.selected_electrodes))
         self.point_program['u_height'] = 2.0 / len(self.selected_electrodes)
-        self.update()
 
     @property
     def filtered(self):

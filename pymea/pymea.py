@@ -21,10 +21,9 @@ from . import optics
 from . import mea_cython
 from .skimage_sub import peak_local_max
 
-__all__ = ['MEARecording', 'MEASpikeDict', 'coordinates_for_electrode',
-           'tag_for_electrode', 'condense_spikes', 'bandpass_filter',
-           'export_spikes', 'tag_conductance_spikes', 'cofiring_events',
-           'choose_keep_electrode', 'extract_waveforms',
+__all__ = ['MEARecording', 'MEASpikeDict', 'condense_spikes',
+           'bandpass_filter', 'export_spikes', 'tag_conductance_spikes',
+           'cofiring_events', 'choose_keep_electrode', 'extract_waveforms',
            'export_conduction_waveforms', 'extract_conduction_windows']
 
 
@@ -255,81 +254,6 @@ class MEASpikeDict:
         else:
             self.spike_order.sort(key=lambda e: key(self.spike_dict[e]),
                                   reverse=reverse)
-
-
-def coordinates_for_electrode(tag):
-    """
-    Returns MEA coordinates for electrode label.
-
-    Parameters
-    ----------
-    tag : str
-        The electrode label, i.e. A8 or C6
-
-    Returns
-    -------
-    coordinates : tuple
-        A tuple of length 2 giving the x and y coordinate of
-        that electrode.
-    """
-    tag = tag.lower()
-    if tag.startswith('analog'):
-        if tag.endswith('1'):
-            return (0, 0)
-        elif tag.endswith('2'):
-            return (1, 0)
-        elif tag.endswith('3'):
-            return (10, 0)
-        elif tag.endswith('4'):
-            return (11, 0)
-        elif tag.endswith('5'):
-            return (0, 11)
-        elif tag.endswith('6'):
-            return (1, 11)
-        elif tag.endswith('7'):
-            return (10, 11)
-        elif tag.endswith('8'):
-            return (11, 11)
-    cols = {'a':  0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5, 'g': 6,
-            'h': 7, 'j': 8, 'k': 9, 'l': 10, 'm': 11}
-    return (cols[tag[0]], int(tag[1:]) - 1)
-
-
-def tag_for_electrode(coords):
-    """
-    Returns MEA tag for electrode coordinates.
-
-    Parameters
-    ----------
-    coords : tuple
-        The electrode coordinates.
-
-    Returns
-    -------
-    tag : str
-        The electrode name.
-    """
-    lookup = {0: 'a', 1: 'b', 2: 'c', 3: 'd', 4: 'e', 5: 'f', 6: 'g', 7: 'h',
-              8: 'j', 9: 'k', 10: 'l', 11: 'm'}
-    tag = lookup[coords[0]] + str(coords[1])
-    if tag == 'a1':
-        return 'analog1'
-    elif tag == 'b1':
-        return 'analog2'
-    elif tag == 'l1':
-        return 'analog3'
-    elif tag == 'm1':
-        return 'analog4'
-    elif tag == 'a12':
-        return 'analog5'
-    elif tag == 'b12':
-        return 'analog6'
-    elif tag == 'l12':
-        return 'analog7'
-    elif tag == 'm12':
-        return 'analog8'
-    else:
-        return tag
 
 
 ################################

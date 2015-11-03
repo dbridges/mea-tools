@@ -169,8 +169,9 @@ class VisualizationCanvas(app.Canvas):
         try:
             gl.glDisable(gl.GL_LINE_SMOOTH)
             gl.glDisable(gl.GL_BLEND)
+            gl.glDisable(gl.GL_DEPTH_TEST)
         except:
-            pass
+            raise
 
     def on_resize(self, event):
         self.width, self.height = event.size
