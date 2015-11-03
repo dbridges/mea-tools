@@ -9,7 +9,6 @@ from vispy import gloo, visuals
 from vispy.visuals.shaders import ModularProgram
 
 from .base import Visualization, Theme
-import pymea as mea
 import pymea.util as util
 
 
@@ -54,18 +53,6 @@ class FlashingSpikeVisualization(Visualization):
     }
     """
 
-    mea_outline = np.array(
-        [[3.0, 0.0], [9.0, 0.0], [9.0, 1.0],
-         [10.0, 1.0], [10.0, 2.0], [11.0, 2.0],
-         [11.0, 3.0], [12.0, 3.0], [12.0, 9.0],
-         [11.0, 9.0], [11.0, 10.0], [10.0, 10.0],
-         [10.0, 11.0], [9.0, 11.0], [9.0, 12.0],
-         [3.0, 12.0], [3.0, 11.0], [2.0, 11.0],
-         [2.0, 10.0], [1.0, 10.0], [1.0, 9.0],
-         [0.0, 9.0], [0.0, 3.0], [1.0, 3.0],
-         [1.0, 2.0], [2.0, 2.0], [2.0, 1.0],
-         [3.0, 1.0], [3.0, 0.0]], dtype=np.float32)
-
     def __init__(self, canvas, spike_data):
         super().__init__()
         self.canvas = canvas
@@ -77,8 +64,12 @@ class FlashingSpikeVisualization(Visualization):
         self._interval = 1 / 30.0
         self.electrode = ''
         self.time_scale = 1 / 200
-        self._vert = np.zeros((120 * 6, 2), dtype=np.float32)
-        self._color = np.zeros(120 * 6, dtype=np.float32)
+
+        # Each quad is drawn as two triangles, so need 6 vertices per electrode
+        self._vert = np.zeros((self.canvas.layout.count * 6, 2),
+                              dtype=np.float32)
+        self._color = np.zeros(self.canvas.layout.count * 6,
+                               dtype=np.float32)
         self.electrodes = []
         self.spikes = spike_data.copy()
         self.spikes.electrode = self.spikes.electrode.str.extract('(\w+)\.*')
@@ -91,7 +82,6 @@ class FlashingSpikeVisualization(Visualization):
         self.program['a_color'] = self._color
         self.program.vert['transform'] = canvas.tr_sys.get_full_transform()
         self.outline = visuals.LineVisual(color=Theme.yellow)
-        self.electrode_cols = [c for c in 'ABCDEFGHJKLM']
         self._rescale_outline()
         self.extra_text = ''
 
@@ -115,11 +105,13 @@ class FlashingSpikeVisualization(Visualization):
         self._dt = util.clip(val, 0.0025, self.spikes.time.max())
 
     def _create_vertex_data(self):
-        self._vert = np.zeros((120*6, 2), dtype=np.float32)
+        self._vert = np.zeros((self.canvas.layout.count*6, 2),
+                              dtype=np.float32)
+        half_cols = self.canvas.layout.columns / 2
         for i, e in enumerate(self.electrodes):
-            x, y = mea.coordinates_for_electrode(e.tag)
-            size = self.canvas.size[1] / 14
-            x = self.canvas.size[0] / 2 - 6 * size + x * size
+            x, y = self.canvas.layout.coordinates_for_electrode(e.tag)
+            size = self.canvas.size[1] / (self.canvas.layout.rows + 2)
+            x = self.canvas.size[0] / 2 - half_cols * size + x * size
             y = y * size + size
             self._vert[6*i] = [x, y]
             self._vert[6*i + 1] = [x + size, y]
@@ -129,9 +121,10 @@ class FlashingSpikeVisualization(Visualization):
             self._vert[6*i + 5] = [x, y + size]
 
     def _rescale_outline(self):
-        size = self.canvas.size[1] / 14
-        self.outline.set_data(self.mea_outline * size +
-                              [self.canvas.size[0] / 2 - 6*size, size])
+        size = self.canvas.size[1] / (self.canvas.layout.rows + 2)
+        self.outline.set_data(self.canvas.layout.outline * size +
+                              [self.canvas.size[0] / 2 -
+                               self.canvas.layout.columns*size / 2, size])
 
     def draw(self):
         gloo.clear((0.0, 0.0, 0.0, 1))
@@ -177,10 +170,14 @@ class FlashingSpikeVisualization(Visualization):
 
     def on_mouse_move(self, event):
         x, y = event.pos
-        cell_size = self.canvas.size[1] / 14
-        row = int((y - cell_size) / cell_size) + 1
-        col = int((x - self.canvas.width/2) / cell_size + 6)
-        if row < 1 or row > 12 or col < 0 or col > 11:
+        size = self.canvas.size[1] / (self.canvas.layout.rows + 2)
+        row = int((y - size) / size) + 1
+        col = int((x - self.canvas.width/2) / size +
+                  (self.canvas.layout.columns / 2))
+        if (row < 1 or row > self.canvas.layout.rows or
+                col < 0 or col > self.canvas.layout.columns):
             self.electrode = ''
         else:
-            self.electrode = '%s%d' % (self.electrode_cols[col], row)
+            self.electrode = (
+                '%s' %
+                self.canvas.layout.electrode_for_coordinate((col, row)))

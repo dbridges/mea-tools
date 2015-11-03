@@ -3,7 +3,7 @@
 # Hansma Lab, Kosik Lab
 # Originally written by Daniel Bridges
 
-
+import numpy as np
 from .base import Layout
 
 
@@ -40,6 +40,18 @@ class MCS120Layout(Layout):
         super().__init__()
         self.rows = 12
         self.columns = 12
+        self.count = 120
+        self.outline = np.array(
+            [[3.0, 0.0], [9.0, 0.0], [9.0, 1.0],
+             [10.0, 1.0], [10.0, 2.0], [11.0, 2.0],
+             [11.0, 3.0], [12.0, 3.0], [12.0, 9.0],
+             [11.0, 9.0], [11.0, 10.0], [10.0, 10.0],
+             [10.0, 11.0], [9.0, 11.0], [9.0, 12.0],
+             [3.0, 12.0], [3.0, 11.0], [2.0, 11.0],
+             [2.0, 10.0], [1.0, 10.0], [1.0, 9.0],
+             [0.0, 9.0], [0.0, 3.0], [1.0, 3.0],
+             [1.0, 2.0], [2.0, 2.0], [2.0, 1.0],
+             [3.0, 1.0], [3.0, 0.0]], dtype=np.float32)
 
     def coordinates_for_electrode(self, electrode):
         """
