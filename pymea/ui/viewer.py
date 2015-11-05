@@ -171,7 +171,7 @@ class VisualizationCanvas(app.Canvas):
             gl.glDisable(gl.GL_BLEND)
             gl.glDisable(gl.GL_DEPTH_TEST)
         except:
-            raise
+            pass
 
     def on_resize(self, event):
         self.width, self.height = event.size

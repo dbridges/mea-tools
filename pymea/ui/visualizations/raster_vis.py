@@ -70,7 +70,7 @@ class RasterPlotVisualization(Visualization):
         self.velocity = 0
         self.tick_separtion = 50
         self.tick_labels = [visuals.TextVisual('', font_size=10, color='w')
-                            for x in range(18)]
+                            for x in range(14)]
         self.tick_marks = LineCollection()
         self.mouse_t = 0
         self.extra_text = ''
