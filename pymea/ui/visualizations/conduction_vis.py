@@ -103,8 +103,6 @@ class MEAConductionVisualization(Visualization):
         self.measure_line = visuals.LineVisual(np.array(((0, 0), (0, 0))),
                                                Theme.yellow,
                                                method='agg')
-        self.calculate_thresholds()
-        self.show_thresholds = True
 
     @property
     def t0(self):
@@ -163,22 +161,6 @@ class MEAConductionVisualization(Visualization):
         for y in np.arange(cell_height, height, cell_height):
             self.grid.append((0, y), (width, y), Theme.grid_line)
 
-    def calculate_thresholds(self):
-        self.thresholds = collections.defaultdict(lambda: 0)
-
-        # Calculate thresholds
-        for electrode in self.analog_data.keys():
-            series = self.analog_data[electrode]
-            dt = series.index[1] - series.index[0]
-            amp = 6.0
-            fs_nyquist = (1.0/dt) / 2.0
-            input_data = series.values
-            bf, af = signal.butter(2, (200.0/fs_nyquist, 4000.0/fs_nyquist),
-                                   btype='bandpass')
-            data = signal.filtfilt(bf, af, input_data)
-            thresh = amp * np.median(np.absolute(data) / 0.6745)
-            self.thresholds[electrode] = thresh
-
     def resample(self):
         if len(self._selected_electrodes) < 1:
             return
@@ -220,14 +202,9 @@ class MEAConductionVisualization(Visualization):
         if waveform_count > 50:
             waveform_count = 50
 
-        if self.show_thresholds:
-            data = np.empty(
-                (channel_count * pt_count * (waveform_count + 4), 4),
-                dtype=np.float32)
-        else:
-            data = np.empty(
-                (channel_count * pt_count * (waveform_count + 2), 4),
-                dtype=np.float32)
+        data = np.empty(
+            (channel_count * pt_count * (waveform_count + 2), 4),
+            dtype=np.float32)
         colors = np.empty_like(data)
         flip = False
         opacity = 0.16 - 0.0001 * waveform_count
@@ -264,31 +241,6 @@ class MEAConductionVisualization(Visualization):
             ])
             colors[n:n+pt_count] = np.array(Theme.black)
             n += pt_count
-
-            if self.show_thresholds:
-                # Add the positive threshold
-                wave = [self.thresholds[electrode]]*pt_count
-                data[n:n+pt_count] = np.transpose([
-                    np.full((pt_count,), col),
-                    np.full((pt_count,), row),
-                    np.arange(pt_count, 0, -1) if flip else np.arange(pt_count),  # noqa
-                    wave
-                ])
-                colors[n:n+pt_count] = np.array(Theme.blue)
-                n += pt_count
-
-                flip = not flip
-
-                # Add the negative threshold
-                wave = [-self.thresholds[electrode]]*pt_count
-                data[n:n+pt_count] = np.transpose([
-                    np.full((pt_count,), col),
-                    np.full((pt_count,), row),
-                    np.arange(pt_count, 0, -1) if flip else np.arange(pt_count),  # noqa
-                    wave
-                ])
-                colors[n:n+pt_count] = np.array(Theme.blue)
-                n += pt_count
 
         self.program['u_width'] = pt_count
         self.program['a_position'] = data
