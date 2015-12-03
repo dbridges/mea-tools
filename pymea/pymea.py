@@ -406,9 +406,12 @@ def sort_spikes(dataframe, analog_data, standardize=False):
         rprime = reach[np.isfinite(reach)]
         if len(rprime) < 2:
             continue
-        thresh = 8.5*stats.tstd(rprime,
-                                (np.percentile(rprime, 15),
-                                 np.percentile(rprime, 85))) + np.median(rprime)  # noqa
+        try:
+            thresh = 8.5*stats.tstd(rprime,
+                                    (np.percentile(rprime, 15),
+                                    np.percentile(rprime, 85))) + np.median(rprime)  # noqa
+        except:
+            continue
         peaks = peak_local_max(reach, min_distance=4,
                                threshold_abs=thresh,
                                threshold_rel=0).flatten()

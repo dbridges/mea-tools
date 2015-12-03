@@ -218,7 +218,7 @@ class MEAConductionVisualization(Visualization):
                 data[n:n+pt_count] = np.transpose([
                     np.full((pt_count,), col),
                     np.full((pt_count,), row),
-                    np.arange(pt_count, 0, -1) if flip else np.arange(pt_count),  # noqa
+                    np.arange(pt_count - 1, -1, -1) if flip else np.arange(pt_count),  # noqa
                     wave
                 ])
                 colors[n:n+pt_count] = np.array((0.4, 0.4, 0.4, opacity))
@@ -236,7 +236,7 @@ class MEAConductionVisualization(Visualization):
             data[n:n+pt_count] = np.transpose([
                 np.full((pt_count,), col),
                 np.full((pt_count,), row),
-                np.arange(pt_count, 0, -1) if flip else np.arange(pt_count),
+                np.arange(pt_count - 1, -1, -1) if flip else np.arange(pt_count),  # noqa
                 avg_wave
             ])
             colors[n:n+pt_count] = np.array(Theme.black)
