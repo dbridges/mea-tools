@@ -5,10 +5,8 @@
 
 
 import math
-import collections
 
 import numpy as np
-from scipy import signal
 from vispy import visuals, gloo
 
 from .base import LineCollection, Visualization, Theme
@@ -211,6 +209,17 @@ class MEAConductionVisualization(Visualization):
         for electrode, waves in waveforms.items():
             col, row = self.canvas.layout.coordinates_for_electrode(electrode)
             row = self.canvas.layout.rows - row - 1
+
+            avg_wave = waves.mean(0)
+            try:
+                thresh = self.condensed_spike_data[electrode].threshold.iloc[0]
+            except:
+                thresh = 1e9
+            if np.abs(avg_wave).max() > np.abs(thresh):
+                color = np.array(Theme.red)
+            else:
+                color = np.array(Theme.black)
+
             for i, wave in enumerate(waves):
                 flip = i % 2 == 1
                 if flip:
@@ -221,7 +230,7 @@ class MEAConductionVisualization(Visualization):
                     np.arange(pt_count - 1, -1, -1) if flip else np.arange(pt_count),  # noqa
                     wave
                 ])
-                colors[n:n+pt_count] = np.array((0.4, 0.4, 0.4, opacity))
+                colors[n:n+pt_count] = color * np.array((1, 1, 1, opacity))
                 n += pt_count
                 if i >= waveform_count:
                     break
@@ -239,7 +248,8 @@ class MEAConductionVisualization(Visualization):
                 np.arange(pt_count - 1, -1, -1) if flip else np.arange(pt_count),  # noqa
                 avg_wave
             ])
-            colors[n:n+pt_count] = np.array(Theme.black)
+
+            colors[n:n+pt_count] = color
             n += pt_count
 
         self.program['u_width'] = pt_count

@@ -20,6 +20,7 @@ class Theme:
     light_gray = (0.9, 0.9, 0.9, 1.0)
     transparent_black = (0, 0, 0, 0.01)
     black = (0, 0, 0, 1.0)
+    red = (0.85, 0.06, 0.12, 1.0)
     grid_line = (0.7, 0.7, 0.7, 1.0)
     plot_colors = (yellow, purple, blue)
     background = (0.5, 0.5, 0.5, 1.0)
