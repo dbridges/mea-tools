@@ -16,7 +16,6 @@ import pymea.util as util
 
 from PyQt4 import QtGui, QtCore  # noqa
 
-
 class MEAGridVisualization(Visualization):
     VERTEX_SHADER = """
     attribute vec4 a_position;

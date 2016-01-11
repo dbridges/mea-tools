@@ -12,11 +12,11 @@ import pandas as pd
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-
 MEA_TOOLS_SETTINGS_DIR = os.path.expanduser('~/.mea-tools')
 
 if not os.path.exists(MEA_TOOLS_SETTINGS_DIR):
     os.makedirs(MEA_TOOLS_SETTINGS_DIR)
+
 
 logging.basicConfig(filename=os.path.join(MEA_TOOLS_SETTINGS_DIR, 'log.txt'),
                     level=logging.INFO)
