@@ -17,6 +17,11 @@ import numpy as np
 from sklearn.neighbors import BallTree
 from sklearn.base import BaseEstimator, ClusterMixin
 
+
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+
+
 # algo class #
 class setOfObjects(BallTree):
 

@@ -327,7 +327,7 @@ def detect_spikes(analog_data, amp=6.0, neg_only=False):
         p.insert(0, 'electrode', electrode)
         peaks.append(p)
     peaks = pd.concat(peaks, ignore_index=True)
-    return peaks.convert_objects(convert_numeric=True)
+    return peaks
 
 
 def extract_waveforms(series, times, window_len=0.003,
@@ -470,7 +470,7 @@ def cofiring_events(dataframe, min_sep=0.0005):
         separated by less than min_sep.
     """
     electrode_count = len(dataframe.electrode.unique())
-    sub_df = dataframe.sort('time')
+    sub_df = dataframe.sort_values(by='time')
     splits = np.concatenate([
         [0],
         np.where(np.diff(sub_df.time.values) > min_sep)[0] + 1,
@@ -527,7 +527,7 @@ def tag_conductance_spikes(df):
         sub_df = pd.concat([spikes[e1], spikes[e2]])
         try:
             cofiring = pd.concat(
-                [event.sort('electrode') for event
+                [event.sort_values(by='electrode') for event
                  in cofiring_events(sub_df, 0.0012)])
             diffs = cofiring.time.diff()
         except:

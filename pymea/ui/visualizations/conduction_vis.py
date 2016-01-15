@@ -225,8 +225,8 @@ class MEAConductionVisualization(Visualization):
                 if flip:
                     wave = wave[::-1]
                 data[n:n+pt_count] = np.transpose([
-                    np.full((pt_count,), col),
-                    np.full((pt_count,), row),
+                    np.full((pt_count,), col, dtype=np.float32),
+                    np.full((pt_count,), row, dtype=np.float32),
                     np.arange(pt_count - 1, -1, -1) if flip else np.arange(pt_count),  # noqa
                     wave
                 ])
@@ -243,8 +243,8 @@ class MEAConductionVisualization(Visualization):
 
             # Add the average wave
             data[n:n+pt_count] = np.transpose([
-                np.full((pt_count,), col),
-                np.full((pt_count,), row),
+                np.full((pt_count,), col, dtype=np.float32),
+                np.full((pt_count,), row, dtype=np.float32),
                 np.arange(pt_count - 1, -1, -1) if flip else np.arange(pt_count),  # noqa
                 avg_wave
             ])
