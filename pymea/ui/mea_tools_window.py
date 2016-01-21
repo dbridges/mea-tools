@@ -50,7 +50,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_4 = QtGui.QHBoxLayout()
         self.horizontalLayout_4.setObjectName(_fromUtf8("horizontalLayout_4"))
         self.filenameListWidget = QtGui.QListWidget(self.tab)
-        self.filenameListWidget.setSelectionMode(QtGui.QAbstractItemView.MultiSelection)
+        self.filenameListWidget.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
         self.filenameListWidget.setObjectName(_fromUtf8("filenameListWidget"))
         self.horizontalLayout_4.addWidget(self.filenameListWidget)
         self.verticalLayout = QtGui.QVBoxLayout()
