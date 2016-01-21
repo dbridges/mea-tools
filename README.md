@@ -4,6 +4,8 @@ Tools for viewing, analyzing, and processing multi-electrode array data.
 
 MEA Tools consists of three main components: (1) a Python module (pymea) and command line script for interacting with multi-electrode recordings, (2) a Python GUI application for high performance visualization of raw analog recordings and spike raster data, and (3) a Mathematica library for manipulating and analyzing analog and spike data.
 
+[Watch MEA Viewer](https://vimeo.com/143168058)
+
 ## Requirements
 
 MEA Tools requires:
@@ -36,7 +38,7 @@ export PYTHONPATH=$PYTHONPATH:$HOME/mea-tools
 
 ## PyMEA
 
-The core of the package is a Python 3 module, PyMEA, which has many components for interacting with data acquired by MultiChannel Systems software. Data files must be converted to HDF5 files using [MultiChannel Systems Data Manager]( http://www.multichannelsystems.com/software/multi-channel-datamanager) before they can be viewed or analyzed with PyMEA.
+The core of the package is a Python 3 module, PyMEA, which has many components for interacting with data acquired by MultiChannel Systems software. Data files must be converted to HDF5 files using [MultiChannel Systems Data Manager](http://www.multichannelsystems.com/software/multi-channel-datamanager) before they can be viewed or analyzed with PyMEA.
 
 ### MEA Script Commands
 
