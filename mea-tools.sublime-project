@@ -6,7 +6,17 @@
 				"make",
 				"test"
 			],
+			"working_dir": "${project_path}",
 			"name": "Make - Test"
+		},
+		{
+			"cmd":
+			[
+				"make",
+				"test-ui"
+			],
+			"working_dir": "${project_path}",
+			"name": "Make - Test Spike UI"
 		},
 		{
 			"cmd":
@@ -14,6 +24,7 @@
 				"make",
 				"inline"
 			],
+			"working_dir": "${project_path}",
 			"name": "Make - Cython"
 		},
 		{
