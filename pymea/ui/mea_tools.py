@@ -22,6 +22,7 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
 
         self.setWindowTitle('MEA Tools')
 
+        self.last_directory = os.path.expanduser('~')
         self.load_settings()
         self.directoryLabel.setText(self.last_directory)
         self.populateTable(self.last_directory)
