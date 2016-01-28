@@ -40,9 +40,9 @@ alias mea='python3 ~/mea-tools/mea-runner.py'
 export PYTHONPATH=$PYTHONPATH:$HOME/mea-tools
 ```
 
-## PyMEA
+## pymea
 
-The core of the package is a Python 3 module, PyMEA, which has many components for interacting with data acquired by MultiChannel Systems software. Data files must be converted to HDF5 files using [MultiChannel Systems Data Manager](http://www.multichannelsystems.com/software/multi-channel-datamanager) before they can be viewed or analyzed with PyMEA.
+The core of the package is a Python 3 module, pymea, which has many components for interacting with data acquired by MultiChannel Systems software. Data files must be converted to HDF5 files using [MultiChannel Systems Data Manager](http://www.multichannelsystems.com/software/multi-channel-datamanager) before they can be viewed or analyzed with pymea.
 
 ### MEA Viewer
 
