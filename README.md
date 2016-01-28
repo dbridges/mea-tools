@@ -2,9 +2,7 @@
 
 Tools for viewing, analyzing, and processing multi-electrode array data.
 
-MEA Tools consists of three main components: (1) a Python module (pymea) and command line script for interacting with multi-electrode recordings, (2) a Python GUI application for high performance visualization of raw analog recordings and spike raster data, and (3) a Mathematica library for manipulating and analyzing analog and spike data.
-
-[Watch MEA Viewer](https://vimeo.com/143168058)
+MEA Tools consists of three main components: (1) a Python module (pymea) and command line script for interacting with multi-electrode recordings, (2) a Python GUI application, [MEA Viewer](https://vimeo.com/143168058), for high performance visualization of raw analog recordings and spike raster data, and (3) a Mathematica library for manipulating and analyzing analog and spike data.
 
 ## Requirements
 
@@ -22,7 +20,13 @@ Typically it is easiest to install Anaconda Python 3.4 to obtain these packages.
 
 ## Installation
 
-Clone to a suitable directory:
+#### Windows
+Windows users can download an [installation package](http://mea-data.s3.amazonaws.com/MEA_Tools.zip) containing the GUI interfaces. If you would like access to the pymea python module follow the instructions for a Full Installation below. After downloading, unzip the folder to a suitable location. MEAViewer.exe provides an interface to the MEA Viewer tool described below, MEATools.exe provides an interface to the spike detection and sorting routines.
+
+#### Full Installation
+Follow these instructions if you want access to the pymea module for your own python programming, or if you are on Mac or Linux.
+
+Clone the repository to a suitable directory:
 
 ```shell
 cd ~
@@ -40,15 +44,25 @@ export PYTHONPATH=$PYTHONPATH:$HOME/mea-tools
 
 The core of the package is a Python 3 module, PyMEA, which has many components for interacting with data acquired by MultiChannel Systems software. Data files must be converted to HDF5 files using [MultiChannel Systems Data Manager](http://www.multichannelsystems.com/software/multi-channel-datamanager) before they can be viewed or analyzed with PyMEA.
 
+### MEA Viewer
+
+![alt tag](http://mea-data.s3.amazonaws.com/mea_viewer.png)
+
+The MEA Viewer application allows you to seemlesly interact with both spike data and analog data. As you switch views the time window of displayed data is maintained for easy comparison. Interactive visualizations of raw analog data, spike time stamp data, and interfaces to averaging repeated events to reveal a neuron's propagation signal across an array are provided.
+
+A video demo of [MEA Viewer](https://vimeo.com/143168058) is available.
+
+### MEA Tools GUI
+
+![alt tag](http://mea-data.s3.amazonaws.com/mea_tools.png)
+
+The MEA Tools GUI provides an interface to basic spike detection, sorting, and tagging of redundant signals attributed to propagation along an axon. Select a directory, then select the files you wish to run spike detection analysis on. CSV files will be generated and saved in the same directory as the source files.
+
 ### MEA Script Commands
 
 #### view
 
 Open a data file for viewing in the MEA Viewer application. MEA Viewer displays analog and spike data in an interactive application. Input data files should have a `*.h5` or `*.csv` file extension. All csv files should be built with the `detect` command listed below.
-
-The MEA Viewer application allows you to seemlesly move between spike data and analog data. As you switch views the time window of displayed data is maintained for easy comparison.
-
-![MEA Viwer screenshot](http://mea-data.s3-website-us-east-1.amazonaws.com/mea_viewer.png)
 
 ##### Raster
 
@@ -144,6 +158,10 @@ $ mea export_cond 2014-10-30_I9119_Stimulate_D3.h5 'h8,g8,g7'
 ```
 
 Uses h8 as the source electrode and finds all signals in g8 that occur within +- 0.7 ms. Once signals are found, it exports the raw analog data for a 5 ms window for each electrode given in the list. The datafiles are automatically labeled in accordance to the source file and the electrode.
+
+## Mac Extras
+
+Two applications in the `extras/mac` folder provide graphical user interfaces to the MEA Tools pacakge. Copy them to your `/Applications` folder. To work correctly MEA Tools must be installed at `~/mea-tools`
 
 ## Mathematica Tools
 
