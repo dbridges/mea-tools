@@ -2,7 +2,7 @@
 
 Tools for viewing, analyzing, and processing multi-electrode array data.
 
-MEA Tools consists of three main components: (1) a Python module (pymea) and command line script for interacting with multi-electrode recordings, (2) a Python GUI application, [MEA Viewer](https://vimeo.com/143168058), for high performance visualization of raw analog recordings and spike raster data, and (3) a Mathematica library for manipulating and analyzing analog and spike data.
+MEA Tools consists of three main components: (1) a Python module (pymea) and command line script for interacting with multi-electrode recordings, (2) a Python GUI application, [MEA Viewer](#mea-viewer), for high performance visualization of raw analog recordings and spike raster data, and (3) a Mathematica library for manipulating and analyzing analog and spike data.
 
 ## Requirements
 
@@ -21,7 +21,7 @@ Typically it is easiest to install Anaconda Python 3.4 to obtain these packages.
 ## Installation
 
 #### Windows
-Windows users can download an [installation package](http://mea-data.s3.amazonaws.com/MEA_Tools.zip) containing the GUI interfaces. If you would like access to the pymea python module follow the instructions for a Full Installation below. After downloading, unzip the folder to a suitable location. MEAViewer.exe provides an interface to the MEA Viewer tool described below, MEATools.exe provides an interface to the spike detection and sorting routines.
+Windows users can download an [installation package](http://mea-data.s3.amazonaws.com/MEA_Tools.zip) containing the GUI interfaces. If you would like access to the pymea python module follow the instructions for a Full Installation below. After downloading, unzip the folder to a suitable location. [MEAViewer.exe](#MEA-Viewer) provides an interface to the MEA Viewer tool described below, [MEATools.exe](#mea-tools-gui) provides an interface to the spike detection and sorting routines.
 
 #### Full Installation
 Follow these instructions if you want access to the pymea module for your own python programming, or if you are on Mac or Linux.
