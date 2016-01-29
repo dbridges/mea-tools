@@ -50,7 +50,7 @@ The core of the package is a Python 3 module, pymea, which has many components f
 
 The MEA Viewer application allows you to seemlesly interact with both spike data and analog data. As you switch views the time window of displayed data is maintained for easy comparison. Interactive visualizations of raw analog data, spike time stamp data, and interfaces to averaging repeated events to reveal a neuron's propagation signal across an array are provided.
 
-A video demo of [MEA Viewer](https://vimeo.com/143168058) is available.
+A [video demo](https://vimeo.com/143168058) of MEA Viewer is available.
 
 ### MEA Tools GUI
 
