@@ -219,17 +219,19 @@ class MEAAnalogVisualization(Visualization):
                                 if k.split('.')[0] == e]
             electrode_spikes.sort()
             for k, esub in enumerate(electrode_spikes):
+                sort_id = int(esub.split('.')[1])
                 for j, row in self.spike_data[esub].iterrows():
                     spike_data.append((row.time, row.amplitude, i))
                     try:
                         if row.conductance:
                             spike_colors.append(Theme.gray)
-                        elif esub.split('.')[1] == '-1':
+                        elif sort_id == -1:
+                            # Unsorted spikes in black.
                             spike_colors.append(Theme.black)
                         else:
-                            spike_colors.append(Theme.indexed(k))
+                            spike_colors.append(Theme.indexed(sort_id))
                     except AttributeError:
-                        spike_colors.append(Theme.indexed(k))
+                        spike_colors.append(Theme.indexed(sort_id))
 
         self.strip_program['a_position'] = np.column_stack(
             (np.concatenate(xs), np.concatenate(ys), np.concatenate(zs)))
