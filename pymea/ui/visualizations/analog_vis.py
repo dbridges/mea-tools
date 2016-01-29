@@ -216,7 +216,7 @@ class MEAAnalogVisualization(Visualization):
             # TODO vectorize this
             # find spikes for this electrode
             electrode_spikes = [k for k in self.spike_data.keys()
-                                if k.split('.')[0] == e and '-1' not in k]
+                                if k.split('.')[0] == e]
             electrode_spikes.sort()
             for k, esub in enumerate(electrode_spikes):
                 for j, row in self.spike_data[esub].iterrows():
@@ -224,6 +224,8 @@ class MEAAnalogVisualization(Visualization):
                     try:
                         if row.conductance:
                             spike_colors.append(Theme.gray)
+                        elif esub.split('.')[1] == '-1':
+                            spike_colors.append(Theme.black)
                         else:
                             spike_colors.append(Theme.indexed(k))
                     except AttributeError:
