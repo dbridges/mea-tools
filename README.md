@@ -21,7 +21,7 @@ Typically it is easiest to install Anaconda Python 3.4 to obtain these packages.
 ## Installation
 
 #### Windows
-Windows users can download an [installation package](http://mea-data.s3.amazonaws.com/MEA_Tools.zip) containing the GUI interfaces. If you would like access to the pymea python module follow the instructions for a Full Installation below. After downloading, unzip the folder to a suitable location. [MEAViewer.exe](#MEA-Viewer) provides an interface to the MEA Viewer tool described below, [MEATools.exe](#mea-tools-gui) provides an interface to the spike detection and sorting routines.
+Windows users can download an [installation package](http://mea-data.s3.amazonaws.com/MEA_Tools.zip) containing the GUI interfaces. If you would like access to the pymea python module follow the instructions for a Full Installation below. After downloading, unzip the folder to a suitable location. [MEAViewer.exe](#mea-viewer) provides an interface to the MEA Viewer tool described below, [MEATools.exe](#mea-tools-gui) provides an interface to the spike detection and sorting routines.
 
 #### Full Installation
 Follow these instructions if you want access to the pymea module for your own python programming, or if you are on Mac or Linux.
