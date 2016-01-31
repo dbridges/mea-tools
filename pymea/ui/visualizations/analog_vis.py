@@ -114,6 +114,11 @@ class MEAAnalogVisualization(Visualization):
         self.measure_start = (0, 0)
         self.measure_line = visuals.LineVisual(np.array(((0, 0), (100, 100))),
                                                Theme.yellow)
+        self.scale_bar = visuals.LineVisual(np.array(((10, 10), (200, 10))),
+                                            Theme.black,
+                                            width=10,
+                                            method='agg')
+        self.scale_label = visuals.TextVisual('', font_size=8)
         self.extra_text = ''
         self._filtered = False
         self._filter_cutoff = [200, 4000]
@@ -136,6 +141,22 @@ class MEAAnalogVisualization(Visualization):
     @dt.setter
     def dt(self, val):
         self._dt = util.clip(val, 0.0025, self.analog_data.index[-1])
+        frac = util.nearest_decimal(self.dt / 6)
+        multiplier = int(self.dt / 6 / frac)
+        width = frac * multiplier * self.canvas.width / self.dt
+        max_width = self.canvas.width / 6
+        center_x = self.canvas.width - max_width / 2 - 20
+
+        self.scale_bar.set_data(np.array(
+            ((center_x - width / 2, 20),
+             (center_x + width / 2, 20))))
+
+        self.scale_label.pos = (center_x, 40)
+        scale_val = multiplier * frac
+        if scale_val < 0.1:
+            self.scale_label.text = '%1.1f ms' % (1000 * multiplier * frac)
+        else:
+            self.scale_label.text = '%1.1f s' % (multiplier * frac)
 
     @property
     def pan(self):
@@ -194,6 +215,8 @@ class MEAAnalogVisualization(Visualization):
         if self.show_spikes and len(self.spike_data) > 0:
             self.point_program.draw('points')
         self.strip_program.draw('line_strip')
+        self.scale_bar.draw(self.canvas.tr_sys)
+        self.scale_label.draw(self.canvas.tr_sys)
 
     def resample(self):
         xs = []
@@ -219,19 +242,19 @@ class MEAAnalogVisualization(Visualization):
                                 if k.split('.')[0] == e]
             electrode_spikes.sort()
             for k, esub in enumerate(electrode_spikes):
-                sort_id = int(esub.split('.')[1])
+                unit_number = int(esub.split('.')[1])
                 for j, row in self.spike_data[esub].iterrows():
                     spike_data.append((row.time, row.amplitude, i))
                     try:
                         if row.conductance:
                             spike_colors.append(Theme.gray)
-                        elif sort_id == -1:
+                        elif unit_number == -1:
                             # Unsorted spikes in black.
                             spike_colors.append(Theme.black)
                         else:
-                            spike_colors.append(Theme.indexed(sort_id))
+                            spike_colors.append(Theme.indexed(unit_number))
                     except AttributeError:
-                        spike_colors.append(Theme.indexed(sort_id))
+                        spike_colors.append(Theme.indexed(unit_number))
 
         self.strip_program['a_position'] = np.column_stack(
             (np.concatenate(xs), np.concatenate(ys), np.concatenate(zs)))

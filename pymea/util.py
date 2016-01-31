@@ -1,5 +1,6 @@
 #!/usr/bin/enb python3
 
+import math
 
 def clip(val, minval, maxval):
     """
@@ -14,7 +15,7 @@ def clip(val, minval, maxval):
     maxval : number
         Uperr value to clamp to.
 
-    Retruns
+    Retunrs
     -------
     number
         The clamped value.
@@ -24,3 +25,19 @@ def clip(val, minval, maxval):
     if val > maxval:
         return maxval
     return val
+
+
+def nearest_decimal(val):
+    """
+    Returns the nearest decimal fraction of val.
+
+    Parameters
+    ----------
+    val : number
+        The input value.
+    """
+    log_val = math.log10(val)
+    if log_val > 0:
+        return math.pow(10, int(log_val))
+    else:
+        return math.pow(10, int(log_val - 1))
