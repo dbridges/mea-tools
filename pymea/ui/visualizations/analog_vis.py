@@ -242,7 +242,10 @@ class MEAAnalogVisualization(Visualization):
                                 if k.split('.')[0] == e]
             electrode_spikes.sort()
             for k, esub in enumerate(electrode_spikes):
-                unit_number = int(esub.split('.')[1])
+                try:
+                    unit_number = int(esub.split('.')[1])
+                except IndexError:
+                    unit_number = 0
                 for j, row in self.spike_data[esub].iterrows():
                     spike_data.append((row.time, row.amplitude, i))
                     try:
