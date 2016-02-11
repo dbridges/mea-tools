@@ -6,7 +6,7 @@ if __name__ == '__main__':
         if sys.argv[1].endswith('.csv'):
             pymea.ui.viewer.run(None, sys.argv[1], 'raster')
         elif sys.argv[1].endswith('.h5'):
-            pymea.ui.viewer.run(None, sys.argv[1], '')
+            pymea.ui.viewer.run(sys.argv[1], None, '')
         else:
             pymea.ui.viewer.run(None, None, '')  
     else:
