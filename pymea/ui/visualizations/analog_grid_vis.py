@@ -208,7 +208,7 @@ class MEAGridVisualization(Visualization):
         elif event.key == 'Escape':
             self.selected_electrodes = []
             self.update_extra_text()
-        elif event.key == 'c':
+        elif event.key == 'c' or event.key == 'p':
             self.canvas.show_conduction()
         elif event.key == 'r':
             self.canvas.show_raster(selected=self.selected_electrodes)

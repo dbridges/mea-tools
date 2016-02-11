@@ -2,9 +2,23 @@
 
 Tools for viewing, analyzing, and processing multi-electrode array data.
 
-MEA Tools consists of three main components: (1) a Python module (pymea) and command line script for interacting with multi-electrode recordings, (2) a Python GUI application, [MEA Viewer](#mea-viewer), for high performance visualization of raw analog recordings and spike raster data, and (3) a Mathematica library for manipulating and analyzing analog and spike data.
+MEA Tools consists of five main components including:
 
-## Requirements
+- `pymea`, a Python module for interacting with multi-electrode data within Python. 
+- A command line script for spike detection/spike sorting.
+- [MEA Viewer](#mea-viewer), a Python application for high performance visualization of raw analog recordings and spike raster data.
+- [MEA Tools](#mea-tools-gui), a Python application which provides an easy to use interface to the spike detection/spike sorting routines provided by the command line script.
+- A Mathematica library for manipulating and analyzing analog and spike data.
+
+## Installation
+
+#### Windows
+
+Windows users can [download the Windows executable](http://mea-tools.s3.amazonaws.com/MEA_Tools.zip) containing pre-compiled versions of the GUI programs [MEA Viewer](#mea-viewer) and [MEA Tools](#mea-tools-gui). This executable comes with Python and all required libraries, so no additional dependencies are needed. After downloading, unzip the folder to a suitable location. `MEAViewer.exe` provides an interface to the MEA Viewer application, `MEATools.exe` provides an interface to the spike detection and sorting routines. If you need access to the pymea Python module please follow the instructions for a Full Installation. 
+
+#### Full Installation
+
+Follow these instructions if you want access to the pymea module for your own Python programming, or if you are on Mac or Linux.
 
 MEA Tools requires:
 
@@ -17,14 +31,6 @@ MEA Tools requires:
 - PyOpenGL
 
 Typically it is easiest to install Anaconda Python 3.4 to obtain these packages.
-
-## Installation
-
-#### Windows
-Windows users can [download the Windows executable](http://mea-data.s3.amazonaws.com/MEA_Tools.zip) containing precompiled versions of the [GUI programs](#mea-viewer) MEA Viewer and MEA Tools. This executable comes with Python and all required libraries, so no additional dependencies are needed. After downloading, unzip the folder to a suitable location. [MEAViewer.exe](#mea-viewer) provides an interface to the MEA Viewer tool described below, [MEATools.exe](#mea-tools-gui) provides an interface to the spike detection and sorting routines. If you need access to the pymea Python module please follow the instructions for a Full Installation below. 
-
-#### Full Installation
-Follow these instructions if you want access to the pymea module for your own python programming, or if you are on Mac or Linux.
 
 Clone the repository to a suitable directory:
 
@@ -46,25 +52,70 @@ The core of the package is a Python 3 module, pymea, which has many components f
 
 ### MEA Viewer
 
-![alt tag](http://mea-data.s3.amazonaws.com/mea_viewer.png)
+![alt tag](http://mea-tools.s3.amazonaws.com/mea_viewer.png)
 
-The MEA Viewer application allows you to seemlesly interact with both spike data and analog data. As you switch views the time window of displayed data is maintained for easy comparison. Interactive visualizations of raw analog data, spike time stamp data, and interfaces to averaging repeated events to reveal a neuron's propagation signal across an array are provided.
+The MEA Viewer application allows you to seamlessly interact with both spike data and analog data. As you switch views the time window of displayed data is maintained for easy comparison. Interactive visualizations of raw analog data, spike time stamp data, and interfaces to averaging repeated events to reveal a neuron's propagation signal across an array are provided.
 
 A [video demo](https://vimeo.com/143168058) of MEA Viewer is available.
 
+#### Analog Grid View
+
+The analog grid view displays an overview of analog data for all channels.
+
+- `Drag` to pan through the dataset.
+- `Double-Click` on a channel to view it in the analog comparison view.
+- Select multiple electrodes by `Shift-clicking` on the desired channels, then press `Enter` to display them in the analog comparison view.
+- After selecting two electrodes you can press `p` to use them to define and view their propagation signal. See the section on the [propagation signal](#propagation-signal-view) for more information on how these signals are defined and displayed.
+
+#### Analog Comparison View
+
+The analog comparison view displays a selected number (typically 1-5) of channels for comparison. A CSV file is required for display of detected spike markers.
+
+- Detected spikes are color coded by sorting group. Spike markers in black indicate a failure in spike sorting for those events. 
+- `Drag` to pan through the data record.
+- `Scroll` to adjust the time scale.
+- `Shift-Drag` to measure time differences between points in the data record.
+- `Right Click` on a spike to display a menu allowing you to select a sorted spike group for use in the propagation signal view.
+- `Esc` to exit back to the analog grid view.
+- `Double-Click` to exit back to the analog grid view.
+- `b` to toggle the background color between gray and white.
+
+#### Propagation Signal View
+
+The propagation signal view superimposes and averages multiple spiking events occurring from a single neuron. A single neuron is defined either as a sorted group from a specific electrode, or by selecting two electrodes in the analog grid view and finding coincident (delta t < 0.7 ms) spiking events. A CSV file is required for the propagation view to work correctly.
+
+- `Scroll` to adjust the vertical scale.
+- `Shift-Scroll` to adjust the temporal scale.
+- `Shift-Drag` to measure time differences between waveforms. You can `Shift-Drag` from one point in one waveform to another point in a completely different waveform and the program will keep track of the correct time offsets.
+- `Esc` to exit back to the view you came from.
+
+#### Raster View
+
+The raster view displays an interactive raster plot of the spike time stamp data. A CSV file is required for the raster view to work.
+
+- `Drag` to pan data set.
+- `Scroll` to adjust time scale.
+- `Shift-Drag` to measure time differences.
+- `Shift-Click` to select specific rows, then press `Enter` to display only those rows.
+
+#### Flashing Spike View
+
+The flashing spike view displays a spatial-temporal visualization of spiking activity in an array.
+
+- `Space` to play/pause the animation. You may have to click inside the main window before these and other commands work.
+- `Left-Arrow` to jump back in time briefly.
+
 ### MEA Tools GUI
 
-![alt tag](http://mea-data.s3.amazonaws.com/mea_tools.png)
+![alt tag](http://mea-tools.s3.amazonaws.com/mea_tools.png)
 
-The MEA Tools GUI provides an interface to basic spike detection, sorting, and tagging of redundant signals attributed to propagation along an axon. Select a directory, then select the files you wish to run spike detection analysis on. CSV files will be generated and saved in the same directory as the source files.
+The MEA Tools GUI provides an interface to basic spike detection, sorting, and tagging of redundant signals attributed to propagation along an axon. Select a directory, then within the application select the files you wish to run spike detection analysis on. CSV files will be generated and saved in the same directory as the source files.
 
 ### MEA Script Commands
 
 #### view
 
-Open a data file for viewing in the MEA Viewer application. MEA Viewer displays analog and spike data in an interactive application. Input data files should have a `*.h5` or `*.csv` file extension. All csv files should be built with the `detect` command listed below.
-
-##### Raster
+Open a data file for viewing in the MEA Viewer application. MEA Viewer displays analog and spike data in an interactive application. Input data files should have a `*.h5` or `*.csv` file extension. All CSV files should be built with the `detect` command listed below or with the MEA Tools GUI interface.
 
 Show an interactive raster plot of spike data:
 
@@ -72,29 +123,11 @@ Show an interactive raster plot of spike data:
 mea view 2015-03-20_I9119.csv
 ```
 
-Use the mouse wheel to zoom in and out of time. Sort the raster rows by average firing rate or by latency from the left edge of the window. The latency sorting allows you to easily recognize repeating patterns of activity.
-
-##### Flashing Spike
-
-Once you have opened a spike file, you can change the view from the raster plot to a flashing spike display. This display slows down time, allowing you to view the patterns of activity. Each spike creates a flash at its electrode, which slowly fades out. First scroll the raster view so that the time of interest is on the far left edge. Then when you switch to the flashing spike view it will begin playing from this time.
-
-Click inside the view window, then press Space to start and stop playing. The current time is displayed in the status bar.
-
-##### Analog
-
 Interactively view an analog file:
 
 ```shell
 mea view 2015-03-20_I9119.h5
 ```
-
-This brings up a grid showing the analog data for all of the channels. From here you can drag left and right to move through the data file. You can compare multiple electrodes by Shift-clicking on them, then press Enter to bring up the analog comparison view. From here you can right click and drag to measure time differences. You can also overlay spike data to verify the accuracy of spike detection and sorting.
-
-##### Conduction
-
-The conduction view detects conduction signals from two electrodes, then extracts the analog data in a user selectable time window for each electrode. This data is aggregated, aligned, and superimposed to give a view of the signals read by each electrode for this one neuron.
-
-The easiest way to use the conduction view is by starting in the analog grid view, then select two channels and press 'C'. The first channel is used as the index, and the second is used as a test by seeing if a spike occurs within 0.7 ms for each spike in the first channel. Scroll to change y-scale, shift-scroll to change time window size.
 
 #### info
 
@@ -157,12 +190,16 @@ Export conduction traces.
 $ mea export_cond 2014-10-30_I9119_Stimulate_D3.h5 'h8,g8,g7'
 ```
 
-Uses h8 as the source electrode and finds all signals in g8 that occur within +- 0.7 ms. Once signals are found, it exports the raw analog data for a 5 ms window for each electrode given in the list. The datafiles are automatically labeled in accordance to the source file and the electrode.
+Uses h8 as the source electrode and finds all signals in g8 that occur within +- 0.7 ms. Once signals are found, it exports the raw analog data for a 5 ms window for each electrode given in the list. The data files are automatically labeled in accordance to the source file and the electrode.
 
 ## Mac Extras
 
-Two applications in the `extras/mac` folder provide graphical user interfaces to the MEA Tools pacakge. Copy them to your `/Applications` folder. To work correctly MEA Tools must be installed at `~/mea-tools`
+Two applications in the `extras/mac` folder provide graphical user interfaces to the MEA Tools package. Copy them to your `/Applications` folder. To work correctly MEA Tools must be installed at `~/mea-tools`
 
 ## Mathematica Tools
 
 A Mathematica library is also included to analyze analog and spike data, as well as to create useful static visualizations. See `mathematica/MEA_Examples.nb` for more information.
+
+## Sample Data
+
+Sample MEA data to verify correct operation of the various components is available [here](http://mea-tools.s3.amazonaws.com/MEAViewerSampleData.zip).
