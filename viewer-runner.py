@@ -8,6 +8,6 @@ if __name__ == '__main__':
         elif sys.argv[1].endswith('.h5'):
             pymea.ui.viewer.run(sys.argv[1], None, '')
         else:
-            pymea.ui.viewer.run(None, None, '')  
+            pymea.ui.viewer.run(None, None, '')
     else:
         pymea.ui.viewer.run(None, None, '')

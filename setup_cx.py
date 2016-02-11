@@ -43,8 +43,8 @@ import sys
 base = 'Win32GUI' if sys.platform == 'win32' else None
 
 executables = [
-    Executable('viewer-runner.py', base=None, targetName='MEAViewer.exe'),
-    Executable('mea_tools_runner.py', base=None, targetName='MEATools.exe')
+    Executable('viewer-runner.py', base=base, targetName='MEAViewer.exe'),
+    Executable('mea_tools_runner.py', base=base, targetName='MEATools.exe')
 ]
 
 setup(name='MEA Viewer',
