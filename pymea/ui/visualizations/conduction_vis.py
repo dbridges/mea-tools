@@ -289,7 +289,7 @@ class MEAConductionVisualization(Visualization):
 
         if event.is_dragging and 'shift' in event.modifiers:
             self.measuring = True
-            self.extra_text = 'dt: %1.1f ms' % (
+            self.extra_text = 'dt: %1.2f ms' % (
                 sec_per_pixel * (x % cell_width -
                                  self.measure_start[0] % cell_width))
             self.measure_line.set_data(np.array((self.measure_start,
