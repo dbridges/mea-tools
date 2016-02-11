@@ -49,6 +49,6 @@ executables = [
 
 setup(name='MEA Viewer',
       version='1.0',
-      description='Visualize electrophysiological data.',
-      options=dict(build_exe = buildOptions),
+      description='MEA Viewer',
+      options=dict(build_exe=buildOptions),
       executables=executables)
