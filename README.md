@@ -46,7 +46,7 @@ alias mea='python3 ~/mea-tools/mea-runner.py'
 export PYTHONPATH=$PYTHONPATH:$HOME/mea-tools
 ```
 
-## pymea
+### pymea
 
 The core of the package is a Python 3 module, pymea, which has many components for interacting with data acquired by MultiChannel Systems software. Data files must be converted to HDF5 files using [MultiChannel Systems Data Manager](http://www.multichannelsystems.com/software/multi-channel-datamanager) before they can be viewed or analyzed with pymea.
 
@@ -64,8 +64,8 @@ The analog grid view displays an overview of analog data for all channels.
 
 - `Drag` to pan through the dataset.
 - `Double-Click` on a channel to view it in the analog comparison view.
-- Select multiple electrodes by `Shift-clicking` on the desired channels, then press `Enter` to display them in the analog comparison view.
-- After selecting two electrodes you can press `p` to use them to define and view their propagation signal. See the section on the [propagation signal](#propagation-signal-view) for more information on how these signals are defined and displayed.
+- `Shift-Click` to select multiple electrodes, then press `Enter` to display them in the analog comparison view.
+- `p` to switch to the propagation signal view after selecting two channels.  See the section on the [propagation signal](#propagation-signal-view) for more information on how these signals are defined and displayed.
 
 #### Analog Comparison View
 
