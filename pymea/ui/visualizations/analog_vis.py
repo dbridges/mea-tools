@@ -94,6 +94,7 @@ class MEAAnalogVisualization(Visualization):
         self.raw_data = spike_data
         self.spike_data = mea.MEASpikeDict(spike_data)
         self.show_spikes = False
+        self._dim_conductance = False
         self._t0 = 0
         self._dt = 20
         self._y_scale = 150
@@ -208,6 +209,15 @@ class MEAAnalogVisualization(Visualization):
         self._filter_cutoff = val
         self.resample()
 
+    @property
+    def dim_conductance(self):
+        return self._dim_conductance
+
+    @dim_conductance.setter
+    def dim_conductance(self, val):
+        self._dim_conductance = val
+        self.resample()
+
     def draw(self):
         gloo.clear(self.background_color)
         if self.measuring:
@@ -249,7 +259,7 @@ class MEAAnalogVisualization(Visualization):
                 for j, row in self.spike_data[esub].iterrows():
                     spike_data.append((row.time, row.amplitude, i))
                     try:
-                        if row.conductance:
+                        if row.conductance and self.dim_conductance:
                             spike_colors.append(Theme.gray)
                         elif unit_number == -1:
                             # Unsorted spikes in black.

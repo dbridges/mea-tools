@@ -118,6 +118,8 @@ class VisualizationCanvas(app.Canvas):
                 self.controller.filterCheckBox.isChecked()
             self.analog_vis.show_spikes = \
                 self.controller.showSpikesCheckBox.isChecked()
+            self.analog_vis.dim_conductance = \
+                self.controller.grayConductanceCheckBox.isChecked()
         if self.visualization is not None:
             self.analog_vis.t0 = self.visualization.t0
             self.analog_vis.dt = self.visualization.dt
@@ -282,6 +284,9 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
             self.showSpikesCheckBox.setChecked(
                 settings.value('showSpikesCheckBox', False, type=bool)
             )
+            self.grayConductanceCheckBox.setChecked(
+                settings.value('grayConductanceCheckBox', False, type=bool)
+            )
             settings.endGroup()
         except:
             pass
@@ -294,6 +299,8 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         settings.setValue('filterCheckBox', self.filterCheckBox.isChecked())
         settings.setValue('showSpikesCheckBox',
                           self.showSpikesCheckBox.isChecked())
+        settings.setValue('grayConductanceCheckBox',
+                          self.grayConductanceCheckBox.isChecked())
         settings.endGroup()
 
     def load_spike_data(self):
@@ -407,6 +414,12 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
         if self.canvas.analog_vis is None:
             return
         self.canvas.analog_vis.show_spikes = checked
+
+    @QtCore.pyqtSlot(bool)
+    def on_grayConductanceCheckBox_toggled(self, checked):
+        if self.canvas.analog_vis is None:
+            return
+        self.canvas.analog_vis.dim_conductance = checked
 
     @QtCore.pyqtSlot(bool)
     def on_dimConductanceCheckBox_toggled(self, checked):
