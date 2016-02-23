@@ -123,6 +123,8 @@ class MEAAnalogVisualization(Visualization):
         self.extra_text = ''
         self._filtered = False
         self._filter_cutoff = [200, 4000]
+        self.all_spike_colors = []
+        self.propagation_spike_colors = []
         self.resample()
         self.background_color = Theme.background
 
@@ -216,7 +218,13 @@ class MEAAnalogVisualization(Visualization):
     @dim_conductance.setter
     def dim_conductance(self, val):
         self._dim_conductance = val
-        self.resample()
+        try:
+            if val:
+                self.point_program['a_color'] = self.propagation_spike_colors
+            else:
+                self.point_program['a_color'] = self.all_spike_colors
+        except ValueError:
+            self.point_program['a_color'] = np.empty((1, 4), dtype=np.float32)
 
     def draw(self):
         gloo.clear(self.background_color)
@@ -233,7 +241,8 @@ class MEAAnalogVisualization(Visualization):
         ys = []
         zs = []
         spike_data = []
-        spike_colors = []
+        self.all_spike_colors = []
+        self.propagation_spike_colors = []
         for i, e in enumerate(self.selected_electrodes):
             x = self.analog_data[e].index.values.astype(np.float32)
             if self.filtered:
@@ -259,22 +268,33 @@ class MEAAnalogVisualization(Visualization):
                 for j, row in self.spike_data[esub].iterrows():
                     spike_data.append((row.time, row.amplitude, i))
                     try:
-                        if row.conductance and self.dim_conductance:
-                            spike_colors.append(Theme.gray)
-                        elif unit_number == -1:
+                        if unit_number == -1:
                             # Unsorted spikes in black.
-                            spike_colors.append(Theme.black)
+                            self.all_spike_colors.append(Theme.black)
+                            self.propagation_spike_colors.append(Theme.black)
+                        elif row.conductance:
+                            self.propagation_spike_colors.append(Theme.gray)
+                            self.all_spike_colors.append(
+                                Theme.indexed(unit_number))
                         else:
-                            spike_colors.append(Theme.indexed(unit_number))
+                            self.propagation_spike_colors.append(
+                                Theme.indexed(unit_number))
+                            self.all_spike_colors.append(
+                                Theme.indexed(unit_number))
                     except AttributeError:
-                        spike_colors.append(Theme.indexed(unit_number))
+                        self.all_spike_colors.append(
+                            Theme.indexed(unit_number))
+                        self.propagation_spike_colors.append(
+                            Theme.indexed(unit_number))
 
         self.strip_program['a_position'] = np.column_stack(
             (np.concatenate(xs), np.concatenate(ys), np.concatenate(zs)))
-
         if len(spike_data) > 0:
             self.point_program['a_position'] = spike_data
-            self.point_program['a_color'] = spike_colors
+            if self.dim_conductance:
+                self.point_program['a_color'] = self.propagation_spike_colors
+            else:
+                self.point_program['a_color'] = self.all_spike_colors
         else:
             self.point_program['a_position'] = np.empty((1, 3),
                                                         dtype=np.float32)
