@@ -346,6 +346,12 @@ class MEAAnalogVisualization(Visualization):
                     sec_per_pixel * np.abs(x - self.measure_start[0]))
                 self.measure_line.set_data(np.array((self.measure_start,
                                                      event.pos)))
+        else:
+            yscale = (2 * self.y_scale /
+                      self.canvas.size[1] * len(self.selected_electrodes))
+            yadj = y % (self.canvas.size[1] / len(self.selected_electrodes))
+            self.extra_text = ('%1.1f uV' %
+                               -(yadj * yscale - self.y_scale))
         self.mouse_t = self.t0 + sec_per_pixel * x
         try:
             self.electrode = self.selected_electrodes[int(

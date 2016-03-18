@@ -1,13 +1,14 @@
 {
 	"build_systems":
-	[	{
+	[
+		{
 			"cmd":
 			[
 				"make",
 				"test"
 			],
-			"working_dir": "${project_path}",
-			"name": "Make - Test"
+			"name": "Make - Test",
+			"working_dir": "${project_path}"
 		},
 		{
 			"cmd":
@@ -15,8 +16,8 @@
 				"make",
 				"test-ui"
 			],
-			"working_dir": "${project_path}",
-			"name": "Make - Test Spike UI"
+			"name": "Make - Test Spike UI",
+			"working_dir": "${project_path}"
 		},
 		{
 			"cmd":
@@ -24,14 +25,14 @@
 				"make",
 				"inline"
 			],
-			"working_dir": "${project_path}",
-			"name": "Make - Cython"
+			"name": "Make - Cython",
+			"working_dir": "${project_path}"
 		},
 		{
 			"file_regex": "^[ ]*File \"(...*?)\", line ([0-9]*)",
 			"name": "Anaconda Python Builder",
 			"selector": "source.python",
-			"shell_cmd": "/Users/bridges/anaconda/bin/python -u \"$file\""
+			"shell_cmd": "\"/Users/bridges/anaconda/bin/python\" -u \"$file\""
 		}
 	],
 	"folders":
