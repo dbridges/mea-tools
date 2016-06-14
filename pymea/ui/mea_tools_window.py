@@ -96,7 +96,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_3 = QtGui.QVBoxLayout(self.tab_2)
         self.verticalLayout_3.setObjectName(_fromUtf8("verticalLayout_3"))
         self.logTextEdit = QtGui.QTextEdit(self.tab_2)
-        self.logTextEdit.setEnabled(False)
+        self.logTextEdit.setEnabled(True)
         self.logTextEdit.setReadOnly(True)
         self.logTextEdit.setObjectName(_fromUtf8("logTextEdit"))
         self.verticalLayout_3.addWidget(self.logTextEdit)

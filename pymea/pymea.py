@@ -598,6 +598,26 @@ def bandpass_filter(series, low=200.0, high=4000.0):
 
 
 def extract_conduction_windows(keys, spikes, rec, window=0.005, limit=200):
+    """
+    Helper function to extract spike waveforms from data.:w
+
+    Parameters
+    ----------
+    keys : list of str
+        The electrode ids for extraction.
+
+    spikes : pandas.DataFrame
+        A pandas DataFrame containing the spike information.
+
+    rec : MEARecording
+        The MEARecording object.
+
+    window : float
+        The window length to extract in seconds.
+
+    limit : int
+        Limit extraction to first 200 waveforms by default.
+    """
     lead = keys[0]
     test = keys[1]
 
@@ -632,12 +652,18 @@ def extract_conduction_windows(keys, spikes, rec, window=0.005, limit=200):
 
 
 def export_waveforms(fname, waveforms):
+    """
+    Exports waveforms to list of files for importing into an external program.
+    """
     fname = fname.split('.')[0]
     for key, value in waveforms.items():
         np.savetxt(fname + '_' + key + '.csv', value, delimiter=',')
 
 
 def export_conduction_waveforms(keys, spike_file, rec_file, window=0.005):
+    """
+    Exports waveforms to list of files for importing into an external program.
+    """
     rec = MEARecording(rec_file)
     basename = os.path.basename(rec_file)[:-3]
     output_dir = os.path.join(os.path.dirname(rec_file),
