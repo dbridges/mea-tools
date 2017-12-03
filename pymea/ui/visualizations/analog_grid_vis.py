@@ -14,7 +14,7 @@ from .base import LineCollection, Visualization, Theme
 import pymea as mea
 import pymea.util as util
 
-from PyQt4 import QtGui, QtCore  # noqa
+from PyQt5 import QtGui, QtCore, QtWidgets  # noqa
 
 class MEAGridVisualization(Visualization):
     VERTEX_SHADER = """
@@ -193,7 +193,7 @@ class MEAGridVisualization(Visualization):
                 self.selected_electrodes.append(self.electrode)
             self.update_extra_text()
         elif event.button == 2:
-            menu = QtGui.QMenu(None)
+            menu = QtWidgets.QMenu(None)
             menu.addAction('Show Multi-electrode Signal')
             try:
                 action = menu.exec_(event.native.globalPos())

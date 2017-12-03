@@ -45,7 +45,7 @@ class MEARecording:
         info = self.store[
             '/Data/Recording_0/AnalogStream/Stream_0/InfoChannel']
         self.sample_rate = 1e6/info['Tick'][0]
-        self.conv = info['ConversionFactor'][0] * 10**(info['Exponent'][0] + 6)
+        self.conv = info['ConversionFactor'][0] * 10**np.float(info['Exponent'][0] + 6)
         self.lookup = {}
         for i, l in enumerate([r[3].decode('ascii').lower() for r in info]):
             self.lookup[l] = i

@@ -5,11 +5,11 @@ import glob
 
 import pymea.pymea as mea
 
-from PyQt4 import QtGui, QtCore  # noqa
+from PyQt5 import QtGui, QtCore, QtWidgets  # noqa
 from .mea_tools_window import Ui_MainWindow
 
 
-class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
+class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     """
     Subclass of QMainWindow
     """
@@ -31,7 +31,7 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
 
     @QtCore.pyqtSlot()
     def on_browseButton_clicked(self):
-        directory = QtGui.QFileDialog.getExistingDirectory(
+        directory = QtWidgets.QFileDialog.getExistingDirectory(
             self,
             'Select directory of experiment files.')
         if os.path.exists(directory):
@@ -46,14 +46,14 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
                   for f in files]
 
         if True in exists:
-            reply = QtGui.QMessageBox.question(
+            reply = QtWidgets.QMessageBox.question(
                 self, 'Overwrite Files?',
                 'Some files will be overwritten. Proceed?',
-                QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+                QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
         else:
-            reply = QtGui.QMessageBox.Yes
+            reply = QtWidgets.QMessageBox.Yes
 
-        if reply == QtGui.QMessageBox.Yes:
+        if reply == QtWidgets.QMessageBox.Yes:
             self.logTextEdit.clear()
             self.tabWidget.setCurrentIndex(1)
             thread = WorkerThread(
@@ -164,7 +164,7 @@ class WorkerThread(QtCore.QThread):
 
 
 def run():
-    appQt = QtGui.QApplication(sys.argv)
+    appQt = QtWidgets.QApplication(sys.argv)
     win = MainWindow()
     win.show()
     if platform.system() == 'Darwin':

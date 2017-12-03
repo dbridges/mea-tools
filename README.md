@@ -24,7 +24,7 @@ MEA Tools requires:
 
 - Python 3.4
 - [vispy](http://www.vispy.org) 0.4.0
-- PyQt4
+- PyQt5
 - numpy
 - scipy
 - pandas

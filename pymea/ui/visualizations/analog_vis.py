@@ -13,7 +13,7 @@ import pymea as mea
 from .base import Visualization, Theme
 import pymea.util as util
 
-from PyQt4 import QtGui, QtCore  # noqa
+from PyQt5 import QtGui, QtCore, QtWidgets  # noqa
 
 
 class MEAAnalogVisualization(Visualization):
@@ -229,7 +229,6 @@ class MEAAnalogVisualization(Visualization):
     def draw(self):
         gloo.clear(self.background_color)
         if self.measuring:
-            self.measure_line.draw(self.canvas.tr_sys)
         if self.show_spikes and len(self.spike_data) > 0:
             self.point_program.draw('points')
         self.strip_program.draw('line_strip')
@@ -365,7 +364,7 @@ class MEAAnalogVisualization(Visualization):
             self.velocity = self.dt * dx / self.canvas.size[0]
         elif event.button == 2:
             unit = self.selected_unit()
-            menu = QtGui.QMenu(None)
+            menu = QtWidgets.QMenu(None)
             menu.addAction('Show Multi-electrode Signal (%s)' % unit.upper())
             try:
                 action = menu.exec_(event.native.globalPos())
