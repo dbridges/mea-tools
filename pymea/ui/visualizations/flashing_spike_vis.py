@@ -80,10 +80,11 @@ class FlashingSpikeVisualization(Visualization):
         self.paused = True
         self.program['a_position'] = self._vert
         self.program['a_color'] = self._color
-        self.program.vert['transform'] = canvas.tr_sys.get_full_transform()
+        self.program.vert['transform'] = canvas.tr_sys.get_transform()
         self.outline = visuals.LineVisual(color=Theme.yellow)
         self._rescale_outline()
         self.extra_text = ''
+        self.configure_transforms()
 
     @property
     def t0(self):
@@ -128,7 +129,7 @@ class FlashingSpikeVisualization(Visualization):
 
     def draw(self):
         gloo.clear((0.0, 0.0, 0.0, 1))
-        self.outline.draw(self.canvas.tr_sys)
+        self.outline.draw()
         self.program.draw('triangles')
 
     def pause(self):
@@ -151,7 +152,7 @@ class FlashingSpikeVisualization(Visualization):
         self._rescale_outline()
         self.program['a_position'] = self._vert
         self.program.vert['transform'] = \
-            self.canvas.tr_sys.get_full_transform()
+            self.canvas.tr_sys.get_transform()
 
     def on_tick(self, event):
         if self.paused:
@@ -181,3 +182,8 @@ class FlashingSpikeVisualization(Visualization):
             self.electrode = (
                 '%s' %
                 self.canvas.layout.electrode_for_coordinate((col, row)))
+
+    def configure_transforms(self):
+        vp = (0, 0, self.canvas.physical_size[0], self.canvas.physical_size[1])
+        self.canvas.context.set_viewport(*vp)
+        self.outline.transforms.configure(canvas=self.canvas, viewport=vp)

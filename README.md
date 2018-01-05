@@ -22,15 +22,15 @@ Follow these instructions if you want access to the pymea module for your own Py
 
 MEA Tools requires:
 
-- Python 3.4
-- [vispy](http://www.vispy.org) 0.4.0
+- Python 3.6
+- [vispy](http://www.vispy.org) 0.5.2
 - PyQt5
 - numpy
 - scipy
 - pandas
 - PyOpenGL
 
-Typically it is easiest to install Anaconda Python 3.4 to obtain these packages.
+Typically it is easiest to install Anaconda Python 3.6 to obtain these packages.
 
 Clone the repository to a suitable directory:
 

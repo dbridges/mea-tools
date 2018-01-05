@@ -101,6 +101,7 @@ class MEAConductionVisualization(Visualization):
         self.measure_line = visuals.LineVisual(np.array(((0, 0), (0, 0))),
                                                Theme.yellow,
                                                method='agg')
+        self.configure_transforms()
 
     @property
     def t0(self):
@@ -262,9 +263,9 @@ class MEAConductionVisualization(Visualization):
 
     def draw(self):
         gloo.clear(Theme.white)
-        self.grid.draw(self.canvas.tr_sys)
+        self.grid.draw()
         if self.measuring:
-            self.measure_line.draw(self.canvas.tr_sys)
+            self.measure_line.draw()
         self.program.draw('line_strip')
 
     def on_mouse_move(self, event):
@@ -330,7 +331,14 @@ class MEAConductionVisualization(Visualization):
 
     def on_resize(self, event):
         self.create_grid()
+        self.configure_transforms()
 
     def on_show(self):
         self.canvas.enable_antialiasing()
-        self.measure_line.draw(self.canvas.tr_sys)
+        self.measure_line.draw()
+
+    def configure_transforms(self):
+        vp = (0, 0, self.canvas.physical_size[0], self.canvas.physical_size[1])
+        self.canvas.context.set_viewport(*vp)
+        self.measure_line.transforms.configure(canvas=self.canvas, viewport=vp)
+        self.grid.transforms.configure(canvas=self.canvas, viewport=vp)
