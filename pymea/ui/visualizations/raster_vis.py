@@ -70,7 +70,7 @@ class RasterPlotVisualization(Visualization):
         self.velocity = 0
         self.tick_separtion = 50
         self.tick_labels = [visuals.TextVisual('', font_size=10, color='w')
-                            for x in range(14)]
+                            for x in range(18)]
         self.tick_marks = LineCollection()
         self.mouse_t = 0
         self.extra_text = ''
@@ -78,6 +78,7 @@ class RasterPlotVisualization(Visualization):
         self.measure_start = (0, 0)
         self.measure_line = visuals.LineVisual(np.array(((0, 0), (100, 100))),
                                                Theme.yellow)
+        self.configure_transforms()
 
     @property
     def t0(self):
@@ -215,11 +216,11 @@ class RasterPlotVisualization(Visualization):
     def draw(self):
         gloo.clear((0.5, 0.5, 0.5, 1))
         if self.measuring:
-            self.measure_line.draw(self.canvas.tr_sys)
+            self.measure_line.draw()
         self.program.draw('lines')
         for label in self.tick_labels:
-            label.draw(self.canvas.tr_sys)
-        self.tick_marks.draw(self.canvas.tr_sys)
+            label.draw()
+        self.tick_marks.draw()
 
     def on_mouse_move(self, event):
         x, y = event.pos
@@ -299,6 +300,7 @@ class RasterPlotVisualization(Visualization):
 
     def on_resize(self, event):
         self.program['u_top_margin'] = 20.0 * 2.0 / self.canvas.size[1]
+        self.configure_transforms()
 
     def on_tick(self, event):
         self.velocity *= 0.98
@@ -328,3 +330,11 @@ class RasterPlotVisualization(Visualization):
             measure_str = 'dt: %1.4f' % measurement
 
         self.extra_text = '%s    %s' % (selected_str, measure_str)
+
+    def configure_transforms(self):
+        vp = (0, 0, self.canvas.physical_size[0], self.canvas.physical_size[1])
+        self.canvas.context.set_viewport(*vp)
+        self.measure_line.transforms.configure(canvas=self.canvas, viewport=vp)
+        self.tick_marks.transforms.configure(canvas=self.canvas, viewport=vp)
+        for label in self.tick_labels:
+            label.transforms.configure(canvas=self.canvas, viewport=vp)
