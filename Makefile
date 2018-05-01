@@ -13,8 +13,8 @@ inline:
 	$(PYTHON) setup.py build_ext $(DFLAGS) --inplace
 
 ui:
-	pyuic4 pymea/ui/PyMEAMainWindow.ui -o pymea/ui/main_window.py
-	pyuic4 pymea/ui/MEAToolsMainWindow.ui -o pymea/ui/mea_tools_window.py
+	pyuic5 pymea/ui/PyMEAMainWindow.ui -o pymea/ui/main_window.py
+	pyuic5 pymea/ui/MEAToolsMainWindow.ui -o pymea/ui/mea_tools_window.py
 
 clean:
 	-@rm -rf pymea/mea_cython.c pymea/mea_cython.so pymea/mea_cython.pyd 2>/dev/null 
@@ -28,7 +28,7 @@ update:
 	@echo "done."
 
 resources:
-	pyrcc4 -py3 pymea/rsc/resources.qrc -o pymea/rsc.py
+	pyrcc5 -py3 pymea/rsc/resources.qrc -o pymea/rsc.py
 
 test:
 	python3 ~/mea-tools/mea-runner.py view ~/Dropbox/neuron/mea/pymea/2014-10-30_I9119_Stimulate_D3.h5

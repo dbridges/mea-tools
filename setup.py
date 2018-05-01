@@ -17,5 +17,5 @@ setup(
     url='http://github.com/dbridges/mea-tools',
     ext_modules=cythonize("pymea/mea_cython.pyx"),
     include_dirs=[numpy.get_include()], requires=['pandas', 'h5py', 'scipy',
-                                                  'sklearn', 'vispy', 'PyQt4']
+                                                  'sklearn', 'vispy', 'PyQt5']
 )

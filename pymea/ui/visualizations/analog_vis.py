@@ -13,7 +13,7 @@ import pymea as mea
 from .base import Visualization, Theme
 import pymea.util as util
 
-from PyQt4 import QtGui, QtCore  # noqa
+from PyQt5 import QtGui, QtCore, QtWidgets  # noqa
 
 
 class MEAAnalogVisualization(Visualization):
@@ -120,6 +120,7 @@ class MEAAnalogVisualization(Visualization):
                                             width=10,
                                             method='agg')
         self.scale_label = visuals.TextVisual('', font_size=8)
+        self.configure_transforms()
         self.extra_text = ''
         self._filtered = False
         self._filter_cutoff = [200, 4000]
@@ -229,12 +230,12 @@ class MEAAnalogVisualization(Visualization):
     def draw(self):
         gloo.clear(self.background_color)
         if self.measuring:
-            self.measure_line.draw(self.canvas.tr_sys)
+            self.measure_line.draw()
         if self.show_spikes and len(self.spike_data) > 0:
             self.point_program.draw('points')
         self.strip_program.draw('line_strip')
-        self.scale_bar.draw(self.canvas.tr_sys)
-        self.scale_label.draw(self.canvas.tr_sys)
+        self.scale_bar.draw()
+        self.scale_label.draw()
 
     def resample(self):
         xs = []
@@ -365,7 +366,7 @@ class MEAAnalogVisualization(Visualization):
             self.velocity = self.dt * dx / self.canvas.size[0]
         elif event.button == 2:
             unit = self.selected_unit()
-            menu = QtGui.QMenu(None)
+            menu = QtWidgets.QMenu(None)
             menu.addAction('Show Multi-electrode Signal (%s)' % unit.upper())
             try:
                 action = menu.exec_(event.native.globalPos())
@@ -418,3 +419,13 @@ class MEAAnalogVisualization(Visualization):
 
     def on_hide(self):
         self.velocity = 0
+
+    def on_resize(self, event):
+        self.configure_transforms()
+
+    def configure_transforms(self):
+        vp = (0, 0, self.canvas.physical_size[0], self.canvas.physical_size[1])
+        self.canvas.context.set_viewport(*vp)
+        self.measure_line.transforms.configure(canvas=self.canvas, viewport=vp)
+        self.scale_bar.transforms.configure(canvas=self.canvas, viewport=vp)
+        self.scale_label.transforms.configure(canvas=self.canvas, viewport=vp)

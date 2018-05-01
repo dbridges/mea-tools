@@ -14,7 +14,7 @@ from .base import LineCollection, Visualization, Theme
 import pymea as mea
 import pymea.util as util
 
-from PyQt4 import QtGui, QtCore  # noqa
+from PyQt5 import QtGui, QtCore, QtWidgets  # noqa
 
 class MEAGridVisualization(Visualization):
     VERTEX_SHADER = """
@@ -155,7 +155,7 @@ class MEAGridVisualization(Visualization):
     def draw(self):
         gloo.clear(Theme.background)
         self.program.draw('line_strip')
-        self.grid.draw(self.canvas.tr_sys)
+        self.grid.draw()
 
     def on_mouse_move(self, event):
         x, y = event.pos
@@ -193,7 +193,7 @@ class MEAGridVisualization(Visualization):
                 self.selected_electrodes.append(self.electrode)
             self.update_extra_text()
         elif event.button == 2:
-            menu = QtGui.QMenu(None)
+            menu = QtWidgets.QMenu(None)
             menu.addAction('Show Multi-electrode Signal')
             try:
                 action = menu.exec_(event.native.globalPos())
@@ -242,9 +242,15 @@ class MEAGridVisualization(Visualization):
 
     def on_resize(self, event):
         self.create_grid()
+        self.configure_transforms()
 
     def on_show(self):
         self.selected_electrodes = []
         self.update_extra_text()
         self.canvas.disable_antialiasing()
         self.needs_update = True
+
+    def configure_transforms(self):
+        vp = (0, 0, self.canvas.physical_size[0], self.canvas.physical_size[1])
+        self.canvas.context.set_viewport(*vp)
+        self.grid.transforms.configure(canvas=self.canvas, viewport=vp)

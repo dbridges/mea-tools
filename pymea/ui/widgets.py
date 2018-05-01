@@ -1,7 +1,7 @@
-from PyQt4 import QtGui, QtCore  # noqa
+from PyQt5 import QtGui, QtCore, QtWidgets  # noqa
 
 
-class MEAViewerStatusBar(QtGui.QStatusBar):
+class MEAViewerStatusBar(QtWidgets.QStatusBar):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._text_fmt = 't: %1.4f    electrode: %s    %s'

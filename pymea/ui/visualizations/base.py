@@ -7,6 +7,8 @@
 import sys
 
 import numpy as np
+from vispy.gloo import VertexBuffer
+from vispy.visuals import Visual
 from vispy.visuals.shaders import ModularProgram
 
 
@@ -40,7 +42,7 @@ class Theme:
         return cls.indexed_colors[val % len(cls.indexed_colors)]
 
 
-class LineCollection:
+class LineCollection(Visual):
     VERTEX_SHADER = """
     attribute vec2 a_position;
     attribute vec4 a_color;
@@ -64,10 +66,12 @@ class LineCollection:
     """
 
     def __init__(self):
+        Visual.__init__(self, self.VERTEX_SHADER, self.FRAGMENT_SHADER)
         self._vert = []
         self._color = []
-        self._program = ModularProgram(LineCollection.VERTEX_SHADER,
-                                       LineCollection.FRAGMENT_SHADER)
+        self._draw_mode = 'lines'
+        # self._program = ModularProgram(LineCollection.VERTEX_SHADER,
+        #                                LineCollection.FRAGMENT_SHADER)
 
     def clear(self):
         self._vert = []
@@ -89,10 +93,12 @@ class LineCollection:
         self._program['a_position'] = np.array(self._vert, dtype=np.float32)
         self._program['a_color'] = np.array(self._color, dtype=np.float32)
 
-    def draw(self, transforms):
-        if len(self._vert) > 0:
-            self._program.vert['transform'] = transforms.get_full_transform()
-            self._program.draw('lines')
+    def _prepare_transforms(self, view=None):
+        view.view_program.vert['transform'] = view.transforms.get_transform()
+
+    def _prepare_draw(self, view):
+        self.shared_program['a_position'] = VertexBuffer(self._vert)
+        self.shared_program['a_color'] = VertexBuffer(self._color)
 
 
 class Visualization:
